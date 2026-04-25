@@ -20,14 +20,15 @@ func GetProfile(c *gin.Context) {
         Rating          float64
         TotalReviews    int
         TotalSessions   int
+        IsAdmin         bool
     }
 
     err := db.QueryRow(`
-        SELECT id, name, email, discord_username, bio, rating, total_reviews, total_sessions 
+        SELECT id, name, email, discord_username, bio, rating, total_reviews, total_sessions, is_admin
         FROM users WHERE id = $1
     `, userID).Scan(
         &user.ID, &user.Name, &user.Email, &user.DiscordUsername,
-        &user.Bio, &user.Rating, &user.TotalReviews, &user.TotalSessions,
+        &user.Bio, &user.Rating, &user.TotalReviews, &user.TotalSessions, &user.IsAdmin,
     )
 
     if err != nil {
@@ -35,7 +36,6 @@ func GetProfile(c *gin.Context) {
         return
     }
 
-    // Get user's skills
     rows, err := db.Query(`
         SELECT skill_name, proficiency FROM skills WHERE user_id = $1
     `, userID)
@@ -50,21 +50,22 @@ func GetProfile(c *gin.Context) {
         var name, proficiency string
         rows.Scan(&name, &proficiency)
         skills = append(skills, map[string]string{
-            "name":       name,
+            "name":        name,
             "proficiency": proficiency,
         })
     }
 
     c.JSON(http.StatusOK, gin.H{
-        "id":             user.ID,
-        "name":           user.Name,
-        "email":          user.Email,
+        "id":               user.ID,
+        "name":             user.Name,
+        "email":            user.Email,
         "discord_username": user.DiscordUsername.String,
-        "bio":            user.Bio.String,
-        "rating":         user.Rating,
-        "total_reviews":  user.TotalReviews,
-        "total_sessions": user.TotalSessions,
-        "skills":         skills,
+        "bio":              user.Bio.String,
+        "rating":           user.Rating,
+        "total_reviews":    user.TotalReviews,
+        "total_sessions":   user.TotalSessions,
+        "skills":           skills,
+        "is_admin":         user.IsAdmin,
     })
 }
 

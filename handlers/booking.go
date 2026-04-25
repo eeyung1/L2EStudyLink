@@ -4,8 +4,10 @@ import (
     "database/sql"
     "net/http"
     "time"
+    "os"
 
     "github.com/gin-gonic/gin"
+    "L2EStudyLink/notifications"
 )
 
 type BookingRequest struct {
@@ -20,6 +22,8 @@ type BookingRequest struct {
 func CreateBooking(c *gin.Context) {
     studentID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
+
+    notifications.Init(os.Getenv("DISCORD_WEBHOOK_URL"))
 
     var input BookingRequest
     if err := c.ShouldBindJSON(&input); err != nil {
@@ -60,6 +64,14 @@ func CreateBooking(c *gin.Context) {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create booking"})
         return
     }
+
+    // Get tutor and student names and Discord IDs for notification
+    var tutorName, tutorDiscord, studentName, studentDiscord string
+    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", input.TutorID).Scan(&tutorName, &tutorDiscord)
+    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentDiscord)
+
+    // Send Discord notification with mentions
+    notifications.SendBookingNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, input.Date, input.StartTime, input.Topic)
 
     c.JSON(http.StatusCreated, gin.H{
         "message":    "Booking created successfully",
@@ -128,6 +140,8 @@ func CancelBooking(c *gin.Context) {
     bookingID := c.Param("id")
     db := c.MustGet("db").(*sql.DB)
 
+    notifications.Init(os.Getenv("DISCORD_WEBHOOK_URL"))
+
     var tutorID, studentID int64
     var sessionDate, startTime string
     err := db.QueryRow(`
@@ -162,6 +176,14 @@ func CancelBooking(c *gin.Context) {
         return
     }
 
+    // Get names for notification
+    var tutorName, studentName, tutorDiscord, studentDiscord string
+    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", tutorID).Scan(&tutorName, &tutorDiscord)
+    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentDiscord)
+
+    // Send Discord notification
+    notifications.SendBookingCancelledNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, sessionDate, startTime)
+
     c.JSON(http.StatusOK, gin.H{"message": "Booking cancelled successfully"})
 }
 
@@ -169,6 +191,8 @@ func UpdateBookingStatus(c *gin.Context) {
     userID := c.GetInt64("user_id")
     bookingID := c.Param("id")
     db := c.MustGet("db").(*sql.DB)
+    
+    notifications.Init(os.Getenv("DISCORD_WEBHOOK_URL"))
     
     var input struct {
         Status string `json:"status" binding:"required,oneof=confirmed cancelled"`
@@ -179,8 +203,9 @@ func UpdateBookingStatus(c *gin.Context) {
         return
     }
     
-    var tutorID int64
-    err := db.QueryRow("SELECT tutor_id FROM bookings WHERE id = $1", bookingID).Scan(&tutorID)
+    var tutorID, studentID int64
+    var sessionDate, startTime string
+    err := db.QueryRow("SELECT tutor_id, student_id, session_date, start_time FROM bookings WHERE id = $1", bookingID).Scan(&tutorID, &studentID, &sessionDate, &startTime)
     if err != nil {
         c.JSON(http.StatusNotFound, gin.H{"error": "Booking not found"})
         return
@@ -195,6 +220,18 @@ func UpdateBookingStatus(c *gin.Context) {
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update status"})
         return
+    }
+    
+    // Get names and Discord IDs for notification
+    var tutorName, studentName, tutorDiscord, studentDiscord string
+    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", tutorID).Scan(&tutorName, &tutorDiscord)
+    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentDiscord)
+    
+    // Send Discord notification if accepted
+    if input.Status == "confirmed" {
+        notifications.SendBookingAcceptedNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, sessionDate, startTime)
+    } else if input.Status == "cancelled" {
+        notifications.SendBookingCancelledNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, sessionDate, startTime)
     }
     
     c.JSON(http.StatusOK, gin.H{"message": "Booking " + input.Status})
