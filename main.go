@@ -51,6 +51,10 @@ func main() {
             protected.PUT("/profile", handlers.UpdateProfile)
             protected.POST("/skills", handlers.AddSkill)
             protected.DELETE("/skills/:skill", handlers.RemoveSkill)
+            
+            // Availability routes
+            protected.GET("/availability", handlers.GetAvailability)
+            protected.PUT("/availability", handlers.SetAvailability)
         }
     }
 
