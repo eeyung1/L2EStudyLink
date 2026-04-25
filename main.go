@@ -24,11 +24,25 @@ func main() {
 
     router := gin.Default()
 
+    // Load templates
+    router.LoadHTMLGlob("templates/*.html")
+
     router.Use(func(c *gin.Context) {
         c.Set("db", db.DB)
         c.Next()
     })
 
+    // Web routes (HTML pages)
+    router.GET("/", func(c *gin.Context) {
+        c.HTML(200, "layout.html", nil)
+    })
+
+    router.GET("/page/:name", func(c *gin.Context) {
+        name := c.Param("name")
+        c.HTML(200, name+".html", nil)
+    })
+
+    // API routes
     router.GET("/health", func(c *gin.Context) {
         c.JSON(200, gin.H{
             "status":  "ok",
@@ -55,8 +69,6 @@ func main() {
             protected.DELETE("/skills/:skill", handlers.RemoveSkill)
             protected.GET("/availability", handlers.GetAvailability)
             protected.PUT("/availability", handlers.SetAvailability)
-            
-            // Booking routes
             protected.POST("/bookings", handlers.CreateBooking)
             protected.GET("/bookings", handlers.GetMyBookings)
             protected.DELETE("/bookings/:id", handlers.CancelBooking)

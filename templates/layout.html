@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L2EStudyLink - Peer Learning Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-blue-600">L2EStudyLink</h1>
+                    <span class="ml-2 text-sm text-gray-500">Peer Learning</span>
+                </div>
+                <div id="nav-links" class="hidden md:flex space-x-4">
+                    <a href="#" onclick="loadPage('home'); return false;" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600">Home</a>
+                    <a href="#" onclick="loadPage('search'); return false;" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600">Find Tutors</a>
+                </div>
+                <div id="auth-buttons" class="flex space-x-2">
+                    <button onclick="showLogin()" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">Login</button>
+                    <button onclick="showSignup()" class="border border-blue-600 text-blue-600 px-4 py-2 rounded-md text-sm hover:bg-blue-50">Signup</button>
+                </div>
+                <div id="user-info" class="hidden flex items-center space-x-3">
+                    <span id="user-name" class="text-sm font-medium text-gray-700"></span>
+                    <button onclick="logout()" class="text-red-600 text-sm hover:text-red-800">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div id="content">
+            Loading...
+        </div>
+    </div>
+
+    <script>
+        let currentToken = localStorage.getItem('token');
+        
+        function updateUI() {
+            if (currentToken) {
+                document.getElementById('auth-buttons').classList.add('hidden');
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('nav-links').classList.remove('hidden');
+                fetch('/api/v1/me', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                }).then(r => r.json()).then(user => {
+                    document.getElementById('user-name').innerText = user.name;
+                }).catch(() => {});
+            } else {
+                document.getElementById('auth-buttons').classList.remove('hidden');
+                document.getElementById('user-info').classList.add('hidden');
+                document.getElementById('nav-links').classList.add('hidden');
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('token');
+            currentToken = null;
+            updateUI();
+            loadPage('home');
+        }
+        
+        function showLogin() { loadPage('login'); }
+        function showSignup() { loadPage('signup'); }
+        
+        async function loadPage(page) {
+            try {
+                const response = await fetch(`/page/${page}`);
+                const html = await response.text();
+                document.getElementById('content').innerHTML = html;
+            } catch(e) {
+                console.error('Error loading page:', e);
+                document.getElementById('content').innerHTML = '<div class="text-red-600 text-center">Error loading page. Please refresh.</div>';
+            }
+        }
+        
+        // Global search function
+        window.performSearchGlobal = async function() {
+            const skill = document.getElementById('skill-search-global').value;
+            if (!skill) return;
+            
+            const resultsDiv = document.getElementById('search-results-global');
+            resultsDiv.innerHTML = '<div class="text-center text-gray-500">Searching...</div>';
+            
+            try {
+                const res = await fetch('/api/v1/search?skill=' + encodeURIComponent(skill));
+                const tutors = await res.json();
+                
+                if (!tutors || tutors.length === 0) {
+                    resultsDiv.innerHTML = '<div class="text-center text-gray-500">No tutors found for "' + skill + '"</div>';
+                    return;
+                }
+                
+                let html = '';
+                for (const t of tutors) {
+                    html += '<div class="border rounded-lg p-4 mb-3 hover:shadow">' +
+                        '<div class="flex justify-between items-start">' +
+                        '<div>' +
+                        '<h3 class="font-bold text-lg">' + t.name + '</h3>' +
+                        '<p class="text-gray-600 text-sm">⭐ ' + t.rating + ' (' + t.total_reviews + ' reviews)</p>' +
+                        '<p class="text-gray-700 mt-2">' + (t.bio || 'No bio yet') + '</p>' +
+                        '<p class="text-gray-500 text-sm mt-1">Discord: ' + (t.discord_username || 'Not set') + '</p>' +
+                        '</div>' +
+                        '<button onclick="alert(\\\'Profile view coming soon!\\\')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">View Profile</button>' +
+                        '</div>' +
+                        '</div>';
+                }
+                resultsDiv.innerHTML = html;
+            } catch(e) {
+                resultsDiv.innerHTML = '<div class="text-center text-red-600">Search failed</div>';
+            }
+        }
+        
+        // Initialize
+        updateUI();
+        loadPage('home');
+    </script>
+</body>
+</html>

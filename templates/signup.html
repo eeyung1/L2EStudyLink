@@ -1,0 +1,83 @@
+<div class="bg-white rounded-lg shadow p-8 max-w-md mx-auto">
+    <h2 class="text-2xl font-bold mb-6 text-center">Create Account</h2>
+    
+    <form id="signup-form" onsubmit="handleSignup(event)">
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
+            <input type="text" id="signup-name" required class="w-full p-2 border rounded focus:outline-none focus:border-blue-500">
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+            <input type="email" id="signup-email" required class="w-full p-2 border rounded focus:outline-none focus:border-blue-500">
+        </div>
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+            <input type="password" id="signup-password" required minlength="6" class="w-full p-2 border rounded focus:outline-none focus:border-blue-500">
+            <p class="text-gray-500 text-xs mt-1">Minimum 6 characters</p>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Sign Up</button>
+    </form>
+    
+    <p class="text-center text-gray-600 mt-4 text-sm">
+        Already have an account? 
+        <a href="#" onclick="showLogin(); return false;" class="text-blue-600 hover:underline">Login</a>
+    </p>
+    
+    <div id="signup-error" class="mt-4 text-red-600 text-sm text-center hidden"></div>
+    <div id="signup-success" class="mt-4 text-green-600 text-sm text-center hidden"></div>
+</div>
+
+<script>
+async function handleSignup(event) {
+    event.preventDefault();
+    const name = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const errorDiv = document.getElementById('signup-error');
+    const successDiv = document.getElementById('signup-success');
+    
+    errorDiv.classList.add('hidden');
+    successDiv.classList.add('hidden');
+    
+    try {
+        // Signup
+        const response = await fetch('/api/v1/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            successDiv.textContent = 'Account created! Logging you in...';
+            successDiv.classList.remove('hidden');
+            
+            // Login after signup
+            const loginResponse = await fetch('/api/v1/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const loginData = await loginResponse.json();
+            
+            if (loginResponse.ok) {
+                localStorage.setItem('token', loginData.token);
+                currentToken = loginData.token;
+                updateUI();
+                loadPage('home');
+            } else {
+                errorDiv.textContent = 'Account created but login failed. Please login manually.';
+                errorDiv.classList.remove('hidden');
+                showLogin();
+            }
+        } else {
+            errorDiv.textContent = data.error || 'Signup failed';
+            errorDiv.classList.remove('hidden');
+        }
+    } catch(e) {
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.classList.remove('hidden');
+    }
+}
+</script>
