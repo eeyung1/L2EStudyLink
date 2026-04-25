@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard - L2EStudyLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-blue-600">L2EStudyLink Admin</h1>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="/dashboard" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+                    <a href="/search-page" class="text-gray-700 hover:text-blue-600">Find Tutors</a>
+                    <a href="/my-bookings" class="text-gray-700 hover:text-blue-600">My Bookings</a>
+                    <a href="/admin" class="text-blue-600 font-bold">Admin</a>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-800">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Stats Cards -->
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+                <div class="text-3xl font-bold text-blue-600" id="totalUsers">-</div>
+                <div class="text-gray-600">Total Users</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+                <div class="text-3xl font-bold text-green-600" id="totalBookings">-</div>
+                <div class="text-gray-600">Total Bookings</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+                <div class="text-3xl font-bold text-purple-600" id="totalSkills">-</div>
+                <div class="text-gray-600">Total Skills</div>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-4">Users</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-100">
+                        <tr><th class="p-2 text-left">ID</th><th class="p-2 text-left">Name</th><th class="p-2 text-left">Email</th><th class="p-2 text-left">Rating</th><th class="p-2 text-left">Sessions</th><th class="p-2 text-left">No-Shows</th><th class="p-2 text-left">Status</th><th class="p-2 text-left">Actions</th></tr>
+                    </thead>
+                    <tbody id="usersTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-2xl font-bold mb-4">All Bookings</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-100">
+                        <tr><th class="p-2 text-left">ID</th><th class="p-2 text-left">Tutor</th><th class="p-2 text-left">Student</th><th class="p-2 text-left">Date</th><th class="p-2 text-left">Time</th><th class="p-2 text-left">Status</th></tr>
+                    </thead>
+                    <tbody id="bookingsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/page/login';
+        }
+        
+        async function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/page/login';
+        }
+        
+        async function loadStats() {
+            const res = await fetch('/api/v1/admin/stats', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const stats = await res.json();
+            document.getElementById('totalUsers').innerText = stats.total_users;
+            document.getElementById('totalBookings').innerText = stats.total_bookings;
+            document.getElementById('totalSkills').innerText = stats.total_skills;
+        }
+        
+        async function loadUsers() {
+            const res = await fetch('/api/v1/admin/users', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const users = await res.json();
+            
+            let html = '';
+            for (const u of users) {
+                const statusBadge = u.is_suspended ? 
+                    '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Suspended</span>' : 
+                    '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Active</span>';
+                
+                html += `
+                    <tr class="border-b">
+                        <td class="p-2">${u.id}</td>
+                        <td class="p-2">${u.name} ${u.is_admin ? '👑' : ''}</td>
+                        <td class="p-2">${u.email}</td>
+                        <td class="p-2">⭐ ${u.rating}</td>
+                        <td class="p-2">${u.total_sessions}</td>
+                        <td class="p-2">${u.no_show_count}</td>
+                        <td class="p-2">${statusBadge}</td>
+                        <td class="p-2">
+                            <button onclick="toggleSuspend(${u.id})" class="bg-yellow-500 text-white px-2 py-1 rounded text-xs mr-1">${u.is_suspended ? 'Unsuspend' : 'Suspend'}</button>
+                            <button onclick="deleteUser(${u.id})" class="bg-red-600 text-white px-2 py-1 rounded text-xs">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            }
+            document.getElementById('usersTable').innerHTML = html;
+        }
+        
+        async function loadBookings() {
+            const res = await fetch('/api/v1/admin/bookings', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const bookings = await res.json();
+            
+            let html = '';
+            for (const b of bookings) {
+                const statusColor = b.status === 'confirmed' ? 'text-green-600' : 
+                                   (b.status === 'pending' ? 'text-yellow-600' : 'text-red-600');
+                html += `
+                    <tr class="border-b">
+                        <td class="p-2">${b.id}</td>
+                        <td class="p-2">${b.tutor}</td>
+                        <td class="p-2">${b.student}</td>
+                        <td class="p-2">${b.date}</td>
+                        <td class="p-2">${b.time}</td>
+                        <td class="p-2 ${statusColor}">${b.status}</td>
+                    </tr>
+                `;
+            }
+            document.getElementById('bookingsTable').innerHTML = html;
+        }
+        
+        async function toggleSuspend(userId) {
+            const res = await fetch(`/api/v1/admin/users/${userId}/suspend`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                loadUsers();
+            } else {
+                alert('Failed to toggle suspension');
+            }
+        }
+        
+        async function deleteUser(userId) {
+            if (!confirm('Are you sure? This will delete all their data.')) return;
+            
+            const res = await fetch(`/api/v1/admin/users/${userId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                loadUsers();
+                loadStats();
+            } else {
+                alert('Failed to delete user');
+            }
+        }
+        
+        loadStats();
+        loadUsers();
+        loadBookings();
+    </script>
+</body>
+</html>

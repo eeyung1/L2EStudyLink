@@ -48,6 +48,10 @@ func main() {
         c.HTML(200, "my-bookings.html", nil)
     })
     
+    router.GET("/admin", func(c *gin.Context) {
+        c.HTML(200, "admin.html", nil)
+    })
+    
     router.GET("/page/:name", func(c *gin.Context) {
         name := c.Param("name")
         c.HTML(200, name+".html", nil)
@@ -84,6 +88,13 @@ func main() {
             protected.GET("/bookings", handlers.GetMyBookings)
             protected.DELETE("/bookings/:id", handlers.CancelBooking)
             protected.PUT("/bookings/:id/status", handlers.UpdateBookingStatus)
+            
+            // Admin routes
+            protected.GET("/admin/stats", handlers.AdminStats)
+            protected.GET("/admin/users", handlers.AdminUsers)
+            protected.DELETE("/admin/users/:id", handlers.AdminDeleteUser)
+            protected.PUT("/admin/users/:id/suspend", handlers.AdminToggleSuspend)
+            protected.GET("/admin/bookings", handlers.AdminBookings)
         }
     }
 
