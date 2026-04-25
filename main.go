@@ -43,6 +43,10 @@ func main() {
         api.GET("/ping", func(c *gin.Context) {
             c.JSON(200, gin.H{"message": "pong"})
         })
+        
+        // Public search (no auth required)
+        api.GET("/search", handlers.SearchTutors)
+        api.GET("/tutors/:id", handlers.GetTutorProfile)
 
         protected := api.Group("/")
         protected.Use(middleware.AuthRequired)
@@ -51,8 +55,6 @@ func main() {
             protected.PUT("/profile", handlers.UpdateProfile)
             protected.POST("/skills", handlers.AddSkill)
             protected.DELETE("/skills/:skill", handlers.RemoveSkill)
-            
-            // Availability routes
             protected.GET("/availability", handlers.GetAvailability)
             protected.PUT("/availability", handlers.SetAvailability)
         }
