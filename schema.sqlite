@@ -1,0 +1,83 @@
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    discord_username TEXT,
+    bio TEXT,
+    meeting_preferences TEXT,
+    rating REAL DEFAULT 0.00,
+    total_reviews INTEGER DEFAULT 0,
+    total_sessions INTEGER DEFAULT 0,
+    no_show_count INTEGER DEFAULT 0,
+    is_suspended INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Skills table
+CREATE TABLE IF NOT EXISTS skills (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    skill_name TEXT NOT NULL,
+    proficiency TEXT CHECK (proficiency IN ('beginner', 'intermediate', 'advanced')),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(user_id, skill_name)
+);
+
+-- Availability table
+CREATE TABLE IF NOT EXISTS availability (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    day_of_week INTEGER CHECK (day_of_week >= 0 AND day_of_week <= 6),
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(user_id, day_of_week, start_time)
+);
+
+-- Bookings table
+CREATE TABLE IF NOT EXISTS bookings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tutor_id INTEGER NOT NULL,
+    student_id INTEGER NOT NULL,
+    session_date TEXT NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    topic TEXT NOT NULL,
+    meeting_type TEXT CHECK (meeting_type IN ('in_person', 'online')),
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled', 'no_show')),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tutor_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    CHECK (tutor_id != student_id)
+);
+
+-- Reviews table
+CREATE TABLE IF NOT EXISTS reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    booking_id INTEGER NOT NULL,
+    reviewer_id INTEGER NOT NULL,
+    reviewee_id INTEGER NOT NULL,
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT NOT NULL,
+    tags TEXT,
+    would_book_again INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewer_id) REFERENCES users(id),
+    FOREIGN KEY (reviewee_id) REFERENCES users(id),
+    UNIQUE(booking_id, reviewer_id)
+);
+
+-- Indexes
+CREATE INDEX idx_skills_user ON skills(user_id);
+CREATE INDEX idx_skills_name ON skills(skill_name);
+CREATE INDEX idx_availability_user ON availability(user_id);
+CREATE INDEX idx_bookings_tutor ON bookings(tutor_id);
+CREATE INDEX idx_bookings_student ON bookings(student_id);
+CREATE INDEX idx_bookings_date ON bookings(session_date);
+CREATE INDEX idx_reviews_reviewee ON reviews(reviewee_id);

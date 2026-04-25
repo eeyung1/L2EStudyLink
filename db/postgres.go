@@ -2,30 +2,25 @@ package db
 
 import (
     "database/sql"
-    "fmt"
     "log"
 
-    _ "github.com/lib/pq"
+    _ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sql.DB
 
 func InitDB() error {
-    // Build connection string using studylink user (no password)
-    connStr := "host=localhost port=5432 user=studylink dbname=l2e_studylink sslmode=disable password=studylink123"
-
     var err error
-    DB, err = sql.Open("postgres", connStr)
+    DB, err = sql.Open("sqlite3", "./studylink.db")
     if err != nil {
-        return fmt.Errorf("failed to open database: %w", err)
+        return err
     }
 
-    // Test connection
     if err = DB.Ping(); err != nil {
-        return fmt.Errorf("failed to ping database: %w", err)
+        return err
     }
 
-    log.Println("Database connected successfully")
+    log.Println("SQLite database connected successfully")
     return nil
 }
 

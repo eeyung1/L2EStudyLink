@@ -8,24 +8,27 @@ import (
     "github.com/joho/godotenv"
 
     "L2EStudyLink/db"
+    "L2EStudyLink/handlers"
+    "L2EStudyLink/middleware"
 )
 
 func main() {
-    // Load environment variables
     if err := godotenv.Load(); err != nil {
         log.Println("Warning: .env file not found, using system environment")
     }
 
-    // Initialize database
     if err := db.InitDB(); err != nil {
         log.Fatal("Failed to connect to database:", err)
     }
     defer db.CloseDB()
 
-    // Create Gin router
     router := gin.Default()
 
-    // Health check endpoint
+    router.Use(func(c *gin.Context) {
+        c.Set("db", db.DB)
+        c.Next()
+    })
+
     router.GET("/health", func(c *gin.Context) {
         c.JSON(200, gin.H{
             "status":  "ok",
@@ -33,15 +36,27 @@ func main() {
         })
     })
 
-    // API routes
     api := router.Group("/api/v1")
     {
+        api.POST("/signup", handlers.Signup)
+        api.POST("/login", handlers.Login)
         api.GET("/ping", func(c *gin.Context) {
             c.JSON(200, gin.H{"message": "pong"})
         })
+
+        protected := api.Group("/")
+        protected.Use(middleware.AuthRequired)
+        {
+            protected.GET("/me", func(c *gin.Context) {
+                userID := c.GetInt64("user_id")
+                c.JSON(200, gin.H{
+                    "message": "You are authenticated!",
+                    "user_id": userID,
+                })
+            })
+        }
     }
 
-    // Start server
     port := os.Getenv("PORT")
     if port == "" {
         port = "8080"
