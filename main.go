@@ -47,13 +47,10 @@ func main() {
         protected := api.Group("/")
         protected.Use(middleware.AuthRequired)
         {
-            protected.GET("/me", func(c *gin.Context) {
-                userID := c.GetInt64("user_id")
-                c.JSON(200, gin.H{
-                    "message": "You are authenticated!",
-                    "user_id": userID,
-                })
-            })
+            protected.GET("/me", handlers.GetProfile)
+            protected.PUT("/profile", handlers.UpdateProfile)
+            protected.POST("/skills", handlers.AddSkill)
+            protected.DELETE("/skills/:skill", handlers.RemoveSkill)
         }
     }
 
