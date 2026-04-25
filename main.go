@@ -83,6 +83,7 @@ func main() {
             protected.POST("/bookings", handlers.CreateBooking)
             protected.GET("/bookings", handlers.GetMyBookings)
             protected.DELETE("/bookings/:id", handlers.CancelBooking)
+            protected.PUT("/bookings/:id/status", handlers.UpdateBookingStatus)
         }
     }
 

@@ -10,8 +10,8 @@ import (
 
 type BookingRequest struct {
     TutorID     int64  `json:"tutor_id" binding:"required"`
-    Date        string `json:"date" binding:"required"`        // YYYY-MM-DD
-    StartTime   string `json:"start_time" binding:"required"`  // HH:MM
+    Date        string `json:"date" binding:"required"`
+    StartTime   string `json:"start_time" binding:"required"`
     EndTime     string `json:"end_time" binding:"required"`
     Topic       string `json:"topic" binding:"required"`
     MeetingType string `json:"meeting_type" binding:"required,oneof=in_person online"`
@@ -27,13 +27,11 @@ func CreateBooking(c *gin.Context) {
         return
     }
 
-    // Prevent self-booking
     if input.TutorID == studentID {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot book yourself"})
         return
     }
 
-    // Check if slot is already booked
     var count int
     err := db.QueryRow(`
         SELECT COUNT(*) FROM bookings 
@@ -51,7 +49,6 @@ func CreateBooking(c *gin.Context) {
         return
     }
 
-    // Create booking
     var bookingID int64
     err = db.QueryRow(`
         INSERT INTO bookings (tutor_id, student_id, session_date, start_time, end_time, topic, meeting_type)
@@ -74,7 +71,6 @@ func GetMyBookings(c *gin.Context) {
     userID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
 
-    // Get bookings where user is tutor OR student
     rows, err := db.Query(`
         SELECT b.id, b.tutor_id, t.name as tutor_name, b.student_id, s.name as student_name,
                b.session_date, b.start_time, b.end_time, b.topic, b.meeting_type, b.status,
@@ -132,7 +128,6 @@ func CancelBooking(c *gin.Context) {
     bookingID := c.Param("id")
     db := c.MustGet("db").(*sql.DB)
 
-    // Get booking details
     var tutorID, studentID int64
     var sessionDate, startTime string
     err := db.QueryRow(`
@@ -145,26 +140,22 @@ func CancelBooking(c *gin.Context) {
         return
     }
 
-    // Check if user is part of this booking
     if tutorID != userID && studentID != userID {
         c.JSON(http.StatusForbidden, gin.H{"error": "Not authorized"})
         return
     }
 
-    // Convert session_date + start_time to time.Time for comparison
     sessionDateTime, err := time.Parse("2006-01-02 15:04", sessionDate+" "+startTime)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid date format"})
         return
     }
 
-    // Check if cancellation is >2 hours before session
     if time.Until(sessionDateTime) < 2*time.Hour {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Must cancel at least 2 hours before session"})
         return
     }
 
-    // Update booking status
     _, err = db.Exec("UPDATE bookings SET status = 'cancelled' WHERE id = $1", bookingID)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cancel booking"})
@@ -188,7 +179,6 @@ func UpdateBookingStatus(c *gin.Context) {
         return
     }
     
-    // Check if user is the tutor for this booking
     var tutorID int64
     err := db.QueryRow("SELECT tutor_id FROM bookings WHERE id = $1", bookingID).Scan(&tutorID)
     if err != nil {
@@ -201,7 +191,6 @@ func UpdateBookingStatus(c *gin.Context) {
         return
     }
     
-    // Update status
     _, err = db.Exec("UPDATE bookings SET status = $1 WHERE id = $2", input.Status, bookingID)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update status"})

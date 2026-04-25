@@ -8,9 +8,9 @@ import (
 )
 
 type AvailabilitySlot struct {
-    DayOfWeek int    `json:"day_of_week"` // 0=Monday, 6=Sunday
-    StartTime string `json:"start_time"`  // "14:00"
-    EndTime   string `json:"end_time"`    // "16:00"
+    DayOfWeek int    `json:"day_of_week"`
+    StartTime string `json:"start_time"`
+    EndTime   string `json:"end_time"`
 }
 
 func SetAvailability(c *gin.Context) {
@@ -26,7 +26,7 @@ func SetAvailability(c *gin.Context) {
     // Delete existing availability
     _, err := db.Exec("DELETE FROM availability WHERE user_id = $1", userID)
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clear existing availability"})
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clear availability"})
         return
     }
 
@@ -38,12 +38,12 @@ func SetAvailability(c *gin.Context) {
         `, userID, slot.DayOfWeek, slot.StartTime, slot.EndTime)
         
         if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save availability"})
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save availability: " + err.Error()})
             return
         }
     }
 
-    c.JSON(http.StatusOK, gin.H{"message": "Availability saved successfully"})
+    c.JSON(http.StatusOK, gin.H{"message": "Availability saved successfully", "slots": slots})
 }
 
 func GetAvailability(c *gin.Context) {
@@ -68,6 +68,10 @@ func GetAvailability(c *gin.Context) {
         var slot AvailabilitySlot
         rows.Scan(&slot.DayOfWeek, &slot.StartTime, &slot.EndTime)
         slots = append(slots, slot)
+    }
+
+    if slots == nil {
+        slots = []AvailabilitySlot{}
     }
 
     c.JSON(http.StatusOK, slots)
