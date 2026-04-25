@@ -11,10 +11,8 @@ import (
 var DB *sql.DB
 
 func InitDB() error {
-    // Build connection string
-    connStr := fmt.Sprintf(
-        "host=localhost port=5432 user=postgres dbname=l2e_studylink sslmode=disable password=",
-    )
+    // Build connection string using studylink user (no password)
+    connStr := "host=localhost port=5432 user=studylink dbname=l2e_studylink sslmode=disable password=studylink123"
 
     var err error
     DB, err = sql.Open("postgres", connStr)
