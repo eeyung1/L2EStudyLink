@@ -15,16 +15,16 @@
                     <span class="ml-2 text-sm text-gray-500">Peer Learning</span>
                 </div>
                 <div id="nav-links" class="hidden md:flex space-x-4">
-                    <a href="#" onclick="loadPage('home'); return false;" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600">Home</a>
-                    <a href="#" onclick="loadPage('search'); return false;" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600">Find Tutors</a>
+                    <a href="#" onclick="window.loadPage('home'); return false;" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600">Home</a>
+                    <a href="#" onclick="window.loadPage('search'); return false;" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600">Find Tutors</a>
                 </div>
                 <div id="auth-buttons" class="flex space-x-2">
-                    <button onclick="showLogin()" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">Login</button>
-                    <button onclick="showSignup()" class="border border-blue-600 text-blue-600 px-4 py-2 rounded-md text-sm hover:bg-blue-50">Signup</button>
+                    <button onclick="window.loadPage('login')" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">Login</button>
+                    <button onclick="window.loadPage('signup')" class="border border-blue-600 text-blue-600 px-4 py-2 rounded-md text-sm hover:bg-blue-50">Signup</button>
                 </div>
                 <div id="user-info" class="hidden flex items-center space-x-3">
                     <span id="user-name" class="text-sm font-medium text-gray-700"></span>
-                    <button onclick="logout()" class="text-red-600 text-sm hover:text-red-800">Logout</button>
+                    <button onclick="window.logout()" class="text-red-600 text-sm hover:text-red-800">Logout</button>
                 </div>
             </div>
         </div>
@@ -37,15 +37,15 @@
     </div>
 
     <script>
-        let currentToken = localStorage.getItem('token');
+        window.currentToken = localStorage.getItem('token');
         
-        function updateUI() {
-            if (currentToken) {
+        window.updateUI = function() {
+            if (window.currentToken) {
                 document.getElementById('auth-buttons').classList.add('hidden');
                 document.getElementById('user-info').classList.remove('hidden');
                 document.getElementById('nav-links').classList.remove('hidden');
                 fetch('/api/v1/me', {
-                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                    headers: { 'Authorization': `Bearer ${window.currentToken}` }
                 }).then(r => r.json()).then(user => {
                     document.getElementById('user-name').innerText = user.name;
                 }).catch(() => {});
@@ -56,17 +56,14 @@
             }
         }
         
-        function logout() {
+        window.logout = function() {
             localStorage.removeItem('token');
-            currentToken = null;
-            updateUI();
-            loadPage('home');
+            window.currentToken = null;
+            window.updateUI();
+            window.loadPage('home');
         }
         
-        function showLogin() { loadPage('login'); }
-        function showSignup() { loadPage('signup'); }
-        
-        async function loadPage(page) {
+        window.loadPage = async function(page) {
             try {
                 const response = await fetch(`/page/${page}`);
                 const html = await response.text();
@@ -77,7 +74,6 @@
             }
         }
         
-        // Global search function
         window.performSearchGlobal = async function() {
             const skill = document.getElementById('skill-search-global').value;
             if (!skill) return;
@@ -104,7 +100,7 @@
                         '<p class="text-gray-700 mt-2">' + (t.bio || 'No bio yet') + '</p>' +
                         '<p class="text-gray-500 text-sm mt-1">Discord: ' + (t.discord_username || 'Not set') + '</p>' +
                         '</div>' +
-                        '<button onclick="alert(\\\'Profile view coming soon!\\\')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">View Profile</button>' +
+                        '<button onclick="alert(\'Profile view coming soon!\')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">View Profile</button>' +
                         '</div>' +
                         '</div>';
                 }
@@ -115,8 +111,8 @@
         }
         
         // Initialize
-        updateUI();
-        loadPage('home');
+        window.updateUI();
+        window.loadPage('home');
     </script>
 </body>
 </html>

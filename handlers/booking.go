@@ -173,3 +173,40 @@ func CancelBooking(c *gin.Context) {
 
     c.JSON(http.StatusOK, gin.H{"message": "Booking cancelled successfully"})
 }
+
+func UpdateBookingStatus(c *gin.Context) {
+    userID := c.GetInt64("user_id")
+    bookingID := c.Param("id")
+    db := c.MustGet("db").(*sql.DB)
+    
+    var input struct {
+        Status string `json:"status" binding:"required,oneof=confirmed cancelled"`
+    }
+    
+    if err := c.ShouldBindJSON(&input); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    
+    // Check if user is the tutor for this booking
+    var tutorID int64
+    err := db.QueryRow("SELECT tutor_id FROM bookings WHERE id = $1", bookingID).Scan(&tutorID)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Booking not found"})
+        return
+    }
+    
+    if tutorID != userID {
+        c.JSON(http.StatusForbidden, gin.H{"error": "Only the tutor can confirm bookings"})
+        return
+    }
+    
+    // Update status
+    _, err = db.Exec("UPDATE bookings SET status = $1 WHERE id = $2", input.Status, bookingID)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update status"})
+        return
+    }
+    
+    c.JSON(http.StatusOK, gin.H{"message": "Booking " + input.Status})
+}

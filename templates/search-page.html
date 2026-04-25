@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Find Tutors - L2EStudyLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-blue-600">L2EStudyLink</h1>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="/dashboard" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+                    <a href="/search-page" class="text-gray-700 hover:text-blue-600">Find Tutors</a>
+                    <a href="/my-bookings" class="text-gray-700 hover:text-blue-600">My Bookings</a>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-800">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-2xl font-bold mb-4">Find a Tutor</h2>
+            <div class="flex gap-2 mb-6">
+                <input type="text" id="skill" placeholder="Search by skill (e.g., Go, Python)" class="flex-1 p-2 border rounded">
+                <button onclick="search()" class="bg-blue-600 text-white px-6 py-2 rounded">Search</button>
+            </div>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <!-- Modal for viewing tutor and booking -->
+    <div id="tutorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto m-4">
+            <div class="flex justify-between items-start mb-4">
+                <h2 id="modalTitle" class="text-2xl font-bold"></h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div id="modalContent"></div>
+            <div class="mt-4 pt-4 border-t">
+                <h3 class="font-bold mb-2">Availability</h3>
+                <div id="availabilityList" class="mb-4"></div>
+                <div id="bookingSection"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/page/login';
+        }
+        
+        let currentTutor = null;
+        
+        async function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/page/login';
+        }
+        
+        async function search() {
+            const skill = document.getElementById('skill').value;
+            if (!skill) return;
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="text-center text-gray-500">Searching...</div>';
+            
+            const res = await fetch(`/api/v1/search?skill=${encodeURIComponent(skill)}`);
+            const tutors = await res.json();
+            
+            if (!tutors || tutors.length === 0) {
+                resultsDiv.innerHTML = '<div class="text-center text-gray-500">No tutors found</div>';
+                return;
+            }
+            
+            let html = '';
+            for (const t of tutors) {
+                html += `
+                    <div class="border rounded-lg p-4 mb-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-lg">${t.name}</h3>
+                                <p class="text-gray-600 text-sm">⭐ ${t.rating} (${t.total_reviews} reviews)</p>
+                                <p class="text-gray-700 mt-2">${t.bio || 'No bio yet'}</p>
+                            </div>
+                            <button onclick="viewTutor(${t.id})" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">View & Book</button>
+                        </div>
+                    </div>
+                `;
+            }
+            resultsDiv.innerHTML = html;
+        }
+        
+        async function viewTutor(id) {
+            const res = await fetch(`/api/v1/tutors/${id}`);
+            const tutor = await res.json();
+            currentTutor = tutor;
+            
+            document.getElementById('modalTitle').innerText = tutor.name;
+            
+            // Show profile
+            document.getElementById('modalContent').innerHTML = `
+                <p><strong>Email:</strong> ${tutor.email}</p>
+                <p><strong>Discord:</strong> ${tutor.discord_username || 'Not set'}</p>
+                <p><strong>Bio:</strong> ${tutor.bio || 'No bio'}</p>
+                <p><strong>Rating:</strong> ⭐ ${tutor.rating} (${tutor.total_reviews} reviews)</p>
+                <p><strong>Skills:</strong> ${tutor.skills?.map(s => `${s.name} (${s.proficiency})`).join(', ') || 'None'}</p>
+            `;
+            
+            // Show availability
+            const availabilityHtml = tutor.availability && tutor.availability.length > 0 
+                ? tutor.availability.map(a => {
+                    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                    return `<div class="bg-gray-100 p-2 rounded mb-2">${days[a.day_of_week]}: ${a.start_time} - ${a.end_time}</div>`;
+                  }).join('')
+                : '<div class="text-gray-500">No availability set yet</div>';
+            
+            document.getElementById('availabilityList').innerHTML = availabilityHtml;
+            
+            // Show booking button if availability exists
+            if (tutor.availability && tutor.availability.length > 0) {
+                document.getElementById('bookingSection').innerHTML = `
+                    <button onclick="showBookingForm()" class="bg-green-600 text-white px-6 py-2 rounded w-full">Book a Session</button>
+                `;
+            } else {
+                document.getElementById('bookingSection').innerHTML = '<div class="text-gray-500">Cannot book - tutor has no availability set</div>';
+            }
+            
+            document.getElementById('tutorModal').classList.remove('hidden');
+            document.getElementById('tutorModal').classList.add('flex');
+        }
+        
+        function showBookingForm() {
+            // Get next available date (tomorrow)
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const defaultDate = tomorrow.toISOString().split('T')[0];
+            
+            document.getElementById('bookingSection').innerHTML = `
+                <div class="border-t pt-4 mt-2">
+                    <h3 class="font-bold mb-2">Book a Session</h3>
+                    <div class="mb-2">
+                        <label class="block text-sm font-bold mb-1">Date</label>
+                        <input type="date" id="bookDate" value="${defaultDate}" class="w-full p-2 border rounded">
+                    </div>
+                    <div class="mb-2">
+                        <label class="block text-sm font-bold mb-1">Time Slot</label>
+                        <select id="bookTime" class="w-full p-2 border rounded">
+                            ${currentTutor.availability.map(a => 
+                                `<option value="${a.start_time}-${a.end_time}">${a.start_time} - ${a.end_time}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="block text-sm font-bold mb-1">What do you need help with?</label>
+                        <textarea id="bookTopic" rows="2" class="w-full p-2 border rounded" placeholder="Describe what you want to learn..."></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="block text-sm font-bold mb-1">Meeting Type</label>
+                        <select id="meetingType" class="w-full p-2 border rounded">
+                            <option value="online">Online (Discord)</option>
+                            <option value="in_person">In Person</option>
+                        </select>
+                    </div>
+                    <button onclick="createBooking()" class="bg-blue-600 text-white px-4 py-2 rounded w-full mt-2">Confirm Booking</button>
+                    <button onclick="viewTutor(currentTutor.id)" class="text-gray-500 text-sm mt-2 w-full">Cancel</button>
+                </div>
+            `;
+        }
+        
+        async function createBooking() {
+            const date = document.getElementById('bookDate').value;
+            const timeRange = document.getElementById('bookTime').value;
+            const [startTime, endTime] = timeRange.split('-');
+            const topic = document.getElementById('bookTopic').value || 'Study session';
+            const meetingType = document.getElementById('meetingType').value;
+            
+            const res = await fetch('/api/v1/bookings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    tutor_id: currentTutor.id,
+                    date: date,
+                    start_time: startTime,
+                    end_time: endTime,
+                    topic: topic,
+                    meeting_type: meetingType
+                })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                alert('Booking created successfully!');
+                closeModal();
+            } else {
+                alert('Booking failed: ' + (data.error || 'Unknown error'));
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('tutorModal').classList.add('hidden');
+            document.getElementById('tutorModal').classList.remove('flex');
+        }
+    </script>
+</body>
+</html>

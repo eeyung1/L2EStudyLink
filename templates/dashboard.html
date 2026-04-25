@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - L2EStudyLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-blue-600">L2EStudyLink</h1>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="/dashboard" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+                    <a href="/search-page" class="text-gray-700 hover:text-blue-600">Find Tutors</a>
+                    <a href="/my-bookings" class="text-gray-700 hover:text-blue-600">My Bookings</a>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-800">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div id="profile" class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Loading profile...</h2>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-xl font-bold mb-4">Your Skills</h3>
+            <div id="skills" class="mb-4"></div>
+            <button onclick="addSkill()" class="bg-green-600 text-white px-4 py-2 rounded">+ Add Skill</button>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold mb-4">Your Availability (When can you tutor?)</h3>
+            <div id="availability" class="mb-4"></div>
+            <button onclick="showAddAvailability()" class="bg-blue-600 text-white px-4 py-2 rounded">+ Add Availability</button>
+        </div>
+    </div>
+
+    <!-- Add Availability Modal -->
+    <div id="availModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-xl font-bold mb-4">Add Availability</h3>
+            <div class="mb-3">
+                <label class="block text-sm font-bold mb-1">Day</label>
+                <select id="availDay" class="w-full p-2 border rounded">
+                    <option value="0">Monday</option>
+                    <option value="1">Tuesday</option>
+                    <option value="2">Wednesday</option>
+                    <option value="3">Thursday</option>
+                    <option value="4">Friday</option>
+                    <option value="5">Saturday</option>
+                    <option value="6">Sunday</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="block text-sm font-bold mb-1">Start Time</label>
+                <input type="time" id="availStart" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-3">
+                <label class="block text-sm font-bold mb-1">End Time</label>
+                <input type="time" id="availEnd" class="w-full p-2 border rounded">
+            </div>
+            <div class="flex gap-2">
+                <button onclick="saveAvailability()" class="bg-blue-600 text-white px-4 py-2 rounded flex-1">Save</button>
+                <button onclick="closeAvailModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded flex-1">Cancel</button>
+            </div>
+            <div id="saveError" class="mt-2 text-red-500 text-sm hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/page/login';
+        }
+        
+        let currentAvailability = [];
+        
+        async function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/page/login';
+        }
+        
+        async function loadProfile() {
+            const res = await fetch('/api/v1/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const user = await res.json();
+            
+            document.getElementById('profile').innerHTML = `
+                <h2 class="text-2xl font-bold mb-4">Welcome, ${user.name}!</h2>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Discord:</strong> ${user.discord_username || 'Not set'}</p>
+                <p><strong>Bio:</strong> ${user.bio || 'Not set'}</p>
+                <p><strong>Rating:</strong> ⭐ ${user.rating} (${user.total_reviews} reviews)</p>
+            `;
+            
+            const skillsHtml = user.skills?.map(s => 
+                `<span class="bg-blue-100 px-3 py-1 rounded-full text-sm mr-2 inline-block mb-2">${s.name} (${s.proficiency})</span>`
+            ).join('') || 'No skills yet';
+            document.getElementById('skills').innerHTML = skillsHtml;
+            
+            await loadAvailability();
+        }
+        
+        async function loadAvailability() {
+            const res = await fetch('/api/v1/availability', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            currentAvailability = await res.json();
+            
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            if (!currentAvailability || currentAvailability.length === 0) {
+                document.getElementById('availability').innerHTML = '<div class="text-gray-500">No availability set. Add some to start tutoring!</div>';
+                return;
+            }
+            
+            let html = '<div class="space-y-2">';
+            for (let i = 0; i < currentAvailability.length; i++) {
+                const slot = currentAvailability[i];
+                html += `
+                    <div class="bg-gray-100 p-2 rounded flex justify-between items-center">
+                        <span>${days[slot.day_of_week]}: ${slot.start_time} - ${slot.end_time}</span>
+                        <button onclick="deleteAvailability(${i})" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Delete</button>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            document.getElementById('availability').innerHTML = html;
+        }
+        
+        async function deleteAvailability(index) {
+            if (!confirm('Remove this availability slot?')) return;
+            
+            const newAvailability = [...currentAvailability];
+            newAvailability.splice(index, 1);
+            
+            const res = await fetch('/api/v1/availability', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(newAvailability)
+            });
+            
+            if (res.ok) {
+                alert('Availability removed!');
+                await loadAvailability();
+            } else {
+                alert('Failed to remove availability');
+            }
+        }
+        
+        async function addSkill() {
+            const skillName = prompt('Enter skill name (e.g., Go, Python):');
+            if (!skillName) return;
+            const proficiency = prompt('Enter proficiency (beginner/intermediate/advanced):');
+            if (!proficiency) return;
+            
+            const res = await fetch('/api/v1/skills', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ skill_name: skillName, proficiency: proficiency })
+            });
+            
+            if (res.ok) {
+                loadProfile();
+            } else {
+                alert('Failed to add skill');
+            }
+        }
+        
+        function showAddAvailability() {
+            document.getElementById('availModal').classList.remove('hidden');
+            document.getElementById('availModal').classList.add('flex');
+            document.getElementById('saveError').classList.add('hidden');
+        }
+        
+        function closeAvailModal() {
+            document.getElementById('availModal').classList.add('hidden');
+            document.getElementById('availModal').classList.remove('flex');
+        }
+        
+        async function saveAvailability() {
+            const day = parseInt(document.getElementById('availDay').value);
+            let startTime = document.getElementById('availStart').value;
+            let endTime = document.getElementById('availEnd').value;
+            const errorDiv = document.getElementById('saveError');
+            
+            errorDiv.classList.add('hidden');
+            
+            if (!startTime || !endTime) {
+                errorDiv.innerText = 'Please select both start and end times';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            console.log('Saving:', { day, startTime, endTime });
+            
+            // Add new slot to existing
+            const newSlots = [...currentAvailability, { day_of_week: day, start_time: startTime, end_time: endTime }];
+            
+            try {
+                const saveRes = await fetch('/api/v1/availability', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(newSlots)
+                });
+                
+                const responseText = await saveRes.text();
+                console.log('Response:', saveRes.status, responseText);
+                
+                if (saveRes.ok) {
+                    alert('Availability added!');
+                    closeAvailModal();
+                    await loadAvailability();
+                    document.getElementById('availStart').value = '';
+                    document.getElementById('availEnd').value = '';
+                } else {
+                    errorDiv.innerText = 'Failed to add availability: ' + responseText;
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch(err) {
+                errorDiv.innerText = 'Error: ' + err.message;
+                errorDiv.classList.remove('hidden');
+            }
+        }
+        
+        loadProfile();
+    </script>
+</body>
+</html>

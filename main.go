@@ -24,19 +24,30 @@ func main() {
 
     router := gin.Default()
 
-    // Load templates
-    router.LoadHTMLGlob("templates/*.html")
-
     router.Use(func(c *gin.Context) {
         c.Set("db", db.DB)
         c.Next()
     })
 
-    // Web routes (HTML pages)
+    // Static HTML pages
+    router.LoadHTMLGlob("templates/*.html")
+    
     router.GET("/", func(c *gin.Context) {
-        c.HTML(200, "layout.html", nil)
+        c.Redirect(302, "/page/login")
     })
-
+    
+    router.GET("/dashboard", func(c *gin.Context) {
+        c.HTML(200, "dashboard.html", nil)
+    })
+    
+    router.GET("/search-page", func(c *gin.Context) {
+        c.HTML(200, "search-page.html", nil)
+    })
+    
+    router.GET("/my-bookings", func(c *gin.Context) {
+        c.HTML(200, "my-bookings.html", nil)
+    })
+    
     router.GET("/page/:name", func(c *gin.Context) {
         name := c.Param("name")
         c.HTML(200, name+".html", nil)

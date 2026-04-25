@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Bookings - L2EStudyLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-blue-600">L2EStudyLink</h1>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="/dashboard" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+                    <a href="/search-page" class="text-gray-700 hover:text-blue-600">Find Tutors</a>
+                    <a href="/my-bookings" class="text-gray-700 hover:text-blue-600">My Bookings</a>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-800">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-2xl font-bold mb-4">My Bookings</h2>
+            <div id="bookingsList"></div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/page/login';
+        }
+        
+        let currentUserId = null;
+        
+        async function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/page/login';
+        }
+        
+        async function getCurrentUser() {
+            const res = await fetch('/api/v1/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const user = await res.json();
+            currentUserId = user.id;
+        }
+        
+        async function loadBookings() {
+            await getCurrentUser();
+            
+            const res = await fetch('/api/v1/bookings', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const bookings = await res.json();
+            
+            const container = document.getElementById('bookingsList');
+            
+            if (!bookings || bookings.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500">No bookings yet. Find a tutor to book!</div>';
+                return;
+            }
+            
+            let html = '';
+            for (const b of bookings) {
+                const statusColor = b.status === 'cancelled' ? 'text-red-600' : 
+                                   (b.status === 'confirmed' ? 'text-green-600' : 
+                                   (b.status === 'pending' ? 'text-yellow-600' : 'text-gray-600'));
+                
+                let actionButtons = '';
+                
+                // If user is the tutor and booking is pending, show Accept/Decline buttons
+                if (b.role === 'tutor' && b.status === 'pending') {
+                    actionButtons = `
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="updateBookingStatus(${b.id}, 'confirmed')" class="bg-green-600 text-white px-4 py-1 rounded text-sm">Accept</button>
+                            <button onclick="updateBookingStatus(${b.id}, 'cancelled')" class="bg-red-600 text-white px-4 py-1 rounded text-sm">Decline</button>
+                        </div>
+                    `;
+                }
+                
+                // If booking is pending and user is student, show cancel button
+                if (b.role === 'student' && b.status === 'pending') {
+                    actionButtons = `
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="cancelBooking(${b.id})" class="bg-red-600 text-white px-4 py-1 rounded text-sm">Cancel Request</button>
+                        </div>
+                    `;
+                }
+                
+                // If booking is confirmed, show message
+                if (b.status === 'confirmed') {
+                    actionButtons = `<div class="text-green-600 text-sm mt-2">✓ Confirmed - Show up at scheduled time!</div>`;
+                }
+                
+                html += `
+                    <div class="border rounded-lg p-4 mb-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-lg">${b.role === 'tutor' ? 'Teaching' : 'Learning with'} ${b.role === 'tutor' ? b.student_name : b.tutor_name}</h3>
+                                <p class="text-gray-600">📅 ${b.date} at ${b.start_time} - ${b.end_time}</p>
+                                <p class="text-gray-700 mt-1">📚 ${b.topic}</p>
+                                <p class="text-gray-500 text-sm">💻 ${b.meeting_type === 'online' ? 'Online (Discord)' : 'In Person'}</p>
+                                <p class="text-sm ${statusColor} mt-1">Status: ${b.status}</p>
+                                ${actionButtons}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+        
+        async function updateBookingStatus(bookingId, status) {
+            // For accepting, use a special endpoint
+            const res = await fetch(`/api/v1/bookings/${bookingId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: status })
+            });
+            
+            if (res.ok) {
+                alert(status === 'confirmed' ? 'Booking accepted!' : 'Booking declined');
+                loadBookings();
+            } else {
+                alert('Failed to update booking status');
+            }
+        }
+        
+        async function cancelBooking(bookingId) {
+            if (!confirm('Are you sure you want to cancel this booking?')) return;
+            
+            const res = await fetch(`/api/v1/bookings/${bookingId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (res.ok) {
+                alert('Booking cancelled');
+                loadBookings();
+            } else {
+                alert('Failed to cancel booking');
+            }
+        }
+        
+        loadBookings();
+    </script>
+</body>
+</html>
