@@ -25,7 +25,6 @@
     </nav>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <!-- How to get Discord ID Banner -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <p class="text-sm text-blue-800">
                 📌 <strong>Get Discord ID for Notifications:</strong> 
@@ -41,7 +40,15 @@
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h3 class="text-xl font-bold mb-4">Your Skills</h3>
             <div id="skills" class="mb-4"></div>
-            <button onclick="addSkill()" class="bg-green-600 text-white px-4 py-2 rounded">+ Add Skill</button>
+            <div class="flex gap-2">
+                <input type="text" id="newSkillName" placeholder="Skill name (e.g., Go)" class="border rounded p-2 flex-1">
+                <select id="newSkillProficiency" class="border rounded p-2">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+                <button onclick="addSkill()" class="bg-green-600 text-white px-4 py-2 rounded">+ Add Skill</button>
+            </div>
         </div>
         
         <div class="bg-white rounded-lg shadow p-6">
@@ -123,11 +130,8 @@
             });
             currentUser = await res.json();
             
-            // Show/hide Admin nav link based on is_admin
             if (currentUser.is_admin) {
                 document.getElementById('adminNavLink').classList.remove('hidden');
-            } else {
-                document.getElementById('adminNavLink').classList.add('hidden');
             }
             
             const discordDisplay = currentUser.discord_username && currentUser.discord_username !== '' 
@@ -143,12 +147,47 @@
                 <button onclick="showEditProfile()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Edit Profile</button>
             `;
             
-            const skillsHtml = currentUser.skills?.map(s => 
+            await loadSkills();
+            await loadAvailability();
+        }
+        
+        async function loadSkills() {
+            const res = await fetch('/api/v1/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const user = await res.json();
+            
+            const skillsHtml = user.skills?.map(s => 
                 `<span class="bg-blue-100 px-3 py-1 rounded-full text-sm mr-2 inline-block mb-2">${s.name} (${s.proficiency})</span>`
             ).join('') || 'No skills yet';
             document.getElementById('skills').innerHTML = skillsHtml;
+        }
+        
+        async function addSkill() {
+            const skillName = document.getElementById('newSkillName').value;
+            const proficiency = document.getElementById('newSkillProficiency').value;
             
-            await loadAvailability();
+            if (!skillName) {
+                alert('Please enter a skill name');
+                return;
+            }
+            
+            const res = await fetch('/api/v1/skills', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ skill_name: skillName, proficiency: proficiency })
+            });
+            
+            if (res.ok) {
+                document.getElementById('newSkillName').value = '';
+                await loadSkills();
+            } else {
+                const error = await res.json();
+                alert('Failed to add skill: ' + (error.error || 'Unknown error'));
+            }
         }
         
         async function loadAvailability() {
@@ -194,32 +233,9 @@
             });
             
             if (res.ok) {
-                alert('Availability removed!');
                 await loadAvailability();
             } else {
                 alert('Failed to remove availability');
-            }
-        }
-        
-        async function addSkill() {
-            const skillName = prompt('Enter skill name (e.g., Go, Python):');
-            if (!skillName) return;
-            const proficiency = prompt('Enter proficiency (beginner/intermediate/advanced):');
-            if (!proficiency) return;
-            
-            const res = await fetch('/api/v1/skills', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ skill_name: skillName, proficiency: proficiency })
-            });
-            
-            if (res.ok) {
-                loadProfile();
-            } else {
-                alert('Failed to add skill');
             }
         }
         
