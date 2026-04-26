@@ -20,14 +20,14 @@ func SearchTutors(c *gin.Context) {
     minRating := c.DefaultQuery("min_rating", "0")
     minRatingFloat, _ := strconv.ParseFloat(minRating, 64)
     
-    // PostgreSQL uses boolean type, but our column is INTEGER (0/1)
+    // Use integer comparison for is_suspended (0 = false, 1 = true)
     query := `
         SELECT DISTINCT u.id, u.name, u.bio, u.rating, u.total_reviews, COALESCE(u.discord_username, '')
         FROM users u
         JOIN skills s ON u.id = s.user_id
         WHERE s.skill_name ILIKE $1
         AND u.rating >= $2
-        AND u.is_suspended = 0
+        AND (u.is_suspended = 0 OR u.is_suspended IS NULL)
         ORDER BY u.rating DESC, u.total_reviews DESC
         LIMIT 20
     `
@@ -81,7 +81,7 @@ func GetTutorProfile(c *gin.Context) {
     
     err := db.QueryRow(`
         SELECT id, name, email, discord_username, bio, rating, total_reviews, total_sessions 
-        FROM users WHERE id = $1 AND is_suspended = 0
+        FROM users WHERE id = $1 AND (is_suspended = 0 OR is_suspended IS NULL)
     `, tutorID).Scan(
         &user.ID, &user.Name, &user.Email, &user.DiscordUsername,
         &user.Bio, &user.Rating, &user.TotalReviews, &user.TotalSessions,
