@@ -3,6 +3,7 @@ package handlers
 import (
     "database/sql"
     "net/http"
+    "time"
 
     "github.com/gin-gonic/gin"
 )
@@ -32,10 +33,22 @@ func SetAvailability(c *gin.Context) {
 
     // Insert new slots
     for _, slot := range slots {
+        // Ensure time format is HH:MM:SS
+        startTime := slot.StartTime
+        endTime := slot.EndTime
+        
+        // Add seconds if missing
+        if len(startTime) == 5 {
+            startTime = startTime + ":00"
+        }
+        if len(endTime) == 5 {
+            endTime = endTime + ":00"
+        }
+        
         _, err := db.Exec(`
             INSERT INTO availability (user_id, day_of_week, start_time, end_time) 
             VALUES ($1, $2, $3, $4)
-        `, userID, slot.DayOfWeek, slot.StartTime, slot.EndTime)
+        `, userID, slot.DayOfWeek, startTime, endTime)
         
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save availability: " + err.Error()})
@@ -66,7 +79,12 @@ func GetAvailability(c *gin.Context) {
     var slots []AvailabilitySlot
     for rows.Next() {
         var slot AvailabilitySlot
-        rows.Scan(&slot.DayOfWeek, &slot.StartTime, &slot.EndTime)
+        var startTime, endTime time.Time
+        rows.Scan(&slot.DayOfWeek, &startTime, &endTime)
+        
+        // Format times as HH:MM
+        slot.StartTime = startTime.Format("15:04")
+        slot.EndTime = endTime.Format("15:04")
         slots = append(slots, slot)
     }
 
