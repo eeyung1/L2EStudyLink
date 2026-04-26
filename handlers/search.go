@@ -91,7 +91,7 @@ func GetTutorProfile(c *gin.Context) {
         }
     }
     
-    // Get availability
+    // Get availability - format times correctly
     availability := []gin.H{}
     availRows, err := db.Query(`SELECT day_of_week, start_time, end_time FROM availability WHERE user_id = $1`, tutorID)
     if err == nil {
@@ -100,7 +100,8 @@ func GetTutorProfile(c *gin.Context) {
             var dayOfWeek int
             var startTime, endTime string
             availRows.Scan(&dayOfWeek, &startTime, &endTime)
-            // Format time to HH:MM only
+            
+            // Extract just HH:MM from "HH:MM:SS" format
             startTimeStr := startTime
             endTimeStr := endTime
             if len(startTimeStr) > 5 {
@@ -109,6 +110,7 @@ func GetTutorProfile(c *gin.Context) {
             if len(endTimeStr) > 5 {
                 endTimeStr = endTimeStr[:5]
             }
+            
             availability = append(availability, gin.H{
                 "day_of_week": dayOfWeek,
                 "start_time":  startTimeStr,

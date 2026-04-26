@@ -30,7 +30,6 @@
         </div>
     </div>
 
-    <!-- Modal for tutor details and booking -->
     <div id="tutorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <div class="flex justify-between items-center mb-4">
@@ -39,6 +38,8 @@
             </div>
             <div id="modalContent"></div>
             <div class="mt-4">
+                <label class="block font-bold mb-1">Select Date</label>
+                <input type="date" id="bookingDate" class="w-full p-2 border rounded mb-3">
                 <label class="block font-bold mb-1">Select Time Slot</label>
                 <select id="timeSlot" class="w-full p-2 border rounded mb-3"></select>
                 <label class="block font-bold mb-1">Topic</label>
@@ -53,6 +54,7 @@
         if (!token) window.location.href = '/page/login';
         
         let currentTutor = null;
+        let currentAvailability = [];
         
         function logout() {
             localStorage.removeItem('token');
@@ -61,8 +63,8 @@
         
         function formatTime(timeStr) {
             if (!timeStr) return '';
-            if (timeStr.includes('T')) {
-                return timeStr.split('T')[1].split('.')[0].substring(0, 5);
+            if (timeStr.includes(':')) {
+                return timeStr.substring(0, 5);
             }
             return timeStr;
         }
@@ -91,7 +93,7 @@
                             <h3 class="font-bold text-lg">${escapeHtml(t.name)}</h3>
                             <p>⭐ ${t.rating} (${t.total_reviews} reviews)</p>
                             <p class="text-gray-600">${escapeHtml(t.bio) || 'No bio'}</p>
-                            <button onclick="viewTutor(${t.id})" class="mt-2 bg-blue-600 text-white px-4 py-1 rounded text-sm">View Availability & Book</button>
+                            <button onclick="viewTutor(${t.id})" class="mt-2 bg-blue-600 text-white px-4 py-1 rounded text-sm">View & Book</button>
                         </div>
                     `;
                 }
@@ -106,13 +108,14 @@
                 const response = await fetch(`/api/v1/tutors/${tutorId}`);
                 const tutor = await response.json();
                 currentTutor = tutor;
+                currentAvailability = tutor.availability || [];
                 
                 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                 
                 let availabilityHtml = '<div class="mb-3">';
-                if (tutor.availability && tutor.availability.length > 0) {
+                if (currentAvailability.length > 0) {
                     availabilityHtml += '<p class="font-bold">Available Times:</p><ul class="list-disc pl-5">';
-                    for (const a of tutor.availability) {
+                    for (const a of currentAvailability) {
                         availabilityHtml += `<li>${days[a.day_of_week]}: ${formatTime(a.start_time)} - ${formatTime(a.end_time)}</li>`;
                     }
                     availabilityHtml += '</ul>';
@@ -129,13 +132,19 @@
                     ${availabilityHtml}
                 `;
                 
+                // Set default date to tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                document.getElementById('bookingDate').value = tomorrow.toISOString().split('T')[0];
+                
                 // Populate time slots
                 const timeSlot = document.getElementById('timeSlot');
                 timeSlot.innerHTML = '';
-                if (tutor.availability && tutor.availability.length > 0) {
-                    for (const a of tutor.availability) {
+                if (currentAvailability.length > 0) {
+                    for (let i = 0; i < currentAvailability.length; i++) {
+                        const a = currentAvailability[i];
                         const option = document.createElement('option');
-                        option.value = `${formatTime(a.start_time)}-${formatTime(a.end_time)}`;
+                        option.value = `${formatTime(a.start_time)}|${formatTime(a.end_time)}`;
                         option.text = `${days[a.day_of_week]}: ${formatTime(a.start_time)} - ${formatTime(a.end_time)}`;
                         timeSlot.appendChild(option);
                     }
@@ -157,20 +166,24 @@
         async function confirmBooking() {
             const timeRange = document.getElementById('timeSlot').value;
             if (!timeRange || timeRange === 'No availability') {
-                alert('No available time slots');
+                alert('Please select a valid time slot');
                 return;
             }
             
-            const [startTime, endTime] = timeRange.split('-');
+            const [startTime, endTime] = timeRange.split('|');
+            const date = document.getElementById('bookingDate').value;
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+            
             const topic = document.getElementById('topic').value;
             if (!topic) {
                 alert('Please enter what you need help with');
                 return;
             }
             
-            const date = new Date();
-            date.setDate(date.getDate() + 1);
-            const bookingDate = date.toISOString().split('T')[0];
+            const meetingType = confirm('Online session? (OK = Online, Cancel = In Person)') ? 'online' : 'in_person';
             
             try {
                 const res = await fetch('/api/v1/bookings', {
@@ -181,18 +194,19 @@
                     },
                     body: JSON.stringify({
                         tutor_id: currentTutor.id,
-                        date: bookingDate,
+                        date: date,
                         start_time: startTime,
                         end_time: endTime,
                         topic: topic,
-                        meeting_type: 'online'
+                        meeting_type: meetingType
                     })
                 });
                 
                 const data = await res.json();
                 if (res.ok) {
-                    alert('Booking confirmed for ' + bookingDate + ' at ' + startTime);
+                    alert('Booking confirmed for ' + date + ' at ' + startTime);
                     closeModal();
+                    window.location.href = '/my-bookings';
                 } else {
                     alert('Error: ' + data.error);
                 }
