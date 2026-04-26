@@ -95,6 +95,7 @@ func main() {
             protected.DELETE("/admin/users/:id", handlers.AdminDeleteUser)
             protected.PUT("/admin/users/:id/suspend", handlers.AdminToggleSuspend)
             protected.GET("/admin/bookings", handlers.AdminBookings)
+\t		protected.POST("/admin/reset-password", handlers.ResetAdminPassword)
         }
     }
 
