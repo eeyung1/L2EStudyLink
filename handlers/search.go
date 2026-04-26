@@ -12,12 +12,15 @@ func SearchTutors(c *gin.Context) {
     db := c.MustGet("db").(*sql.DB)
     
     skillQuery := c.Query("skill")
-    minRating := c.DefaultQuery("min_rating", "0")
+    if skillQuery == "" {
+        c.JSON(http.StatusOK, []gin.H{})
+        return
+    }
     
+    minRating := c.DefaultQuery("min_rating", "0")
     minRatingFloat, _ := strconv.ParseFloat(minRating, 64)
     
-    // Fix: Use integer comparison for is_suspended (0 = false in SQLite, but PostgreSQL uses boolean)
-    // PostgreSQL stores is_suspended as integer (0/1) from our schema
+    // PostgreSQL uses boolean type, but our column is INTEGER (0/1)
     query := `
         SELECT DISTINCT u.id, u.name, u.bio, u.rating, u.total_reviews, COALESCE(u.discord_username, '')
         FROM users u
@@ -43,7 +46,10 @@ func SearchTutors(c *gin.Context) {
         var rating float64
         var totalReviews int
         
-        rows.Scan(&id, &name, &bio, &rating, &totalReviews, &discordUsername)
+        err := rows.Scan(&id, &name, &bio, &rating, &totalReviews, &discordUsername)
+        if err != nil {
+            continue
+        }
         
         tutors = append(tutors, gin.H{
             "id":               id,
@@ -87,12 +93,10 @@ func GetTutorProfile(c *gin.Context) {
     }
     
     // Get skills
-    skillRows, err := db.Query(`
-        SELECT skill_name, proficiency FROM skills WHERE user_id = $1
-    `, tutorID)
+    skills := []gin.H{}
+    skillRows, err := db.Query(`SELECT skill_name, proficiency FROM skills WHERE user_id = $1`, tutorID)
     if err == nil {
         defer skillRows.Close()
-        var skills []gin.H
         for skillRows.Next() {
             var skillName, proficiency string
             skillRows.Scan(&skillName, &proficiency)
@@ -101,39 +105,23 @@ func GetTutorProfile(c *gin.Context) {
                 "proficiency": proficiency,
             })
         }
-        
-        // Get availability
-        availRows, err := db.Query(`
-            SELECT day_of_week, start_time, end_time FROM availability WHERE user_id = $1
-        `, tutorID)
-        var availability []gin.H
-        if err == nil {
-            defer availRows.Close()
-            for availRows.Next() {
-                var dayOfWeek int
-                var startTime, endTime string
-                availRows.Scan(&dayOfWeek, &startTime, &endTime)
-                availability = append(availability, gin.H{
-                    "day_of_week": dayOfWeek,
-                    "start_time":  startTime,
-                    "end_time":    endTime,
-                })
-            }
+    }
+    
+    // Get availability
+    availability := []gin.H{}
+    availRows, err := db.Query(`SELECT day_of_week, start_time, end_time FROM availability WHERE user_id = $1`, tutorID)
+    if err == nil {
+        defer availRows.Close()
+        for availRows.Next() {
+            var dayOfWeek int
+            var startTime, endTime string
+            availRows.Scan(&dayOfWeek, &startTime, &endTime)
+            availability = append(availability, gin.H{
+                "day_of_week": dayOfWeek,
+                "start_time":  startTime,
+                "end_time":    endTime,
+            })
         }
-        
-        c.JSON(http.StatusOK, gin.H{
-            "id":               user.ID,
-            "name":             user.Name,
-            "email":            user.Email,
-            "discord_username": user.DiscordUsername.String,
-            "bio":              user.Bio.String,
-            "rating":           user.Rating,
-            "total_reviews":    user.TotalReviews,
-            "total_sessions":   user.TotalSessions,
-            "skills":           skills,
-            "availability":     availability,
-        })
-        return
     }
     
     c.JSON(http.StatusOK, gin.H{
@@ -145,7 +133,7 @@ func GetTutorProfile(c *gin.Context) {
         "rating":           user.Rating,
         "total_reviews":    user.TotalReviews,
         "total_sessions":   user.TotalSessions,
-        "skills":           []gin.H{},
-        "availability":     []gin.H{},
+        "skills":           skills,
+        "availability":     availability,
     })
 }

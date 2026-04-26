@@ -35,31 +35,12 @@
         </div>
     </div>
 
-    <!-- Tutor Modal -->
-    <div id="tutorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto m-4">
-            <div class="flex justify-between items-start mb-4">
-                <h2 id="modalTitle" class="text-2xl font-bold"></h2>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-            </div>
-            <div id="modalContent"></div>
-            <div class="mt-4 pt-4 border-t">
-                <h3 class="font-bold mb-2">Availability</h3>
-                <div id="availabilityList" class="mb-4"></div>
-                <div id="bookingSection"></div>
-            </div>
-        </div>
-    </div>
-
     <script>
         const token = localStorage.getItem('token');
         if (!token) {
             window.location.href = '/page/login';
         }
         
-        let currentTutor = null;
-        
-        // Get current user to check if admin
         fetch('/api/v1/me', {
             headers: { 'Authorization': `Bearer ${token}` }
         }).then(r => r.json()).then(user => {
@@ -85,6 +66,13 @@
             
             try {
                 const res = await fetch(`/api/v1/search?skill=${encodeURIComponent(skill)}`);
+                
+                if (!res.ok) {
+                    const error = await res.json();
+                    resultsDiv.innerHTML = '<div class="text-center text-red-600">Search error: ' + (error.error || 'Unknown') + '</div>';
+                    return;
+                }
+                
                 const tutors = await res.json();
                 
                 if (!tutors || tutors.length === 0) {
@@ -93,7 +81,8 @@
                 }
                 
                 let html = '';
-                for (const t of tutors) {
+                for (let i = 0; i < tutors.length; i++) {
+                    const t = tutors[i];
                     html += `
                         <div class="border rounded-lg p-4 mb-3 hover:shadow">
                             <div class="flex justify-between items-start">
@@ -102,136 +91,16 @@
                                     <p class="text-gray-600 text-sm">⭐ ${t.rating} (${t.total_reviews} reviews)</p>
                                     <p class="text-gray-700 mt-2">${escapeHtml(t.bio) || 'No bio yet'}</p>
                                 </div>
-                                <button onclick="viewTutor(${t.id})" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">View & Book</button>
+                                <button onclick="alert('View profile feature coming soon')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">View Profile</button>
                             </div>
                         </div>
                     `;
                 }
                 resultsDiv.innerHTML = html;
             } catch(e) {
-                resultsDiv.innerHTML = '<div class="text-center text-red-600">Search failed. Please try again.</div>';
+                resultsDiv.innerHTML = '<div class="text-center text-red-600">Search failed: ' + e.message + '</div>';
                 console.error(e);
             }
-        }
-        
-        async function viewTutor(id) {
-            try {
-                const res = await fetch(`/api/v1/tutors/${id}`);
-                const tutor = await res.json();
-                currentTutor = tutor;
-                
-                document.getElementById('modalTitle').innerText = tutor.name;
-                
-                // Show profile
-                document.getElementById('modalContent').innerHTML = `
-                    <p><strong>Email:</strong> ${escapeHtml(tutor.email)}</p>
-                    <p><strong>Discord:</strong> ${escapeHtml(tutor.discord_username) || 'Not set'}</p>
-                    <p><strong>Bio:</strong> ${escapeHtml(tutor.bio) || 'No bio'}</p>
-                    <p><strong>Rating:</strong> ⭐ ${tutor.rating} (${tutor.total_reviews} reviews)</p>
-                    <p><strong>Skills:</strong> ${tutor.skills?.map(s => `${s.name} (${s.proficiency})`).join(', ') || 'None'}</p>
-                `;
-                
-                // Show availability
-                if (tutor.availability && tutor.availability.length > 0) {
-                    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                    let availHtml = '';
-                    for (const a of tutor.availability) {
-                        availHtml += `<div class="bg-gray-100 p-2 rounded mb-2">${days[a.day_of_week]}: ${a.start_time} - ${a.end_time}</div>`;
-                    }
-                    document.getElementById('availabilityList').innerHTML = availHtml;
-                    document.getElementById('bookingSection').innerHTML = `
-                        <button onclick="showBookingForm()" class="bg-green-600 text-white px-6 py-2 rounded w-full">Book a Session</button>
-                    `;
-                } else {
-                    document.getElementById('availabilityList').innerHTML = '<div class="text-gray-500">No availability set yet</div>';
-                    document.getElementById('bookingSection').innerHTML = '<div class="text-gray-500">Cannot book - tutor has no availability set</div>';
-                }
-                
-                document.getElementById('tutorModal').classList.remove('hidden');
-                document.getElementById('tutorModal').classList.add('flex');
-            } catch(e) {
-                alert('Failed to load tutor profile');
-                console.error(e);
-            }
-        }
-        
-        function showBookingForm() {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const defaultDate = tomorrow.toISOString().split('T')[0];
-            
-            document.getElementById('bookingSection').innerHTML = `
-                <div class="border-t pt-4 mt-2">
-                    <h3 class="font-bold mb-2">Book a Session</h3>
-                    <div class="mb-2">
-                        <label class="block text-sm font-bold mb-1">Date</label>
-                        <input type="date" id="bookDate" value="${defaultDate}" class="w-full p-2 border rounded">
-                    </div>
-                    <div class="mb-2">
-                        <label class="block text-sm font-bold mb-1">Time Slot</label>
-                        <select id="bookTime" class="w-full p-2 border rounded">
-                            ${currentTutor.availability.map(a => 
-                                `<option value="${a.start_time}-${a.end_time}">${a.start_time} - ${a.end_time}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="block text-sm font-bold mb-1">What do you need help with?</label>
-                        <textarea id="bookTopic" rows="2" class="w-full p-2 border rounded" placeholder="Describe what you want to learn..."></textarea>
-                    </div>
-                    <div class="mb-2">
-                        <label class="block text-sm font-bold mb-1">Meeting Type</label>
-                        <select id="meetingType" class="w-full p-2 border rounded">
-                            <option value="online">Online (Discord)</option>
-                            <option value="in_person">In Person</option>
-                        </select>
-                    </div>
-                    <button onclick="createBooking()" class="bg-blue-600 text-white px-4 py-2 rounded w-full mt-2">Confirm Booking</button>
-                    <button onclick="viewTutor(currentTutor.id)" class="text-gray-500 text-sm mt-2 w-full">Cancel</button>
-                </div>
-            `;
-        }
-        
-        async function createBooking() {
-            const date = document.getElementById('bookDate').value;
-            const timeRange = document.getElementById('bookTime').value;
-            const [startTime, endTime] = timeRange.split('-');
-            const topic = document.getElementById('bookTopic').value || 'Study session';
-            const meetingType = document.getElementById('meetingType').value;
-            
-            try {
-                const res = await fetch('/api/v1/bookings', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        tutor_id: currentTutor.id,
-                        date: date,
-                        start_time: startTime,
-                        end_time: endTime,
-                        topic: topic,
-                        meeting_type: meetingType
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (res.ok) {
-                    alert('Booking created successfully!');
-                    closeModal();
-                } else {
-                    alert('Booking failed: ' + (data.error || 'Unknown error'));
-                }
-            } catch(e) {
-                alert('Booking failed: ' + e.message);
-            }
-        }
-        
-        function closeModal() {
-            document.getElementById('tutorModal').classList.add('hidden');
-            document.getElementById('tutorModal').classList.remove('flex');
         }
         
         function escapeHtml(str) {
@@ -244,7 +113,6 @@
             });
         }
         
-        // Press Enter to search
         document.getElementById('skillSearch').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 searchTutors();
