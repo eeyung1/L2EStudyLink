@@ -3,6 +3,7 @@ package handlers
 import (
     "database/sql"
     "net/http"
+    "strings"
     "time"
     "os"
 
@@ -65,12 +66,10 @@ func CreateBooking(c *gin.Context) {
         return
     }
 
-    // Get tutor and student names and Discord IDs for notification
     var tutorName, tutorDiscord, studentName, studentDiscord string
     db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", input.TutorID).Scan(&tutorName, &tutorDiscord)
     db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentDiscord)
 
-    // Send Discord notification with mentions
     notifications.SendBookingNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, input.Date, input.StartTime, input.Topic)
 
     c.JSON(http.StatusCreated, gin.H{
@@ -159,9 +158,28 @@ func CancelBooking(c *gin.Context) {
         return
     }
 
-    sessionDateTime, err := time.Parse("2006-01-02 15:04", sessionDate+" "+startTime)
+    // Parse date (handle both YYYY-MM-DD and timestamp formats)
+    dateStr := sessionDate
+    if len(dateStr) > 10 {
+        dateStr = dateStr[:10]
+    }
+    
+    // Parse start time (handle both HH:MM and timestamp formats)
+    timeStr := startTime
+    if len(timeStr) > 5 {
+        if strings.Contains(timeStr, "T") {
+            parts := strings.Split(timeStr, "T")
+            if len(parts) > 1 {
+                timeStr = parts[1][:5]
+            }
+        } else {
+            timeStr = timeStr[:5]
+        }
+    }
+    
+    sessionDateTime, err := time.Parse("2006-01-02 15:04", dateStr+" "+timeStr)
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid date format"})
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format: " + err.Error()})
         return
     }
 
@@ -176,13 +194,11 @@ func CancelBooking(c *gin.Context) {
         return
     }
 
-    // Get names for notification
     var tutorName, studentName, tutorDiscord, studentDiscord string
     db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", tutorID).Scan(&tutorName, &tutorDiscord)
     db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentDiscord)
 
-    // Send Discord notification
-    notifications.SendBookingCancelledNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, sessionDate, startTime)
+    notifications.SendBookingCancelledNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, dateStr, timeStr)
 
     c.JSON(http.StatusOK, gin.H{"message": "Booking cancelled successfully"})
 }
@@ -222,12 +238,10 @@ func UpdateBookingStatus(c *gin.Context) {
         return
     }
     
-    // Get names and Discord IDs for notification
     var tutorName, studentName, tutorDiscord, studentDiscord string
     db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", tutorID).Scan(&tutorName, &tutorDiscord)
     db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentDiscord)
     
-    // Send Discord notification if accepted
     if input.Status == "confirmed" {
         notifications.SendBookingAcceptedNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, sessionDate, startTime)
     } else if input.Status == "cancelled" {
