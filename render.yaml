@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: l2e-studylink
+    runtime: go
+    repo: https://github.com/eeyung1/L2EStudyLink
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DISCORD_WEBHOOK_URL
+        sync: false
+    buildCommand: go build -o L2EStudyLink
+    startCommand: ./L2EStudyLink
