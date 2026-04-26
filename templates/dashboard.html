@@ -58,58 +58,6 @@
         </div>
     </div>
 
-    <!-- Edit Profile Modal -->
-    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 class="text-xl font-bold mb-4">Edit Profile</h3>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">Discord User ID</label>
-                <input type="text" id="editDiscord" class="w-full p-2 border rounded" placeholder="e.g., 123456789012345678">
-                <p class="text-xs text-gray-500 mt-1">Enable Developer Mode in Discord → Right-click your name → Copy ID</p>
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">Bio</label>
-                <textarea id="editBio" rows="3" class="w-full p-2 border rounded" placeholder="Tell others about yourself..."></textarea>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="saveProfile()" class="bg-blue-600 text-white px-4 py-2 rounded flex-1">Save</button>
-                <button onclick="closeEditModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded flex-1">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Availability Modal -->
-    <div id="availModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 class="text-xl font-bold mb-4">Add Availability</h3>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">Day</label>
-                <select id="availDay" class="w-full p-2 border rounded">
-                    <option value="0">Monday</option>
-                    <option value="1">Tuesday</option>
-                    <option value="2">Wednesday</option>
-                    <option value="3">Thursday</option>
-                    <option value="4">Friday</option>
-                    <option value="5">Saturday</option>
-                    <option value="6">Sunday</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">Start Time</label>
-                <input type="time" id="availStart" class="w-full p-2 border rounded">
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">End Time</label>
-                <input type="time" id="availEnd" class="w-full p-2 border rounded">
-            </div>
-            <div class="flex gap-2">
-                <button onclick="saveAvailability()" class="bg-blue-600 text-white px-4 py-2 rounded flex-1">Save</button>
-                <button onclick="closeAvailModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded flex-1">Cancel</button>
-            </div>
-            <div id="saveError" class="mt-2 text-red-500 text-sm hidden"></div>
-        </div>
-    </div>
-
     <script>
         const token = localStorage.getItem('token');
         if (!token) {
@@ -122,6 +70,15 @@
         async function logout() {
             localStorage.removeItem('token');
             window.location.href = '/page/login';
+        }
+        
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            // If it's a full timestamp, extract just the time part
+            if (timeStr.includes('T')) {
+                return timeStr.split('T')[1].split('.')[0].substring(0, 5);
+            }
+            return timeStr.substring(0, 5);
         }
         
         async function loadProfile() {
@@ -206,15 +163,8 @@
             let html = '<div class="space-y-2">';
             for (let i = 0; i < currentAvailability.length; i++) {
                 const slot = currentAvailability[i];
-                // Extract just the time part (HH:MM) from the full timestamp
-                let startTime = slot.start_time;
-                let endTime = slot.end_time;
-                if (startTime && startTime.includes('T')) {
-                    startTime = startTime.split('T')[1].split('.')[0].substring(0, 5);
-                }
-                if (endTime && endTime.includes('T')) {
-                    endTime = endTime.split('T')[1].split('.')[0].substring(0, 5);
-                }
+                const startTime = formatTime(slot.start_time);
+                const endTime = formatTime(slot.end_time);
                 html += `
                     <div class="bg-gray-100 p-2 rounded flex justify-between items-center">
                         <span>${days[slot.day_of_week]}: ${startTime} - ${endTime}</span>
@@ -249,93 +199,41 @@
         }
         
         function showEditProfile() {
-            document.getElementById('editDiscord').value = currentUser.discord_username || '';
-            document.getElementById('editBio').value = currentUser.bio || '';
-            document.getElementById('editModal').classList.remove('hidden');
-            document.getElementById('editModal').classList.add('flex');
-        }
-        
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
-            document.getElementById('editModal').classList.remove('flex');
-        }
-        
-        async function saveProfile() {
-            const discord = document.getElementById('editDiscord').value;
-            const bio = document.getElementById('editBio').value;
+            const discord = prompt('Enter your Discord ID:', currentUser.discord_username || '');
+            const bio = prompt('Enter your bio:', currentUser.bio || '');
             
-            const res = await fetch('/api/v1/profile', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ discord_username: discord, bio: bio })
-            });
-            
-            if (res.ok) {
-                alert('Profile updated!');
-                closeEditModal();
-                loadProfile();
-            } else {
-                alert('Failed to update profile');
+            if (discord !== null && bio !== null) {
+                fetch('/api/v1/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ discord_username: discord, bio: bio })
+                }).then(() => loadProfile());
             }
         }
         
         function showAddAvailability() {
-            document.getElementById('availModal').classList.remove('hidden');
-            document.getElementById('availModal').classList.add('flex');
-            document.getElementById('saveError').classList.add('hidden');
-            document.getElementById('availStart').value = '';
-            document.getElementById('availEnd').value = '';
-        }
-        
-        function closeAvailModal() {
-            document.getElementById('availModal').classList.add('hidden');
-            document.getElementById('availModal').classList.remove('flex');
-        }
-        
-        async function saveAvailability() {
-            const day = parseInt(document.getElementById('availDay').value);
-            let startTime = document.getElementById('availStart').value;
-            let endTime = document.getElementById('availEnd').value;
-            const errorDiv = document.getElementById('saveError');
+            const day = prompt('Enter day (0=Monday, 1=Tuesday, 2=Wednesday, 3=Thursday, 4=Friday, 5=Saturday, 6=Sunday):', '0');
+            const startTime = prompt('Enter start time (HH:MM, e.g., 14:00):', '14:00');
+            const endTime = prompt('Enter end time (HH:MM, e.g., 16:00):', '16:00');
             
-            errorDiv.classList.add('hidden');
-            
-            if (!startTime || !endTime) {
-                errorDiv.innerText = 'Please select both start and end times';
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-            
-            // Add new slot to existing (allows multiple slots per day)
-            const newSlots = [...currentAvailability, { day_of_week: day, start_time: startTime, end_time: endTime }];
-            
-            try {
-                const saveRes = await fetch('/api/v1/availability', {
+            if (day && startTime && endTime) {
+                const newSlots = [...currentAvailability, { 
+                    day_of_week: parseInt(day), 
+                    start_time: startTime, 
+                    end_time: endTime 
+                }];
+                
+                fetch('/api/v1/availability', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(newSlots)
-                });
-                
-                if (saveRes.ok) {
-                    alert('Availability added!');
-                    closeAvailModal();
-                    await loadAvailability();
-                    document.getElementById('availStart').value = '';
-                    document.getElementById('availEnd').value = '';
-                } else {
-                    const error = await saveRes.json();
-                    errorDiv.innerText = error.error || 'Failed to add availability';
-                    errorDiv.classList.remove('hidden');
-                }
-            } catch(err) {
-                errorDiv.innerText = 'Error: ' + err.message;
-                errorDiv.classList.remove('hidden');
+                }).then(() => loadAvailability());
             }
         }
         

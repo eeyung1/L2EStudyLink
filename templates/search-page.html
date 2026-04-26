@@ -35,22 +35,6 @@
         </div>
     </div>
 
-    <!-- Tutor Modal -->
-    <div id="tutorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto m-4">
-            <div class="flex justify-between items-start mb-4">
-                <h2 id="modalTitle" class="text-2xl font-bold"></h2>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-            </div>
-            <div id="modalContent"></div>
-            <div class="mt-4 pt-4 border-t">
-                <h3 class="font-bold mb-2">Availability</h3>
-                <div id="availabilityList" class="mb-4"></div>
-                <div id="bookingSection"></div>
-            </div>
-        </div>
-    </div>
-
     <script>
         const token = localStorage.getItem('token');
         if (!token) {
@@ -58,6 +42,14 @@
         }
         
         let currentTutor = null;
+        
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            if (timeStr.includes('T')) {
+                return timeStr.split('T')[1].split('.')[0].substring(0, 5);
+            }
+            return timeStr.substring(0, 5);
+        }
         
         fetch('/api/v1/me', {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -84,13 +76,6 @@
             
             try {
                 const res = await fetch(`/api/v1/search?skill=${encodeURIComponent(skill)}`);
-                
-                if (!res.ok) {
-                    const error = await res.json();
-                    resultsDiv.innerHTML = '<div class="text-center text-red-600">Search error: ' + (error.error || 'Unknown') + '</div>';
-                    return;
-                }
-                
                 const tutors = await res.json();
                 
                 if (!tutors || tutors.length === 0) {
@@ -99,8 +84,7 @@
                 }
                 
                 let html = '';
-                for (let i = 0; i < tutors.length; i++) {
-                    const t = tutors[i];
+                for (const t of tutors) {
                     html += `
                         <div class="border rounded-lg p-4 mb-3 hover:shadow">
                             <div class="flex justify-between items-start">
@@ -116,8 +100,7 @@
                 }
                 resultsDiv.innerHTML = html;
             } catch(e) {
-                resultsDiv.innerHTML = '<div class="text-center text-red-600">Search failed: ' + e.message + '</div>';
-                console.error(e);
+                resultsDiv.innerHTML = '<div class="text-center text-red-600">Search failed. Please try again.</div>';
             }
         }
         
@@ -127,43 +110,47 @@
                 const tutor = await res.json();
                 currentTutor = tutor;
                 
-                document.getElementById('modalTitle').innerText = tutor.name;
-                
-                let skillsHtml = '';
-                if (tutor.skills && tutor.skills.length > 0) {
-                    skillsHtml = tutor.skills.map(s => `${s.name} (${s.proficiency})`).join(', ');
-                } else {
-                    skillsHtml = 'None';
-                }
-                
-                document.getElementById('modalContent').innerHTML = `
-                    <p><strong>Email:</strong> ${escapeHtml(tutor.email)}</p>
-                    <p><strong>Discord:</strong> ${escapeHtml(tutor.discord_username) || 'Not set'}</p>
-                    <p><strong>Bio:</strong> ${escapeHtml(tutor.bio) || 'No bio'}</p>
-                    <p><strong>Rating:</strong> ⭐ ${tutor.rating} (${tutor.total_reviews} reviews)</p>
-                    <p><strong>Skills:</strong> ${skillsHtml}</p>
+                const modalHtml = `
+                    <div id="tutorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto m-4">
+                            <div class="flex justify-between items-start mb-4">
+                                <h2 class="text-2xl font-bold">${escapeHtml(tutor.name)}</h2>
+                                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                            </div>
+                            <div>
+                                <p><strong>Email:</strong> ${escapeHtml(tutor.email)}</p>
+                                <p><strong>Discord:</strong> ${escapeHtml(tutor.discord_username) || 'Not set'}</p>
+                                <p><strong>Bio:</strong> ${escapeHtml(tutor.bio) || 'No bio'}</p>
+                                <p><strong>Rating:</strong> ⭐ ${tutor.rating} (${tutor.total_reviews} reviews)</p>
+                                <p><strong>Skills:</strong> ${tutor.skills?.map(s => `${s.name} (${s.proficiency})`).join(', ') || 'None'}</p>
+                            </div>
+                            <div class="mt-4 pt-4 border-t">
+                                <h3 class="font-bold mb-2">Availability</h3>
+                                <div id="availabilityList"></div>
+                                <div id="bookingSection"></div>
+                            </div>
+                        </div>
+                    </div>
                 `;
                 
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                
+                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                let availHtml = '';
                 if (tutor.availability && tutor.availability.length > 0) {
-                    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                    let availHtml = '';
                     for (const a of tutor.availability) {
-                        availHtml += `<div class="bg-gray-100 p-2 rounded mb-2">${days[a.day_of_week]}: ${a.start_time} - ${a.end_time}</div>`;
+                        availHtml += `<div class="bg-gray-100 p-2 rounded mb-2">${days[a.day_of_week]}: ${formatTime(a.start_time)} - ${formatTime(a.end_time)}</div>`;
                     }
                     document.getElementById('availabilityList').innerHTML = availHtml;
-                    document.getElementById('bookingSection').innerHTML = `
-                        <button onclick="showBookingForm()" class="bg-green-600 text-white px-6 py-2 rounded w-full">Book a Session</button>
-                    `;
+                    document.getElementById('bookingSection').innerHTML = \`
+                        <button onclick="showBookingForm()" class="bg-green-600 text-white px-6 py-2 rounded w-full mt-4">Book a Session</button>
+                    \`;
                 } else {
                     document.getElementById('availabilityList').innerHTML = '<div class="text-gray-500">No availability set yet</div>';
-                    document.getElementById('bookingSection').innerHTML = '<div class="text-gray-500">Cannot book - tutor has no availability set</div>';
+                    document.getElementById('bookingSection').innerHTML = '<div class="text-gray-500 mt-4">Cannot book - tutor has no availability set</div>';
                 }
-                
-                document.getElementById('tutorModal').classList.remove('hidden');
-                document.getElementById('tutorModal').classList.add('flex');
             } catch(e) {
                 alert('Failed to load tutor profile');
-                console.error(e);
             }
         }
         
@@ -174,20 +161,20 @@
             
             let timeOptions = '';
             for (const a of currentTutor.availability) {
-                timeOptions += `<option value="${a.start_time}-${a.end_time}">${a.start_time} - ${a.end_time}</option>`;
+                timeOptions += `<option value="${formatTime(a.start_time)}-${formatTime(a.end_time)}">${formatTime(a.start_time)} - ${formatTime(a.end_time)}</option>`;
             }
             
-            document.getElementById('bookingSection').innerHTML = `
+            document.getElementById('bookingSection').innerHTML = \`
                 <div class="border-t pt-4 mt-2">
                     <h3 class="font-bold mb-2">Book a Session</h3>
                     <div class="mb-2">
                         <label class="block text-sm font-bold mb-1">Date</label>
-                        <input type="date" id="bookDate" value="${defaultDate}" class="w-full p-2 border rounded">
+                        <input type="date" id="bookDate" value="\${defaultDate}" class="w-full p-2 border rounded">
                     </div>
                     <div class="mb-2">
                         <label class="block text-sm font-bold mb-1">Time Slot</label>
                         <select id="bookTime" class="w-full p-2 border rounded">
-                            ${timeOptions}
+                            \${timeOptions}
                         </select>
                     </div>
                     <div class="mb-2">
@@ -202,9 +189,9 @@
                         </select>
                     </div>
                     <button onclick="createBooking()" class="bg-blue-600 text-white px-4 py-2 rounded w-full mt-2">Confirm Booking</button>
-                    <button onclick="viewTutor(currentTutor.id)" class="text-gray-500 text-sm mt-2 w-full">Cancel</button>
+                    <button onclick="closeModal()" class="text-gray-500 text-sm mt-2 w-full">Cancel</button>
                 </div>
-            `;
+            \`;
         }
         
         async function createBooking() {
@@ -245,8 +232,8 @@
         }
         
         function closeModal() {
-            document.getElementById('tutorModal').classList.add('hidden');
-            document.getElementById('tutorModal').classList.remove('flex');
+            const modal = document.getElementById('tutorModal');
+            if (modal) modal.remove();
         }
         
         function escapeHtml(str) {
