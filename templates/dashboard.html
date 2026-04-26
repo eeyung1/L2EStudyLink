@@ -206,9 +206,18 @@
             let html = '<div class="space-y-2">';
             for (let i = 0; i < currentAvailability.length; i++) {
                 const slot = currentAvailability[i];
+                // Extract just the time part (HH:MM) from the full timestamp
+                let startTime = slot.start_time;
+                let endTime = slot.end_time;
+                if (startTime && startTime.includes('T')) {
+                    startTime = startTime.split('T')[1].split('.')[0].substring(0, 5);
+                }
+                if (endTime && endTime.includes('T')) {
+                    endTime = endTime.split('T')[1].split('.')[0].substring(0, 5);
+                }
                 html += `
                     <div class="bg-gray-100 p-2 rounded flex justify-between items-center">
-                        <span>${days[slot.day_of_week]}: ${slot.start_time} - ${slot.end_time}</span>
+                        <span>${days[slot.day_of_week]}: ${startTime} - ${endTime}</span>
                         <button onclick="deleteAvailability(${i})" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Delete</button>
                     </div>
                 `;
@@ -277,6 +286,8 @@
             document.getElementById('availModal').classList.remove('hidden');
             document.getElementById('availModal').classList.add('flex');
             document.getElementById('saveError').classList.add('hidden');
+            document.getElementById('availStart').value = '';
+            document.getElementById('availEnd').value = '';
         }
         
         function closeAvailModal() {
@@ -298,6 +309,7 @@
                 return;
             }
             
+            // Add new slot to existing (allows multiple slots per day)
             const newSlots = [...currentAvailability, { day_of_week: day, start_time: startTime, end_time: endTime }];
             
             try {
@@ -317,7 +329,8 @@
                     document.getElementById('availStart').value = '';
                     document.getElementById('availEnd').value = '';
                 } else {
-                    errorDiv.innerText = 'Failed to add availability';
+                    const error = await saveRes.json();
+                    errorDiv.innerText = error.error || 'Failed to add availability';
                     errorDiv.classList.remove('hidden');
                 }
             } catch(err) {
