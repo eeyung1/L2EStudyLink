@@ -8,6 +8,7 @@ import (
     "os"
 
     "github.com/gin-gonic/gin"
+    "L2EStudyLink/email"
     "L2EStudyLink/notifications"
 )
 
@@ -66,11 +67,19 @@ func CreateBooking(c *gin.Context) {
         return
     }
 
-    var tutorName, tutorDiscord, studentName, studentDiscord string
-    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", input.TutorID).Scan(&tutorName, &tutorDiscord)
-    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentDiscord)
+    // Get tutor and student details
+    var tutorName, tutorEmail, tutorDiscord, studentName, studentEmail, studentDiscord string
+    db.QueryRow("SELECT name, email, COALESCE(discord_username, '') FROM users WHERE id = $1", input.TutorID).Scan(&tutorName, &tutorEmail, &tutorDiscord)
+    db.QueryRow("SELECT name, email, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentEmail, &studentDiscord)
 
+    // Send Discord notification
     notifications.SendBookingNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, input.Date, input.StartTime, input.Topic)
+
+    // Send email notifications
+    go func() {
+        email.SendBookingNotification(tutorEmail, tutorName, tutorName, studentName, input.Date, input.StartTime, input.Topic)
+        email.SendBookingNotification(studentEmail, studentName, tutorName, studentName, input.Date, input.StartTime, input.Topic)
+    }()
 
     c.JSON(http.StatusCreated, gin.H{
         "message":    "Booking created successfully",
@@ -194,11 +203,19 @@ func CancelBooking(c *gin.Context) {
         return
     }
 
-    var tutorName, studentName, tutorDiscord, studentDiscord string
-    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", tutorID).Scan(&tutorName, &tutorDiscord)
-    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentDiscord)
+    // Get tutor and student details
+    var tutorName, tutorEmail, tutorDiscord, studentName, studentEmail, studentDiscord string
+    db.QueryRow("SELECT name, email, COALESCE(discord_username, '') FROM users WHERE id = $1", tutorID).Scan(&tutorName, &tutorEmail, &tutorDiscord)
+    db.QueryRow("SELECT name, email, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentEmail, &studentDiscord)
 
+    // Send Discord notification
     notifications.SendBookingCancelledNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, dateStr, timeStr)
+
+    // Send email notifications
+    go func() {
+        email.SendBookingCancelledNotification(tutorEmail, tutorName, tutorName, studentName, dateStr, timeStr)
+        email.SendBookingCancelledNotification(studentEmail, studentName, tutorName, studentName, dateStr, timeStr)
+    }()
 
     c.JSON(http.StatusOK, gin.H{"message": "Booking cancelled successfully"})
 }
@@ -238,14 +255,46 @@ func UpdateBookingStatus(c *gin.Context) {
         return
     }
     
-    var tutorName, studentName, tutorDiscord, studentDiscord string
-    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", tutorID).Scan(&tutorName, &tutorDiscord)
-    db.QueryRow("SELECT name, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentDiscord)
+    // Get tutor and student details
+    var tutorName, tutorEmail, tutorDiscord, studentName, studentEmail, studentDiscord string
+    db.QueryRow("SELECT name, email, COALESCE(discord_username, '') FROM users WHERE id = $1", tutorID).Scan(&tutorName, &tutorEmail, &tutorDiscord)
+    db.QueryRow("SELECT name, email, COALESCE(discord_username, '') FROM users WHERE id = $1", studentID).Scan(&studentName, &studentEmail, &studentDiscord)
+    
+    // Parse date and time for display
+    dateStr := sessionDate
+    if len(dateStr) > 10 {
+        dateStr = dateStr[:10]
+    }
+    timeStr := startTime
+    if len(timeStr) > 5 {
+        if strings.Contains(timeStr, "T") {
+            parts := strings.Split(timeStr, "T")
+            if len(parts) > 1 {
+                timeStr = parts[1][:5]
+            }
+        } else {
+            timeStr = timeStr[:5]
+        }
+    }
     
     if input.Status == "confirmed" {
-        notifications.SendBookingAcceptedNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, sessionDate, startTime)
+        // Send Discord notification
+        notifications.SendBookingAcceptedNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, dateStr, timeStr)
+        
+        // Send email notifications
+        go func() {
+            email.SendBookingAcceptedNotification(tutorEmail, tutorName, tutorName, studentName, dateStr, timeStr)
+            email.SendBookingAcceptedNotification(studentEmail, studentName, tutorName, studentName, dateStr, timeStr)
+        }()
     } else if input.Status == "cancelled" {
-        notifications.SendBookingCancelledNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, sessionDate, startTime)
+        // Send Discord notification
+        notifications.SendBookingCancelledNotificationWithMentions(tutorName, tutorDiscord, studentName, studentDiscord, dateStr, timeStr)
+        
+        // Send email notifications
+        go func() {
+            email.SendBookingCancelledNotification(tutorEmail, tutorName, tutorName, studentName, dateStr, timeStr)
+            email.SendBookingCancelledNotification(studentEmail, studentName, tutorName, studentName, dateStr, timeStr)
+        }()
     }
     
     c.JSON(http.StatusOK, gin.H{"message": "Booking " + input.Status})
