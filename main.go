@@ -88,14 +88,12 @@ func main() {
             protected.GET("/bookings", handlers.GetMyBookings)
             protected.DELETE("/bookings/:id", handlers.CancelBooking)
             protected.PUT("/bookings/:id/status", handlers.UpdateBookingStatus)
-            
-            // Admin routes
             protected.GET("/admin/stats", handlers.AdminStats)
             protected.GET("/admin/users", handlers.AdminUsers)
             protected.DELETE("/admin/users/:id", handlers.AdminDeleteUser)
             protected.PUT("/admin/users/:id/suspend", handlers.AdminToggleSuspend)
             protected.GET("/admin/bookings", handlers.AdminBookings)
-\t		protected.POST("/admin/reset-password", handlers.ResetAdminPassword)
+            protected.POST("/admin/reset-password", handlers.ResetAdminPassword)
         }
     }
 
