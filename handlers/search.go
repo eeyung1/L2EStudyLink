@@ -3,6 +3,7 @@ package handlers
 import (
     "database/sql"
     "net/http"
+    "strings"
 
     "github.com/gin-gonic/gin"
 )
@@ -91,7 +92,7 @@ func GetTutorProfile(c *gin.Context) {
         }
     }
     
-    // Get availability - format times correctly
+    // Get availability - extract just the time part from timestamp
     availability := []gin.H{}
     availRows, err := db.Query(`SELECT day_of_week, start_time, end_time FROM availability WHERE user_id = $1`, tutorID)
     if err == nil {
@@ -101,13 +102,28 @@ func GetTutorProfile(c *gin.Context) {
             var startTime, endTime string
             availRows.Scan(&dayOfWeek, &startTime, &endTime)
             
-            // Extract just HH:MM from "HH:MM:SS" format
+            // Extract just HH:MM from various formats
             startTimeStr := startTime
             endTimeStr := endTime
-            if len(startTimeStr) > 5 {
+            
+            // If it's a full timestamp like "0000-01-01T10:00:00Z", extract the time part
+            if strings.Contains(startTimeStr, "T") {
+                parts := strings.Split(startTimeStr, "T")
+                if len(parts) > 1 {
+                    timePart := strings.Split(parts[1], "Z")[0]
+                    startTimeStr = timePart[:5]
+                }
+            } else if len(startTimeStr) > 5 {
                 startTimeStr = startTimeStr[:5]
             }
-            if len(endTimeStr) > 5 {
+            
+            if strings.Contains(endTimeStr, "T") {
+                parts := strings.Split(endTimeStr, "T")
+                if len(parts) > 1 {
+                    timePart := strings.Split(parts[1], "Z")[0]
+                    endTimeStr = timePart[:5]
+                }
+            } else if len(endTimeStr) > 5 {
                 endTimeStr = endTimeStr[:5]
             }
             
