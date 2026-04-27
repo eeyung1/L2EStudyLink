@@ -2,9 +2,10 @@
 
 
 # TODO: 
-1. add .env to gitignore ✅
-2. impl email functionality
-3. impl notification functionality
+- add .env to gitignore ✅
+- get databaseurl
+- impl email functionality
+- impl notification functionality
 
 # Reusable command
 
@@ -12,4 +13,10 @@
 
 `go mod get url_of_package`
 
+
+# How to run
+
+`go run main.go`  or `go run .`
+
+then run `http://localhost:8080/`
 
