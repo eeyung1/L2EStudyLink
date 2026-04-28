@@ -25,23 +25,37 @@
     </nav>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <p class="text-sm text-blue-800">
-                📌 <strong>Get Discord ID for Notifications:</strong> 
-                Enable Developer Mode in Discord Settings → Advanced → Developer Mode, 
-                then right-click your name → Copy ID. Paste it in your profile to get @mentions!
-            </p>
+        <!-- CTA Banner - Encouraging users to add skills and availability -->
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 mb-6 text-white shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">🚀 Make Peer Learning Work!</h2>
+                    <p class="text-lg mb-1">Add your skills and availability to start getting booked.</p>
+                    <p class="text-sm opacity-90">The more you share, the more others can learn from you.</p>
+                </div>
+                <div class="text-5xl">
+                    📚
+                </div>
+            </div>
+            <div class="mt-4 flex gap-3">
+                <button onclick="scrollToSkills()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
+                    + Add Skill
+                </button>
+                <button onclick="scrollToAvailability()" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
+                    📅 Set Availability
+                </button>
+            </div>
         </div>
 
         <div id="profile" class="bg-white rounded-lg shadow p-6 mb-6">
             <h2 class="text-2xl font-bold mb-4">Loading profile...</h2>
         </div>
         
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div id="skillsSection" class="bg-white rounded-lg shadow p-6 mb-6">
             <h3 class="text-xl font-bold mb-4">Your Skills</h3>
             <div id="skills" class="mb-4"></div>
             <div class="flex gap-2">
-                <input type="text" id="newSkillName" placeholder="Skill name (e.g., Go)" class="border rounded p-2 flex-1">
+                <input type="text" id="newSkillName" placeholder="Skill name (e.g., Go, Python)" class="border rounded p-2 flex-1">
                 <select id="newSkillProficiency" class="border rounded p-2">
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
@@ -51,7 +65,7 @@
             </div>
         </div>
         
-        <div class="bg-white rounded-lg shadow p-6">
+        <div id="availabilitySection" class="bg-white rounded-lg shadow p-6">
             <h3 class="text-xl font-bold mb-4">Your Availability (When can you tutor?)</h3>
             <div id="availability" class="mb-4"></div>
             <button onclick="showAddAvailability()" class="bg-blue-600 text-white px-4 py-2 rounded">+ Add Availability</button>
@@ -67,6 +81,14 @@
         let currentAvailability = [];
         let currentUser = {};
         
+        function scrollToSkills() {
+            document.getElementById('skillsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function scrollToAvailability() {
+            document.getElementById('availabilitySection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
         async function logout() {
             localStorage.removeItem('token');
             window.location.href = '/page/login';
@@ -74,11 +96,15 @@
         
         function formatTime(timeStr) {
             if (!timeStr) return '';
-            // If it's a full timestamp, extract just the time part
             if (timeStr.includes('T')) {
-                return timeStr.split('T')[1].split('.')[0].substring(0, 5);
+                const parts = timeStr.split('T');
+                if (parts.length > 1) {
+                    const timePart = parts[1].split('Z')[0];
+                    return timePart.substring(0, 5);
+                }
             }
-            return timeStr.substring(0, 5);
+            if (timeStr.length > 5) return timeStr.substring(0, 5);
+            return timeStr;
         }
         
         async function loadProfile() {
@@ -93,7 +119,7 @@
             
             const discordDisplay = currentUser.discord_username && currentUser.discord_username !== '' 
                 ? currentUser.discord_username 
-                : '<span class="text-red-500">Not set - Get Discord ID for notifications!</span>';
+                : '<span class="text-red-500">Not set</span>';
             
             document.getElementById('profile').innerHTML = `
                 <h2 class="text-2xl font-bold mb-4">Welcome, ${currentUser.name}!</h2>
@@ -219,7 +245,7 @@
             const startTime = prompt('Enter start time (HH:MM, e.g., 14:00):', '14:00');
             const endTime = prompt('Enter end time (HH:MM, e.g., 16:00):', '16:00');
             
-            if (day && startTime && endTime) {
+            if (day !== null && startTime !== null && endTime !== null) {
                 const newSlots = [...currentAvailability, { 
                     day_of_week: parseInt(day), 
                     start_time: startTime, 
