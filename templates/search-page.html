@@ -25,10 +25,14 @@
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-2xl font-bold mb-4">Find a Tutor</h2>
-            <div class="flex gap-2 mb-6">
-                <input type="text" id="skillSearch" placeholder="Skill (e.g., Go, Python)" class="flex-1 p-2 border rounded">
-                <button onclick="searchTutors()" class="bg-blue-600 text-white px-6 py-2 rounded">Search</button>
+            
+            <!-- Search Filters -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                <input type="text" id="skillSearch" placeholder="Skill (e.g., Go, Python)" class="p-2 border rounded">
+                <input type="date" id="dateSearch" class="p-2 border rounded">
+                <button onclick="searchTutors()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Search</button>
             </div>
+            
             <div id="searchResults"></div>
         </div>
     </div>
@@ -61,12 +65,15 @@
         let currentTutor = null;
         let currentAvailability = [];
         
-        // Set min date to today (not tomorrow)
+        // Set default date to today
         const today = new Date();
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
         const todayDate = `${year}-${month}-${day}`;
+        
+        // Set default date in search field
+        document.getElementById('dateSearch').value = todayDate;
         
         fetch('/api/v1/me', {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -101,25 +108,75 @@
             return `${hour12}:${minutes} ${ampm}`;
         }
         
+        function getDayOfWeekFromDate(dateString) {
+            const date = new Date(dateString);
+            return date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        }
+        
         async function searchTutors() {
             const skill = document.getElementById('skillSearch').value;
-            if (!skill) return;
+            const selectedDate = document.getElementById('dateSearch').value;
+            
+            if (!skill) {
+                alert('Please enter a skill to search');
+                return;
+            }
+            
+            if (!selectedDate) {
+                alert('Please select a date');
+                return;
+            }
             
             const resultsDiv = document.getElementById('searchResults');
             resultsDiv.innerHTML = '<div class="text-center text-gray-500">Searching...</div>';
             
             try {
+                // First, get all tutors with the skill
                 const res = await fetch(`/api/v1/search?skill=${encodeURIComponent(skill)}`);
-                const tutors = await res.json();
+                let tutors = await res.json();
                 
                 if (!tutors || tutors.length === 0) {
                     resultsDiv.innerHTML = '<div class="text-center text-gray-500">No tutors found for "' + skill + '"</div>';
                     return;
                 }
                 
+                // Get the day of week from selected date (0 = Sunday, needs conversion)
+                let selectedDay = getDayOfWeekFromDate(selectedDate);
+                // Convert Sunday from 0 to 6 to match our availability format (0=Monday)
+                if (selectedDay === 0) {
+                    selectedDay = 6; // Sunday becomes day 6
+                } else {
+                    selectedDay = selectedDay - 1; // Monday=1 becomes 0, Tuesday=2 becomes 1, etc.
+                }
+                
+                // Filter tutors by availability on the selected day
+                const filteredTutors = [];
+                for (const tutor of tutors) {
+                    const tutorRes = await fetch(`/api/v1/tutors/${tutor.id}`);
+                    const tutorDetails = await tutorRes.json();
+                    
+                    const availableOnDay = tutorDetails.availability?.some(slot => slot.day_of_week === selectedDay);
+                    if (availableOnDay) {
+                        filteredTutors.push({
+                            id: tutor.id,
+                            name: tutor.name,
+                            rating: tutor.rating,
+                            total_reviews: tutor.total_reviews,
+                            bio: tutor.bio,
+                            discord_username: tutor.discord_username
+                        });
+                    }
+                }
+                
+                if (filteredTutors.length === 0) {
+                    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                    resultsDiv.innerHTML = `<div class="text-center text-gray-500">No tutors available on ${days[selectedDay]} who can teach "${skill}"</div>`;
+                    return;
+                }
+                
                 let html = '';
-                for (let i = 0; i < tutors.length; i++) {
-                    const t = tutors[i];
+                for (let i = 0; i < filteredTutors.length; i++) {
+                    const t = filteredTutors[i];
                     html += `
                         <div class="border rounded-lg p-4 mb-3 hover:shadow">
                             <div class="flex justify-between items-start">
@@ -128,35 +185,46 @@
                                     <p>⭐ ${t.rating} (${t.total_reviews} reviews)</p>
                                     <p class="text-gray-600">${escapeHtml(t.bio) || 'No bio'}</p>
                                 </div>
-                                <button onclick="viewTutor(${t.id})" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">View & Book</button>
+                                <button onclick="viewTutor(${t.id}, '${selectedDate}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">View & Book</button>
                             </div>
                         </div>
                     `;
                 }
                 resultsDiv.innerHTML = html;
             } catch(e) {
-                resultsDiv.innerHTML = '<div class="text-center text-red-600">Search failed</div>';
+                resultsDiv.innerHTML = '<div class="text-center text-red-600">Search failed: ' + e.message + '</div>';
             }
         }
         
-        async function viewTutor(tutorId) {
+        async function viewTutor(tutorId, selectedDate) {
             try {
                 const res = await fetch(`/api/v1/tutors/${tutorId}`);
                 const tutor = await res.json();
                 currentTutor = tutor;
                 currentAvailability = tutor.availability || [];
                 
+                // Get day of week from selected date
+                let selectedDay = getDayOfWeekFromDate(selectedDate);
+                if (selectedDay === 0) {
+                    selectedDay = 6;
+                } else {
+                    selectedDay = selectedDay - 1;
+                }
+                
                 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                 
+                // Filter availability for the selected day only
+                const dayAvailability = currentAvailability.filter(a => a.day_of_week === selectedDay);
+                
                 let availabilityHtml = '<div class="mb-3">';
-                if (currentAvailability.length > 0) {
-                    availabilityHtml += '<p class="font-bold">Available Times:</p><ul class="list-disc pl-5">';
-                    for (const a of currentAvailability) {
-                        availabilityHtml += `<li>${days[a.day_of_week]}: ${formatTimeForDisplay(a.start_time)} - ${formatTimeForDisplay(a.end_time)}</li>`;
+                if (dayAvailability.length > 0) {
+                    availabilityHtml += `<p class="font-bold">Available on ${days[selectedDay]}:</p><ul class="list-disc pl-5">`;
+                    for (const a of dayAvailability) {
+                        availabilityHtml += `<li>${formatTimeForDisplay(a.start_time)} - ${formatTimeForDisplay(a.end_time)}</li>`;
                     }
                     availabilityHtml += '</ul>';
                 } else {
-                    availabilityHtml += '<p class="text-red-500">No availability set yet</p>';
+                    availabilityHtml += `<p class="text-red-500">No availability on ${days[selectedDay]}</p>`;
                 }
                 availabilityHtml += '</div>';
                 
@@ -168,20 +236,20 @@
                     ${availabilityHtml}
                 `;
                 
-                // Set date picker to TODAY instead of tomorrow
+                // Set date picker to selected date
                 const dateInput = document.getElementById('bookingDate');
-                dateInput.value = todayDate;
+                dateInput.value = selectedDate;
                 dateInput.min = todayDate;
                 
-                // Populate time slots
+                // Populate time slots for selected day only
                 const timeSlot = document.getElementById('timeSlot');
                 timeSlot.innerHTML = '';
-                if (currentAvailability.length > 0) {
-                    for (let i = 0; i < currentAvailability.length; i++) {
-                        const a = currentAvailability[i];
+                if (dayAvailability.length > 0) {
+                    for (let i = 0; i < dayAvailability.length; i++) {
+                        const a = dayAvailability[i];
                         const option = document.createElement('option');
-                        option.value = `${a.start_time}|${a.end_time}|${a.day_of_week}`;
-                        option.text = `${days[a.day_of_week]}: ${formatTimeForDisplay(a.start_time)} - ${formatTimeForDisplay(a.end_time)}`;
+                        option.value = `${a.start_time}|${a.end_time}`;
+                        option.text = `${formatTimeForDisplay(a.start_time)} - ${formatTimeForDisplay(a.end_time)}`;
                         timeSlot.appendChild(option);
                     }
                 } else {
@@ -206,7 +274,7 @@
                 return;
             }
             
-            const [startTime, endTime, dayOfWeek] = timeSlotValue.split('|');
+            const [startTime, endTime] = timeSlotValue.split('|');
             const date = document.getElementById('bookingDate').value;
             if (!date) {
                 alert('Please select a date');
