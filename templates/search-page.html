@@ -13,6 +13,9 @@
                     <a href="/dashboard" class="text-gray-700 hover:text-blue-600">Dashboard</a>
                     <a href="/search-page" class="text-gray-700 hover:text-blue-600">Find Tutors</a>
                     <a href="/my-bookings" class="text-gray-700 hover:text-blue-600">My Bookings</a>
+                    <div id="adminNavLink" class="hidden">
+                        <a href="/admin" class="text-gray-700 hover:text-blue-600">Admin</a>
+                    </div>
                     <button onclick="logout()" class="text-red-600 hover:text-red-800">Logout</button>
                 </div>
             </div>
@@ -23,7 +26,7 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-2xl font-bold mb-4">Find a Tutor</h2>
             <div class="flex gap-2 mb-6">
-                <input type="text" id="searchSkill" placeholder="Skill (e.g., Go, Python)" class="flex-1 p-2 border rounded">
+                <input type="text" id="skillSearch" placeholder="Skill (e.g., Go, Python)" class="flex-1 p-2 border rounded">
                 <button onclick="searchTutors()" class="bg-blue-600 text-white px-6 py-2 rounded">Search</button>
             </div>
             <div id="searchResults"></div>
@@ -51,34 +54,63 @@
 
     <script>
         const token = localStorage.getItem('token');
-        if (!token) window.location.href = '/page/login';
+        if (!token) {
+            window.location.href = '/page/login';
+        }
         
         let currentTutor = null;
         let currentAvailability = [];
         
-        function logout() {
+        // Set min date to today (not tomorrow)
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayDate = `${year}-${month}-${day}`;
+        
+        fetch('/api/v1/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }).then(r => r.json()).then(user => {
+            if (user.is_admin) {
+                document.getElementById('adminNavLink').classList.remove('hidden');
+            }
+        });
+        
+        async function logout() {
             localStorage.removeItem('token');
             window.location.href = '/page/login';
         }
         
-        function formatTime(timeStr) {
+        function formatTimeForDisplay(timeStr) {
             if (!timeStr) return '';
-            if (timeStr.includes(':')) {
-                return timeStr.substring(0, 5);
+            if (timeStr.includes('T')) {
+                const parts = timeStr.split('T');
+                if (parts.length > 1) {
+                    const timePart = parts[1].split('Z')[0];
+                    return convertTo12Hour(timePart.substring(0, 5));
+                }
             }
-            return timeStr;
+            return convertTo12Hour(timeStr.substring(0, 5));
+        }
+        
+        function convertTo12Hour(time24) {
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
         }
         
         async function searchTutors() {
-            const skill = document.getElementById('searchSkill').value;
+            const skill = document.getElementById('skillSearch').value;
             if (!skill) return;
             
             const resultsDiv = document.getElementById('searchResults');
             resultsDiv.innerHTML = '<div class="text-center text-gray-500">Searching...</div>';
             
             try {
-                const response = await fetch(`/api/v1/search?skill=${encodeURIComponent(skill)}`);
-                const tutors = await response.json();
+                const res = await fetch(`/api/v1/search?skill=${encodeURIComponent(skill)}`);
+                const tutors = await res.json();
                 
                 if (!tutors || tutors.length === 0) {
                     resultsDiv.innerHTML = '<div class="text-center text-gray-500">No tutors found for "' + skill + '"</div>';
@@ -89,11 +121,15 @@
                 for (let i = 0; i < tutors.length; i++) {
                     const t = tutors[i];
                     html += `
-                        <div class="border rounded-lg p-4 mb-3">
-                            <h3 class="font-bold text-lg">${escapeHtml(t.name)}</h3>
-                            <p>⭐ ${t.rating} (${t.total_reviews} reviews)</p>
-                            <p class="text-gray-600">${escapeHtml(t.bio) || 'No bio'}</p>
-                            <button onclick="viewTutor(${t.id})" class="mt-2 bg-blue-600 text-white px-4 py-1 rounded text-sm">View & Book</button>
+                        <div class="border rounded-lg p-4 mb-3 hover:shadow">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-lg">${escapeHtml(t.name)}</h3>
+                                    <p>⭐ ${t.rating} (${t.total_reviews} reviews)</p>
+                                    <p class="text-gray-600">${escapeHtml(t.bio) || 'No bio'}</p>
+                                </div>
+                                <button onclick="viewTutor(${t.id})" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">View & Book</button>
+                            </div>
                         </div>
                     `;
                 }
@@ -105,8 +141,8 @@
         
         async function viewTutor(tutorId) {
             try {
-                const response = await fetch(`/api/v1/tutors/${tutorId}`);
-                const tutor = await response.json();
+                const res = await fetch(`/api/v1/tutors/${tutorId}`);
+                const tutor = await res.json();
                 currentTutor = tutor;
                 currentAvailability = tutor.availability || [];
                 
@@ -116,7 +152,7 @@
                 if (currentAvailability.length > 0) {
                     availabilityHtml += '<p class="font-bold">Available Times:</p><ul class="list-disc pl-5">';
                     for (const a of currentAvailability) {
-                        availabilityHtml += `<li>${days[a.day_of_week]}: ${formatTime(a.start_time)} - ${formatTime(a.end_time)}</li>`;
+                        availabilityHtml += `<li>${days[a.day_of_week]}: ${formatTimeForDisplay(a.start_time)} - ${formatTimeForDisplay(a.end_time)}</li>`;
                     }
                     availabilityHtml += '</ul>';
                 } else {
@@ -132,10 +168,10 @@
                     ${availabilityHtml}
                 `;
                 
-                // Set default date to tomorrow
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                document.getElementById('bookingDate').value = tomorrow.toISOString().split('T')[0];
+                // Set date picker to TODAY instead of tomorrow
+                const dateInput = document.getElementById('bookingDate');
+                dateInput.value = todayDate;
+                dateInput.min = todayDate;
                 
                 // Populate time slots
                 const timeSlot = document.getElementById('timeSlot');
@@ -144,8 +180,8 @@
                     for (let i = 0; i < currentAvailability.length; i++) {
                         const a = currentAvailability[i];
                         const option = document.createElement('option');
-                        option.value = `${formatTime(a.start_time)}|${formatTime(a.end_time)}`;
-                        option.text = `${days[a.day_of_week]}: ${formatTime(a.start_time)} - ${formatTime(a.end_time)}`;
+                        option.value = `${a.start_time}|${a.end_time}|${a.day_of_week}`;
+                        option.text = `${days[a.day_of_week]}: ${formatTimeForDisplay(a.start_time)} - ${formatTimeForDisplay(a.end_time)}`;
                         timeSlot.appendChild(option);
                     }
                 } else {
@@ -164,13 +200,13 @@
         }
         
         async function confirmBooking() {
-            const timeRange = document.getElementById('timeSlot').value;
-            if (!timeRange || timeRange === 'No availability') {
+            const timeSlotValue = document.getElementById('timeSlot').value;
+            if (!timeSlotValue || timeSlotValue === 'No availability') {
                 alert('Please select a valid time slot');
                 return;
             }
             
-            const [startTime, endTime] = timeRange.split('|');
+            const [startTime, endTime, dayOfWeek] = timeSlotValue.split('|');
             const date = document.getElementById('bookingDate').value;
             if (!date) {
                 alert('Please select a date');
@@ -204,7 +240,7 @@
                 
                 const data = await res.json();
                 if (res.ok) {
-                    alert('Booking confirmed for ' + date + ' at ' + startTime);
+                    alert('Booking confirmed for ' + date + ' at ' + formatTimeForDisplay(startTime));
                     closeModal();
                     window.location.href = '/my-bookings';
                 } else {
@@ -230,8 +266,10 @@
             });
         }
         
-        document.getElementById('searchSkill').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') searchTutors();
+        document.getElementById('skillSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchTutors();
+            }
         });
     </script>
 </body>
