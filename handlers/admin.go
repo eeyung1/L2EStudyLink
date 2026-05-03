@@ -12,8 +12,14 @@ func AdminStats(c *gin.Context) {
     db := c.MustGet("db").(*sql.DB)
     
     var totalUsers, totalBookings, totalSkills int
+    
+    // Count ALL users (no filter)
     db.QueryRow("SELECT COUNT(*) FROM users").Scan(&totalUsers)
+    
+    // Count ALL bookings
     db.QueryRow("SELECT COUNT(*) FROM bookings").Scan(&totalBookings)
+    
+    // Count ALL skills
     db.QueryRow("SELECT COUNT(*) FROM skills").Scan(&totalSkills)
     
     c.JSON(http.StatusOK, gin.H{
