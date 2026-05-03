@@ -25,7 +25,7 @@
     </nav>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <!-- CTA Banner - Encouraging users to add skills and availability -->
+        <!-- CTA Banner -->
         <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 mb-6 text-white shadow-lg">
             <div class="flex items-center justify-between">
                 <div>
@@ -36,14 +36,6 @@
                 <div class="text-5xl">
                     📚
                 </div>
-            </div>
-            <div class="mt-4 flex gap-3">
-                <button onclick="scrollToSkills()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
-                    + Add Skill
-                </button>
-                <button onclick="scrollToAvailability()" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
-                    📅 Set Availability
-                </button>
             </div>
         </div>
 
@@ -68,7 +60,75 @@
         <div id="availabilitySection" class="bg-white rounded-lg shadow p-6">
             <h3 class="text-xl font-bold mb-4">Your Availability (When can you tutor?)</h3>
             <div id="availability" class="mb-4"></div>
-            <button onclick="showAddAvailability()" class="bg-blue-600 text-white px-4 py-2 rounded">+ Add Availability</button>
+            
+            <!-- New Availability Form -->
+            <div class="bg-gray-50 p-4 rounded-lg mt-4">
+                <h4 class="font-bold mb-3">Add New Availability Slot</h4>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <select id="availDay" class="p-2 border rounded">
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                    <select id="availStartHour" class="p-2 border rounded">
+                        <option value="00">12:00 AM</option>
+                        <option value="01">01:00 AM</option>
+                        <option value="02">02:00 AM</option>
+                        <option value="03">03:00 AM</option>
+                        <option value="04">04:00 AM</option>
+                        <option value="05">05:00 AM</option>
+                        <option value="06">06:00 AM</option>
+                        <option value="07">07:00 AM</option>
+                        <option value="08">08:00 AM</option>
+                        <option value="09">09:00 AM</option>
+                        <option value="10">10:00 AM</option>
+                        <option value="11">11:00 AM</option>
+                        <option value="12">12:00 PM</option>
+                        <option value="13">01:00 PM</option>
+                        <option value="14">02:00 PM</option>
+                        <option value="15">03:00 PM</option>
+                        <option value="16">04:00 PM</option>
+                        <option value="17">05:00 PM</option>
+                        <option value="18">06:00 PM</option>
+                        <option value="19">07:00 PM</option>
+                        <option value="20">08:00 PM</option>
+                        <option value="21">09:00 PM</option>
+                        <option value="22">10:00 PM</option>
+                        <option value="23">11:00 PM</option>
+                    </select>
+                    <select id="availEndHour" class="p-2 border rounded">
+                        <option value="01">01:00 AM</option>
+                        <option value="02">02:00 AM</option>
+                        <option value="03">03:00 AM</option>
+                        <option value="04">04:00 AM</option>
+                        <option value="05">05:00 AM</option>
+                        <option value="06">06:00 AM</option>
+                        <option value="07">07:00 AM</option>
+                        <option value="08">08:00 AM</option>
+                        <option value="09">09:00 AM</option>
+                        <option value="10">10:00 AM</option>
+                        <option value="11">11:00 AM</option>
+                        <option value="12">12:00 PM</option>
+                        <option value="13">01:00 PM</option>
+                        <option value="14">02:00 PM</option>
+                        <option value="15">03:00 PM</option>
+                        <option value="16">04:00 PM</option>
+                        <option value="17">05:00 PM</option>
+                        <option value="18">06:00 PM</option>
+                        <option value="19">07:00 PM</option>
+                        <option value="20">08:00 PM</option>
+                        <option value="21">09:00 PM</option>
+                        <option value="22">10:00 PM</option>
+                        <option value="23">11:00 PM</option>
+                        <option value="00">12:00 AM</option>
+                    </select>
+                    <button onclick="addAvailabilitySlot()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Slot</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -81,14 +141,6 @@
         let currentAvailability = [];
         let currentUser = {};
         
-        function scrollToSkills() {
-            document.getElementById('skillsSection').scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function scrollToAvailability() {
-            document.getElementById('availabilitySection').scrollIntoView({ behavior: 'smooth' });
-        }
-        
         async function logout() {
             localStorage.removeItem('token');
             window.location.href = '/page/login';
@@ -100,11 +152,18 @@
                 const parts = timeStr.split('T');
                 if (parts.length > 1) {
                     const timePart = parts[1].split('Z')[0];
-                    return timePart.substring(0, 5);
+                    return convertTo12Hour(timePart.substring(0, 5));
                 }
             }
-            if (timeStr.length > 5) return timeStr.substring(0, 5);
-            return timeStr;
+            return convertTo12Hour(timeStr.substring(0, 5));
+        }
+        
+        function convertTo12Hour(time24) {
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
         }
         
         async function loadProfile() {
@@ -202,6 +261,45 @@
             document.getElementById('availability').innerHTML = html;
         }
         
+        async function addAvailabilitySlot() {
+            const day = parseInt(document.getElementById('availDay').value);
+            const startHour = document.getElementById('availStartHour').value;
+            const endHour = document.getElementById('availEndHour').value;
+            
+            const startTime = `${startHour.padStart(2, '0')}:00`;
+            const endTime = `${endHour.padStart(2, '0')}:00`;
+            
+            if (startTime >= endTime) {
+                alert('End time must be after start time');
+                return;
+            }
+            
+            const newSlots = [...currentAvailability, { 
+                day_of_week: day, 
+                start_time: startTime, 
+                end_time: endTime 
+            }];
+            
+            const res = await fetch('/api/v1/availability', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(newSlots)
+            });
+            
+            if (res.ok) {
+                await loadAvailability();
+                // Reset dropdowns to default
+                document.getElementById('availStartHour').value = '09';
+                document.getElementById('availEndHour').value = '17';
+            } else {
+                const error = await res.json();
+                alert('Failed to add availability: ' + (error.error || 'Unknown error'));
+            }
+        }
+        
         async function deleteAvailability(index) {
             if (!confirm('Remove this availability slot?')) return;
             
@@ -237,29 +335,6 @@
                     },
                     body: JSON.stringify({ discord_username: discord, bio: bio })
                 }).then(() => loadProfile());
-            }
-        }
-        
-        function showAddAvailability() {
-            const day = prompt('Enter day (0=Monday, 1=Tuesday, 2=Wednesday, 3=Thursday, 4=Friday, 5=Saturday, 6=Sunday):', '0');
-            const startTime = prompt('Enter start time (HH:MM, e.g., 14:00):', '14:00');
-            const endTime = prompt('Enter end time (HH:MM, e.g., 16:00):', '16:00');
-            
-            if (day !== null && startTime !== null && endTime !== null) {
-                const newSlots = [...currentAvailability, { 
-                    day_of_week: parseInt(day), 
-                    start_time: startTime, 
-                    end_time: endTime 
-                }];
-                
-                fetch('/api/v1/availability', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(newSlots)
-                }).then(() => loadAvailability());
             }
         }
         
