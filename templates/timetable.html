@@ -40,8 +40,8 @@
                 <option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option>
                 <option value="6">Sunday</option>
             </select>
-            <input type="time" id="blockStart" class="w-full p-2 border rounded mb-3">
-            <input type="time" id="blockEnd" class="w-full p-2 border rounded mb-3">
+            <input type="time" id="blockStart" class="w-full p-2 border rounded mb-3" step="60" value="09:00">
+            <input type="time" id="blockEnd" class="w-full p-2 border rounded mb-3" step="60" value="10:00">
             <input type="text" id="blockActivity" placeholder="Activity" class="w-full p-2 border rounded mb-3">
             <textarea id="blockGoal" rows="2" placeholder="Goal (optional)" class="w-full p-2 border rounded mb-3"></textarea>
             <button onclick="saveTimeBlock()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
@@ -67,7 +67,6 @@
         
         let currentBlockId = null;
         let currentBlockDate = null;
-        let existingReflections = {};
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         
         window.logout = function() {
@@ -77,66 +76,46 @@
         
         async function loadTimetable() {
             try {
-                // First load existing reflections
-                const refRes = await fetch('/api/v1/reflections', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                const reflections = await refRes.json();
-                existingReflections = {};
-                for (const r of reflections) {
-                    existingReflections[`${r.timetable_id}|${r.log_date}`] = r;
-                }
-                
+                console.log('Loading timetable...');
                 const res = await fetch('/api/v1/timetable', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
-                const blocks = await res.json();
                 
+                if (!res.ok) {
+                    document.getElementById('timetable').innerHTML = '<div class="text-red-500">HTTP Error: ' + res.status + '</div>';
+                    return;
+                }
+                
+                const blocks = await res.json();
+                console.log('Blocks received:', blocks);
+                
+                if (!blocks || blocks.length === 0) {
+                    document.getElementById('timetable').innerHTML = '<div class="text-gray-500">No timetable entries. Click + Add Time Block to create one.</div>';
+                    return;
+                }
+                
+                // Group by day
                 const grouped = {};
                 for (let i = 0; i < 7; i++) grouped[i] = [];
                 for (const b of blocks) {
                     if (grouped[b.day_of_week]) grouped[b.day_of_week].push(b);
                 }
                 
-                const today = new Date();
-                const todayStr = today.toISOString().split('T')[0];
-                const currentDayIndex = today.getDay();
-                const currentDay = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
-                const currentHour = today.getHours();
-                const currentMinute = today.getMinutes();
-                
                 let html = '';
                 for (let i = 0; i < 7; i++) {
-                    const isToday = (i === currentDay);
-                    html += `<div class="border rounded-lg p-4 mb-4 ${isToday ? 'bg-blue-50' : ''}">`;
-                    html += `<h3 class="text-xl font-bold mb-2">${days[i]} ${isToday ? '(Today)' : ''}</h3>`;
+                    html += `<div class="border rounded-lg p-4 mb-4">`;
+                    html += `<h3 class="text-xl font-bold mb-2">${days[i]}</h3>`;
                     
                     if (grouped[i].length === 0) {
                         html += `<p class="text-gray-400 italic">No activities planned</p>`;
                     } else {
                         for (const block of grouped[i]) {
-                            const [blockHour, blockMin] = block.start_time.split(':').map(Number);
-                            const isPast = (i < currentDay) || 
-                                (i === currentDay && (blockHour < currentHour || (blockHour === currentHour && blockMin < currentMinute)));
-                            
-                            const reflectionKey = `${block.id}|${todayStr}`;
-                            const hasReflection = existingReflections[reflectionKey];
-                            
-                            let statusHtml = '';
-                            if (hasReflection) {
-                                statusHtml = `<p class="text-green-600 mt-1">✅ Reflection added</p>`;
-                            } else if (isPast) {
-                                statusHtml = `<p class="text-orange-600 mt-1">⚠️ MISSED - No reflection added</p>`;
-                            }
-                            
                             html += `
                                 <div class="bg-gray-50 p-3 rounded mb-2">
                                     <p><span class="font-bold">${block.start_time} - ${block.end_time}</span></p>
                                     <p><strong>Activity:</strong> ${escapeHtml(block.activity)}</p>
                                     ${block.goal ? `<p class="text-gray-600"><strong>Goal:</strong> ${escapeHtml(block.goal)}</p>` : ''}
-                                    ${statusHtml}
                                     <div class="flex gap-2 mt-2">
-                                        <button onclick="openReflection(${block.id}, '${escapeHtml(block.activity)}', '${todayStr}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Add Reflection</button>
                                         <button onclick="deleteBlock(${block.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Delete</button>
                                     </div>
                                 </div>
@@ -147,17 +126,14 @@
                 }
                 document.getElementById('timetable').innerHTML = html;
             } catch(e) {
-                document.getElementById('timetable').innerHTML = '<div class="text-red-500">Error loading timetable</div>';
+                console.error('Error:', e);
+                document.getElementById('timetable').innerHTML = '<div class="text-red-500">Error loading timetable: ' + e.message + '</div>';
             }
         }
         
         window.showAddBlock = function() {
             document.getElementById('addModal').classList.remove('hidden');
             document.getElementById('addModal').classList.add('flex');
-            document.getElementById('blockStart').value = '09:00';
-            document.getElementById('blockEnd').value = '10:00';
-            document.getElementById('blockActivity').value = '';
-            document.getElementById('blockGoal').value = '';
         };
         
         window.closeAddModal = function() {
@@ -171,52 +147,44 @@
             const end = document.getElementById('blockEnd').value;
             const activity = document.getElementById('blockActivity').value;
             const goal = document.getElementById('blockGoal').value;
+            
             if (!activity) { alert('Enter activity'); return; }
             if (start >= end) { alert('End time must be after start'); return; }
-            const res = await fetch('/api/v1/timetable', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify({ day_of_week: day, start_time: start, end_time: end, activity, goal })
-            });
-            if (res.ok) { closeAddModal(); loadTimetable(); }
-            else alert('Failed');
+            
+            try {
+                const res = await fetch('/api/v1/timetable', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ 
+                        day_of_week: day, 
+                        start_time: start + ':00', 
+                        end_time: end + ':00', 
+                        activity, 
+                        goal 
+                    })
+                });
+                
+                if (res.ok) {
+                    closeAddModal();
+                    loadTimetable();
+                    alert('Time block added!');
+                } else {
+                    const data = await res.json();
+                    alert('Failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
         };
         
         window.deleteBlock = async function(id) {
             if (!confirm('Delete this block?')) return;
-            await fetch(`/api/v1/timetable/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
-            loadTimetable();
-        };
-        
-        window.openReflection = function(blockId, activity, date) {
-            currentBlockId = blockId;
-            currentBlockDate = date;
-            document.getElementById('reflectionTitle').innerHTML = `Reflection: ${activity}`;
-            document.getElementById('reflectionDate').innerHTML = `For: ${date}`;
-            document.getElementById('reflectionSummary').value = '';
-            document.getElementById('reflectionChallenges').value = '';
-            document.getElementById('reflectionLearnings').value = '';
-            document.getElementById('reflectionModal').classList.remove('hidden');
-            document.getElementById('reflectionModal').classList.add('flex');
-        };
-        
-        window.closeReflectionModal = function() {
-            document.getElementById('reflectionModal').classList.add('hidden');
-            document.getElementById('reflectionModal').classList.remove('flex');
-        };
-        
-        window.saveReflection = async function() {
-            const summary = document.getElementById('reflectionSummary').value;
-            const challenges = document.getElementById('reflectionChallenges').value;
-            const learnings = document.getElementById('reflectionLearnings').value;
-            if (!summary) { alert('Please add a summary'); return; }
-            const res = await fetch('/api/v1/reflections', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify({ timetable_id: currentBlockId, log_date: currentBlockDate, summary, challenges, learnings })
+            const res = await fetch(`/api/v1/timetable/${id}`, { 
+                method: 'DELETE', 
+                headers: { 'Authorization': 'Bearer ' + token } 
             });
-            if (res.ok) { closeReflectionModal(); loadTimetable(); alert('Reflection saved!'); }
-            else alert('Failed');
+            if (res.ok) loadTimetable();
+            else alert('Failed to delete');
         };
         
         function escapeHtml(str) {
