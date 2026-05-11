@@ -56,6 +56,10 @@ func main() {
         c.HTML(200, "timetable.html", nil)
     })
     
+    router.GET("/reflections", func(c *gin.Context) {
+        c.HTML(200, "reflections.html", nil)
+    })
+    
     router.GET("/page/:name", func(c *gin.Context) {
         name := c.Param("name")
         c.HTML(200, name+".html", nil)

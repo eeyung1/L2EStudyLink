@@ -23,10 +23,8 @@
 
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-2xl font-bold mb-4">My Reflections History</h2>
-            <p class="text-gray-600 mb-6">Track what you've learned and what challenges you faced.</p>
-            
-            <div id="reflectionsList" class="space-y-4"></div>
+            <h2 class="text-2xl font-bold mb-4">My Reflections</h2>
+            <div id="reflectionsList">Loading...</div>
         </div>
     </div>
 
@@ -42,36 +40,38 @@
         }
         
         async function loadReflections() {
-            const res = await fetch('/api/v1/reflections', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const reflections = await res.json();
-            
-            const container = document.getElementById('reflectionsList');
-            
-            if (!reflections || reflections.length === 0) {
-                container.innerHTML = '<div class="text-center text-gray-500">No reflections yet. Complete activities on your timetable and add reflections!</div>';
-                return;
-            }
-            
-            let html = '';
-            for (const r of reflections) {
-                html += `
-                    <div class="border rounded-lg p-4 hover:shadow">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-lg">${days[r.day_of_week]} at ${r.start_time} - ${r.end_time}</h3>
-                            <span class="text-sm text-gray-500">${r.log_date}</span>
+            try {
+                const res = await fetch('/api/v1/reflections', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const reflections = await res.json();
+                
+                const container = document.getElementById('reflectionsList');
+                
+                if (!reflections || reflections.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-500">No reflections yet.</div>';
+                    return;
+                }
+                
+                let html = '';
+                for (const r of reflections) {
+                    html += `
+                        <div class="border rounded-lg p-4 mb-4">
+                            <p class="font-bold">${days[r.day_of_week]} at ${r.start_time} - ${r.end_time}</p>
+                            <p><strong>Activity:</strong> ${escapeHtml(r.activity)}</p>
+                            <p><strong>Date:</strong> ${r.log_date}</p>
+                            <div class="bg-gray-50 p-3 rounded mt-2">
+                                <p><strong>What I did:</strong> ${escapeHtml(r.summary) || 'Not specified'}</p>
+                                ${r.challenges ? `<p><strong>Challenges:</strong> ${escapeHtml(r.challenges)}</p>` : ''}
+                                ${r.learnings ? `<p><strong>Learned:</strong> ${escapeHtml(r.learnings)}</p>` : ''}
+                            </div>
                         </div>
-                        <p class="text-gray-700"><strong>Activity:</strong> ${escapeHtml(r.activity)}</p>
-                        <div class="mt-3 bg-gray-50 p-3 rounded">
-                            <p><strong>📝 What I did:</strong> ${escapeHtml(r.summary) || 'Not specified'}</p>
-                            ${r.challenges ? `<p class="mt-2"><strong>⚠️ Challenges:</strong> ${escapeHtml(r.challenges)}</p>` : ''}
-                            ${r.learnings ? `<p class="mt-2"><strong>💡 What I learned:</strong> ${escapeHtml(r.learnings)}</p>` : ''}
-                        </div>
-                    </div>
-                `;
+                    `;
+                }
+                container.innerHTML = html;
+            } catch(e) {
+                document.getElementById('reflectionsList').innerHTML = '<div class="text-red-500">Error loading reflections</div>';
             }
-            container.innerHTML = html;
         }
         
         function escapeHtml(str) {
