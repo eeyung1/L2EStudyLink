@@ -51,7 +51,7 @@
 
     <div id="reflectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 class="text-xl font-bold mb-4">Add Reflection</h3>
+            <h3 id="reflectionTitle" class="text-xl font-bold mb-4">Add Reflection</h3>
             <p id="reflectionDate" class="text-sm text-gray-600 mb-3"></p>
             <textarea id="reflectionSummary" rows="3" placeholder="What did you actually do?" class="w-full p-2 border rounded mb-3"></textarea>
             <textarea id="reflectionChallenges" rows="2" placeholder="Challenges faced?" class="w-full p-2 border rounded mb-3"></textarea>
@@ -70,7 +70,10 @@
         let existingReflections = {};
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         
-        async function logout() { localStorage.removeItem('token'); window.location.href = '/page/login'; }
+        window.logout = function() {
+            localStorage.removeItem('token');
+            window.location.href = '/page/login';
+        };
         
         async function loadTimetable() {
             try {
@@ -124,9 +127,6 @@
                                 statusHtml = `<p class="text-green-600 mt-1">✅ Reflection added</p>`;
                             } else if (isPast) {
                                 statusHtml = `<p class="text-orange-600 mt-1">⚠️ MISSED - No reflection added</p>`;
-                                if (i === currentDay) {
-                                    statusHtml += `<button onclick="openReflection(${block.id}, '${escapeHtml(block.activity)}', '${todayStr}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm mt-2">Add Reflection</button>`;
-                                }
                             }
                             
                             html += `
@@ -135,7 +135,10 @@
                                     <p><strong>Activity:</strong> ${escapeHtml(block.activity)}</p>
                                     ${block.goal ? `<p class="text-gray-600"><strong>Goal:</strong> ${escapeHtml(block.goal)}</p>` : ''}
                                     ${statusHtml}
-                                    <button onclick="deleteBlock(${block.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm mt-2">Delete</button>
+                                    <div class="flex gap-2 mt-2">
+                                        <button onclick="openReflection(${block.id}, '${escapeHtml(block.activity)}', '${todayStr}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Add Reflection</button>
+                                        <button onclick="deleteBlock(${block.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Delete</button>
+                                    </div>
                                 </div>
                             `;
                         }
@@ -148,21 +151,21 @@
             }
         }
         
-        function showAddBlock() {
+        window.showAddBlock = function() {
             document.getElementById('addModal').classList.remove('hidden');
             document.getElementById('addModal').classList.add('flex');
             document.getElementById('blockStart').value = '09:00';
             document.getElementById('blockEnd').value = '10:00';
             document.getElementById('blockActivity').value = '';
             document.getElementById('blockGoal').value = '';
-        }
+        };
         
-        function closeAddModal() {
+        window.closeAddModal = function() {
             document.getElementById('addModal').classList.add('hidden');
             document.getElementById('addModal').classList.remove('flex');
-        }
+        };
         
-        async function saveTimeBlock() {
+        window.saveTimeBlock = async function() {
             const day = parseInt(document.getElementById('blockDay').value);
             const start = document.getElementById('blockStart').value;
             const end = document.getElementById('blockEnd').value;
@@ -177,15 +180,15 @@
             });
             if (res.ok) { closeAddModal(); loadTimetable(); }
             else alert('Failed');
-        }
+        };
         
-        async function deleteBlock(id) {
+        window.deleteBlock = async function(id) {
             if (!confirm('Delete this block?')) return;
             await fetch(`/api/v1/timetable/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
             loadTimetable();
-        }
+        };
         
-        function openReflection(blockId, activity, date) {
+        window.openReflection = function(blockId, activity, date) {
             currentBlockId = blockId;
             currentBlockDate = date;
             document.getElementById('reflectionTitle').innerHTML = `Reflection: ${activity}`;
@@ -195,14 +198,14 @@
             document.getElementById('reflectionLearnings').value = '';
             document.getElementById('reflectionModal').classList.remove('hidden');
             document.getElementById('reflectionModal').classList.add('flex');
-        }
+        };
         
-        function closeReflectionModal() {
+        window.closeReflectionModal = function() {
             document.getElementById('reflectionModal').classList.add('hidden');
             document.getElementById('reflectionModal').classList.remove('flex');
-        }
+        };
         
-        async function saveReflection() {
+        window.saveReflection = async function() {
             const summary = document.getElementById('reflectionSummary').value;
             const challenges = document.getElementById('reflectionChallenges').value;
             const learnings = document.getElementById('reflectionLearnings').value;
@@ -214,7 +217,7 @@
             });
             if (res.ok) { closeReflectionModal(); loadTimetable(); alert('Reflection saved!'); }
             else alert('Failed');
-        }
+        };
         
         function escapeHtml(str) {
             if (!str) return '';
