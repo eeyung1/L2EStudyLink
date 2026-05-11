@@ -24,7 +24,7 @@
     <div class="max-w-7xl mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-2xl font-bold mb-4">My Weekly Timetable</h2>
-            <p class="text-gray-600 mb-4">Plan your week, track what you actually do.</p>
+            <p class="text-gray-600 mb-4">Plan your week, then add reflections after each time block.</p>
             
             <button onclick="showAddBlock()" class="bg-green-600 text-white px-4 py-2 rounded mb-6">+ Add Time Block</button>
             
@@ -67,6 +67,7 @@
         
         let currentBlockId = null;
         let currentBlockDate = null;
+        let existingReflections = {};
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         
         window.logout = function() {
@@ -76,46 +77,64 @@
         
         async function loadTimetable() {
             try {
-                console.log('Loading timetable...');
+                // Load existing reflections
+                const refRes = await fetch('/api/v1/reflections', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (refRes.ok) {
+                    const reflections = await refRes.json();
+                    existingReflections = {};
+                    for (const r of reflections) {
+                        existingReflections[`${r.timetable_id}|${r.log_date}`] = r;
+                    }
+                }
+                
                 const res = await fetch('/api/v1/timetable', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 
                 if (!res.ok) {
-                    document.getElementById('timetable').innerHTML = '<div class="text-red-500">HTTP Error: ' + res.status + '</div>';
+                    document.getElementById('timetable').innerHTML = '<div class="text-red-500">Error loading timetable</div>';
                     return;
                 }
                 
                 const blocks = await res.json();
-                console.log('Blocks received:', blocks);
                 
-                if (!blocks || blocks.length === 0) {
-                    document.getElementById('timetable').innerHTML = '<div class="text-gray-500">No timetable entries. Click + Add Time Block to create one.</div>';
-                    return;
-                }
-                
-                // Group by day
                 const grouped = {};
                 for (let i = 0; i < 7; i++) grouped[i] = [];
                 for (const b of blocks) {
                     if (grouped[b.day_of_week]) grouped[b.day_of_week].push(b);
                 }
                 
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
+                
                 let html = '';
                 for (let i = 0; i < 7; i++) {
                     html += `<div class="border rounded-lg p-4 mb-4">`;
                     html += `<h3 class="text-xl font-bold mb-2">${days[i]}</h3>`;
                     
-                    if (grouped[i].length === 0) {
+                    if (!grouped[i] || grouped[i].length === 0) {
                         html += `<p class="text-gray-400 italic">No activities planned</p>`;
                     } else {
                         for (const block of grouped[i]) {
+                            const reflectionKey = `${block.id}|${todayStr}`;
+                            const hasReflection = existingReflections[reflectionKey];
+                            
+                            let reflectionButton = '';
+                            if (!hasReflection) {
+                                reflectionButton = `<button onclick="openReflection(${block.id}, '${escapeHtml(block.activity)}', '${todayStr}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Add Reflection</button>`;
+                            } else {
+                                reflectionButton = `<span class="text-green-600 text-sm">✅ Reflection added</span>`;
+                            }
+                            
                             html += `
                                 <div class="bg-gray-50 p-3 rounded mb-2">
                                     <p><span class="font-bold">${block.start_time} - ${block.end_time}</span></p>
                                     <p><strong>Activity:</strong> ${escapeHtml(block.activity)}</p>
                                     ${block.goal ? `<p class="text-gray-600"><strong>Goal:</strong> ${escapeHtml(block.goal)}</p>` : ''}
                                     <div class="flex gap-2 mt-2">
+                                        ${reflectionButton}
                                         <button onclick="deleteBlock(${block.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Delete</button>
                                     </div>
                                 </div>
@@ -127,13 +146,17 @@
                 document.getElementById('timetable').innerHTML = html;
             } catch(e) {
                 console.error('Error:', e);
-                document.getElementById('timetable').innerHTML = '<div class="text-red-500">Error loading timetable: ' + e.message + '</div>';
+                document.getElementById('timetable').innerHTML = '<div class="text-red-500">Error loading timetable</div>';
             }
         }
         
         window.showAddBlock = function() {
             document.getElementById('addModal').classList.remove('hidden');
             document.getElementById('addModal').classList.add('flex');
+            document.getElementById('blockStart').value = '09:00';
+            document.getElementById('blockEnd').value = '10:00';
+            document.getElementById('blockActivity').value = '';
+            document.getElementById('blockGoal').value = '';
         };
         
         window.closeAddModal = function() {
@@ -151,29 +174,25 @@
             if (!activity) { alert('Enter activity'); return; }
             if (start >= end) { alert('End time must be after start'); return; }
             
-            try {
-                const res = await fetch('/api/v1/timetable', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ 
-                        day_of_week: day, 
-                        start_time: start + ':00', 
-                        end_time: end + ':00', 
-                        activity, 
-                        goal 
-                    })
-                });
-                
-                if (res.ok) {
-                    closeAddModal();
-                    loadTimetable();
-                    alert('Time block added!');
-                } else {
-                    const data = await res.json();
-                    alert('Failed: ' + (data.error || 'Unknown error'));
-                }
-            } catch(e) {
-                alert('Error: ' + e.message);
+            const res = await fetch('/api/v1/timetable', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ 
+                    day_of_week: day, 
+                    start_time: start + ':00', 
+                    end_time: end + ':00', 
+                    activity, 
+                    goal 
+                })
+            });
+            
+            if (res.ok) {
+                closeAddModal();
+                loadTimetable();
+                alert('Time block added!');
+            } else {
+                const data = await res.json();
+                alert('Failed: ' + (data.error || 'Unknown error'));
             }
         };
         
@@ -185,6 +204,51 @@
             });
             if (res.ok) loadTimetable();
             else alert('Failed to delete');
+        };
+        
+        window.openReflection = function(blockId, activity, date) {
+            currentBlockId = blockId;
+            currentBlockDate = date;
+            document.getElementById('reflectionTitle').innerHTML = `Reflection: ${activity}`;
+            document.getElementById('reflectionDate').innerHTML = `For: ${date}`;
+            document.getElementById('reflectionSummary').value = '';
+            document.getElementById('reflectionChallenges').value = '';
+            document.getElementById('reflectionLearnings').value = '';
+            document.getElementById('reflectionModal').classList.remove('hidden');
+            document.getElementById('reflectionModal').classList.add('flex');
+        };
+        
+        window.closeReflectionModal = function() {
+            document.getElementById('reflectionModal').classList.add('hidden');
+            document.getElementById('reflectionModal').classList.remove('flex');
+        };
+        
+        window.saveReflection = async function() {
+            const summary = document.getElementById('reflectionSummary').value;
+            const challenges = document.getElementById('reflectionChallenges').value;
+            const learnings = document.getElementById('reflectionLearnings').value;
+            if (!summary) { alert('Please add a summary'); return; }
+            
+            const res = await fetch('/api/v1/reflections', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ 
+                    timetable_id: currentBlockId, 
+                    log_date: currentBlockDate, 
+                    summary, 
+                    challenges, 
+                    learnings 
+                })
+            });
+            
+            if (res.ok) { 
+                closeReflectionModal(); 
+                loadTimetable(); 
+                alert('Reflection saved!'); 
+            } else {
+                const data = await res.json();
+                alert('Failed: ' + (data.error || 'Unknown error'));
+            }
         };
         
         function escapeHtml(str) {
