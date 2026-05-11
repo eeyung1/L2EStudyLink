@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - L2EStudyLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-blue-600">L2EStudyLink</h1>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="/dashboard" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+                    <a href="/search-page" class="text-gray-700 hover:text-blue-600">Find Tutors</a>
+                    <a href="/my-bookings" class="text-gray-700 hover:text-blue-600">My Bookings</a>
+                    <div id="adminNavLink" class="hidden">
+                        <a href="/admin" class="text-gray-700 hover:text-blue-600">Admin</a>
+                    </div>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-800">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- CTA Banner - Encouraging users to add skills and availability -->
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 mb-6 text-white shadow-lg">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">🚀 Make Peer Learning Work!</h2>
+                    <p class="text-lg mb-1">Add your skills and availability to start getting booked.</p>
+                    <p class="text-sm opacity-90">The more you share, the more others can learn from you.</p>
+                </div>
+                <div class="text-5xl">
+                    📚
+                </div>
+            </div>
+            <div class="mt-4 flex gap-3">
+                <button onclick="scrollToSkills()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
+                    + Add Skill
+                </button>
+                <button onclick="scrollToAvailability()" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
+                    📅 Set Availability
+                </button>
+            </div>
+        </div>
+
+        <div id="profile" class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Loading profile...</h2>
+        </div>
+        
+        <div id="skillsSection" class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-xl font-bold mb-4">Your Skills</h3>
+            <div id="skills" class="mb-4"></div>
+            <div class="flex gap-2">
+                <input type="text" id="newSkillName" placeholder="Skill name (e.g., Go, Python)" class="border rounded p-2 flex-1">
+                <select id="newSkillProficiency" class="border rounded p-2">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+                <button onclick="addSkill()" class="bg-green-600 text-white px-4 py-2 rounded">+ Add Skill</button>
+            </div>
+        </div>
+        
+        <div id="availabilitySection" class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold mb-4">Your Availability (When can you tutor?)</h3>
+            <div id="availability" class="mb-4"></div>
+            <button onclick="showAddAvailability()" class="bg-blue-600 text-white px-4 py-2 rounded">+ Add Availability</button>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/page/login';
+        }
+        
+        let currentAvailability = [];
+        let currentUser = {};
+        
+        function scrollToSkills() {
+            document.getElementById('skillsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function scrollToAvailability() {
+            document.getElementById('availabilitySection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        async function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/page/login';
+        }
+        
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            if (timeStr.includes('T')) {
+                const parts = timeStr.split('T');
+                if (parts.length > 1) {
+                    const timePart = parts[1].split('Z')[0];
+                    return timePart.substring(0, 5);
+                }
+            }
+            if (timeStr.length > 5) return timeStr.substring(0, 5);
+            return timeStr;
+        }
+        
+        async function loadProfile() {
+            const res = await fetch('/api/v1/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            currentUser = await res.json();
+            
+            if (currentUser.is_admin) {
+                document.getElementById('adminNavLink').classList.remove('hidden');
+            }
+            
+            const discordDisplay = currentUser.discord_username && currentUser.discord_username !== '' 
+                ? currentUser.discord_username 
+                : '<span class="text-red-500">Not set</span>';
+            
+            document.getElementById('profile').innerHTML = `
+                <h2 class="text-2xl font-bold mb-4">Welcome, ${currentUser.name}!</h2>
+                <p><strong>Email:</strong> ${currentUser.email}</p>
+                <p><strong>Discord ID:</strong> ${discordDisplay}</p>
+                <p><strong>Bio:</strong> ${currentUser.bio || 'Not set'}</p>
+                <p><strong>Rating:</strong> ⭐ ${currentUser.rating} (${currentUser.total_reviews} reviews)</p>
+                <button onclick="showEditProfile()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Edit Profile</button>
+            `;
+            
+            await loadSkills();
+            await loadAvailability();
+        }
+        
+        async function loadSkills() {
+            const res = await fetch('/api/v1/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const user = await res.json();
+            
+            const skillsHtml = user.skills?.map(s => 
+                `<span class="bg-blue-100 px-3 py-1 rounded-full text-sm mr-2 inline-block mb-2">${s.name} (${s.proficiency})</span>`
+            ).join('') || 'No skills yet';
+            document.getElementById('skills').innerHTML = skillsHtml;
+        }
+        
+        async function addSkill() {
+            const skillName = document.getElementById('newSkillName').value;
+            const proficiency = document.getElementById('newSkillProficiency').value;
+            
+            if (!skillName) {
+                alert('Please enter a skill name');
+                return;
+            }
+            
+            const res = await fetch('/api/v1/skills', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ skill_name: skillName, proficiency: proficiency })
+            });
+            
+            if (res.ok) {
+                document.getElementById('newSkillName').value = '';
+                await loadSkills();
+            } else {
+                const error = await res.json();
+                alert('Failed to add skill: ' + (error.error || 'Unknown error'));
+            }
+        }
+        
+        async function loadAvailability() {
+            const res = await fetch('/api/v1/availability', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            currentAvailability = await res.json();
+            
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            if (!currentAvailability || currentAvailability.length === 0) {
+                document.getElementById('availability').innerHTML = '<div class="text-gray-500">No availability set. Add some to start tutoring!</div>';
+                return;
+            }
+            
+            let html = '<div class="space-y-2">';
+            for (let i = 0; i < currentAvailability.length; i++) {
+                const slot = currentAvailability[i];
+                const startTime = formatTime(slot.start_time);
+                const endTime = formatTime(slot.end_time);
+                html += `
+                    <div class="bg-gray-100 p-2 rounded flex justify-between items-center">
+                        <span>${days[slot.day_of_week]}: ${startTime} - ${endTime}</span>
+                        <button onclick="deleteAvailability(${i})" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Delete</button>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            document.getElementById('availability').innerHTML = html;
+        }
+        
+        async function deleteAvailability(index) {
+            if (!confirm('Remove this availability slot?')) return;
+            
+            const newAvailability = [...currentAvailability];
+            newAvailability.splice(index, 1);
+            
+            const res = await fetch('/api/v1/availability', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(newAvailability)
+            });
+            
+            if (res.ok) {
+                await loadAvailability();
+            } else {
+                alert('Failed to remove availability');
+            }
+        }
+        
+        function showEditProfile() {
+            const discord = prompt('Enter your Discord ID:', currentUser.discord_username || '');
+            const bio = prompt('Enter your bio:', currentUser.bio || '');
+            
+            if (discord !== null && bio !== null) {
+                fetch('/api/v1/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ discord_username: discord, bio: bio })
+                }).then(() => loadProfile());
+            }
+        }
+        
+        function showAddAvailability() {
+            const day = prompt('Enter day (0=Monday, 1=Tuesday, 2=Wednesday, 3=Thursday, 4=Friday, 5=Saturday, 6=Sunday):', '0');
+            const startTime = prompt('Enter start time (HH:MM, e.g., 14:00):', '14:00');
+            const endTime = prompt('Enter end time (HH:MM, e.g., 16:00):', '16:00');
+            
+            if (day !== null && startTime !== null && endTime !== null) {
+                const newSlots = [...currentAvailability, { 
+                    day_of_week: parseInt(day), 
+                    start_time: startTime, 
+                    end_time: endTime 
+                }];
+                
+                fetch('/api/v1/availability', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(newSlots)
+                }).then(() => loadAvailability());
+            }
+        }
+        
+        loadProfile();
+    </script>
+</body>
+</html>
