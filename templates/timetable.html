@@ -77,15 +77,18 @@
         
         async function loadTimetable() {
             try {
-                // Load existing reflections
+                // Load existing reflections - handle non-array response
                 const refRes = await fetch('/api/v1/reflections', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 if (refRes.ok) {
                     const reflections = await refRes.json();
-                    existingReflections = {};
-                    for (const r of reflections) {
-                        existingReflections[`${r.timetable_id}|${r.log_date}`] = r;
+                    // Ensure reflections is an array
+                    if (Array.isArray(reflections)) {
+                        existingReflections = {};
+                        for (const r of reflections) {
+                            existingReflections[`${r.timetable_id}|${r.log_date}`] = r;
+                        }
                     }
                 }
                 
@@ -99,6 +102,12 @@
                 }
                 
                 const blocks = await res.json();
+                
+                // Ensure blocks is an array
+                if (!Array.isArray(blocks)) {
+                    document.getElementById('timetable').innerHTML = '<div class="text-red-500">Invalid data format</div>';
+                    return;
+                }
                 
                 const grouped = {};
                 for (let i = 0; i < 7; i++) grouped[i] = [];
@@ -146,7 +155,7 @@
                 document.getElementById('timetable').innerHTML = html;
             } catch(e) {
                 console.error('Error:', e);
-                document.getElementById('timetable').innerHTML = '<div class="text-red-500">Error loading timetable</div>';
+                document.getElementById('timetable').innerHTML = '<div class="text-red-500">Error loading timetable: ' + e.message + '</div>';
             }
         }
         
