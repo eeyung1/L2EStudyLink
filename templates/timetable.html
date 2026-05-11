@@ -28,69 +28,36 @@
             
             <button onclick="showAddBlock()" class="bg-green-600 text-white px-4 py-2 rounded mb-6">+ Add Time Block</button>
             
-            <div id="timetable" class="space-y-4"></div>
+            <div id="timetable">Loading...</div>
         </div>
     </div>
 
-    <!-- Add Time Block Modal -->
     <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 class="text-xl font-bold mb-4">Add Time Block</h3>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">Day</label>
-                <select id="blockDay" class="w-full p-2 border rounded">
-                    <option value="0">Monday</option>
-                    <option value="1">Tuesday</option>
-                    <option value="2">Wednesday</option>
-                    <option value="3">Thursday</option>
-                    <option value="4">Friday</option>
-                    <option value="5">Saturday</option>
-                    <option value="6">Sunday</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">Start Time</label>
-                <input type="time" id="blockStart" class="w-full p-2 border rounded">
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">End Time</label>
-                <input type="time" id="blockEnd" class="w-full p-2 border rounded">
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">Activity</label>
-                <input type="text" id="blockActivity" placeholder="e.g., Study Go, Work on Project" class="w-full p-2 border rounded">
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">Goal (optional)</label>
-                <textarea id="blockGoal" rows="2" placeholder="What do you want to achieve?" class="w-full p-2 border rounded"></textarea>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="saveTimeBlock()" class="bg-blue-600 text-white px-4 py-2 rounded flex-1">Save</button>
-                <button onclick="closeAddModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded flex-1">Cancel</button>
-            </div>
+            <select id="blockDay" class="w-full p-2 border rounded mb-3">
+                <option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option>
+                <option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option>
+                <option value="6">Sunday</option>
+            </select>
+            <input type="time" id="blockStart" class="w-full p-2 border rounded mb-3">
+            <input type="time" id="blockEnd" class="w-full p-2 border rounded mb-3">
+            <input type="text" id="blockActivity" placeholder="Activity" class="w-full p-2 border rounded mb-3">
+            <textarea id="blockGoal" rows="2" placeholder="Goal (optional)" class="w-full p-2 border rounded mb-3"></textarea>
+            <button onclick="saveTimeBlock()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
+            <button onclick="closeAddModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
         </div>
     </div>
 
-    <!-- Reflection Modal -->
     <div id="reflectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 id="reflectionTitle" class="text-xl font-bold mb-4">Add Reflection</h3>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">What did you actually do?</label>
-                <textarea id="reflectionSummary" rows="3" class="w-full p-2 border rounded" placeholder="Summarize what you accomplished..."></textarea>
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">Challenges faced?</label>
-                <textarea id="reflectionChallenges" rows="2" class="w-full p-2 border rounded" placeholder="What was difficult?"></textarea>
-            </div>
-            <div class="mb-3">
-                <label class="block text-sm font-bold mb-1">What did you learn?</label>
-                <textarea id="reflectionLearnings" rows="2" class="w-full p-2 border rounded" placeholder="Key takeaways..."></textarea>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="saveReflection()" class="bg-blue-600 text-white px-4 py-2 rounded flex-1">Save</button>
-                <button onclick="closeReflectionModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded flex-1">Cancel</button>
-            </div>
+            <h3 class="text-xl font-bold mb-4">Add Reflection</h3>
+            <p id="reflectionDate" class="text-sm text-gray-600 mb-3"></p>
+            <textarea id="reflectionSummary" rows="3" placeholder="What did you actually do?" class="w-full p-2 border rounded mb-3"></textarea>
+            <textarea id="reflectionChallenges" rows="2" placeholder="Challenges faced?" class="w-full p-2 border rounded mb-3"></textarea>
+            <textarea id="reflectionLearnings" rows="2" placeholder="What did you learn?" class="w-full p-2 border rounded mb-3"></textarea>
+            <button onclick="saveReflection()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
+            <button onclick="closeReflectionModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
         </div>
     </div>
 
@@ -99,77 +66,91 @@
         if (!token) window.location.href = '/page/login';
         
         let currentBlockId = null;
+        let currentBlockDate = null;
+        let existingReflections = {};
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         
-        async function logout() {
-            localStorage.removeItem('token');
-            window.location.href = '/page/login';
-        }
+        async function logout() { localStorage.removeItem('token'); window.location.href = '/page/login'; }
         
         async function loadTimetable() {
-            const res = await fetch('/api/v1/timetable', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const blocks = await res.json();
-            
-            // Group by day
-            const grouped = {};
-            for (let i = 0; i < days.length; i++) grouped[i] = [];
-            for (const block of blocks) {
-                grouped[block.day_of_week].push(block);
-            }
-            
-            let html = '';
-            for (let i = 0; i < days.length; i++) {
-                html += `<div class="border rounded-lg p-4 mb-4">`;
-                html += `<h3 class="text-xl font-bold mb-2">${days[i]}</h3>`;
-                if (grouped[i].length === 0) {
-                    html += `<p class="text-gray-400 italic">No activities planned</p>`;
-                } else {
-                    html += `<div class="space-y-2">`;
-                    for (const block of grouped[i]) {
-                        const isPast = isTimePassed(i, block.start_time, block.end_time);
-                        html += `
-                            <div class="bg-gray-50 p-3 rounded flex justify-between items-start">
-                                <div>
+            try {
+                // First load existing reflections
+                const refRes = await fetch('/api/v1/reflections', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const reflections = await refRes.json();
+                existingReflections = {};
+                for (const r of reflections) {
+                    existingReflections[`${r.timetable_id}|${r.log_date}`] = r;
+                }
+                
+                const res = await fetch('/api/v1/timetable', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const blocks = await res.json();
+                
+                const grouped = {};
+                for (let i = 0; i < 7; i++) grouped[i] = [];
+                for (const b of blocks) {
+                    if (grouped[b.day_of_week]) grouped[b.day_of_week].push(b);
+                }
+                
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
+                const currentDayIndex = today.getDay();
+                const currentDay = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
+                const currentHour = today.getHours();
+                const currentMinute = today.getMinutes();
+                
+                let html = '';
+                for (let i = 0; i < 7; i++) {
+                    const isToday = (i === currentDay);
+                    html += `<div class="border rounded-lg p-4 mb-4 ${isToday ? 'bg-blue-50' : ''}">`;
+                    html += `<h3 class="text-xl font-bold mb-2">${days[i]} ${isToday ? '(Today)' : ''}</h3>`;
+                    
+                    if (grouped[i].length === 0) {
+                        html += `<p class="text-gray-400 italic">No activities planned</p>`;
+                    } else {
+                        for (const block of grouped[i]) {
+                            const [blockHour, blockMin] = block.start_time.split(':').map(Number);
+                            const isPast = (i < currentDay) || 
+                                (i === currentDay && (blockHour < currentHour || (blockHour === currentHour && blockMin < currentMinute)));
+                            
+                            const reflectionKey = `${block.id}|${todayStr}`;
+                            const hasReflection = existingReflections[reflectionKey];
+                            
+                            let statusHtml = '';
+                            if (hasReflection) {
+                                statusHtml = `<p class="text-green-600 mt-1">✅ Reflection added</p>`;
+                            } else if (isPast) {
+                                statusHtml = `<p class="text-orange-600 mt-1">⚠️ MISSED - No reflection added</p>`;
+                                if (i === currentDay) {
+                                    statusHtml += `<button onclick="openReflection(${block.id}, '${escapeHtml(block.activity)}', '${todayStr}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm mt-2">Add Reflection</button>`;
+                                }
+                            }
+                            
+                            html += `
+                                <div class="bg-gray-50 p-3 rounded mb-2">
                                     <p><span class="font-bold">${block.start_time} - ${block.end_time}</span></p>
                                     <p><strong>Activity:</strong> ${escapeHtml(block.activity)}</p>
                                     ${block.goal ? `<p class="text-gray-600"><strong>Goal:</strong> ${escapeHtml(block.goal)}</p>` : ''}
-                                    ${isPast ? `<p class="text-orange-600 mt-1">⚠️ MISSED - No reflection added</p>` : ''}
+                                    ${statusHtml}
+                                    <button onclick="deleteBlock(${block.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm mt-2">Delete</button>
                                 </div>
-                                <div class="flex gap-2">
-                                    ${isPast ? `<button onclick="openReflection(${block.id}, '${escapeHtml(block.activity)}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Add Reflection</button>` : ''}
-                                    <button onclick="deleteBlock(${block.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Delete</button>
-                                </div>
-                            </div>
-                        `;
+                            `;
+                        }
                     }
                     html += `</div>`;
                 }
-                html += `</div>`;
+                document.getElementById('timetable').innerHTML = html;
+            } catch(e) {
+                document.getElementById('timetable').innerHTML = '<div class="text-red-500">Error loading timetable</div>';
             }
-            document.getElementById('timetable').innerHTML = html;
-        }
-        
-        function isTimePassed(day, startTime, endTime) {
-            const now = new Date();
-            const currentDay = now.getDay(); // 0=Sunday, need to convert
-            let currentDayIndex = currentDay === 0 ? 6 : currentDay - 1;
-            if (day < currentDayIndex) return true;
-            if (day > currentDayIndex) return false;
-            
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
-            const [startHour, startMinute] = startTime.split(':').map(Number);
-            const currentTotal = currentHour * 60 + currentMinute;
-            const startTotal = startHour * 60 + startMinute;
-            return currentTotal > startTotal;
         }
         
         function showAddBlock() {
             document.getElementById('addModal').classList.remove('hidden');
             document.getElementById('addModal').classList.add('flex');
-            document.getElementById('blockDay').value = '0';
             document.getElementById('blockStart').value = '09:00';
             document.getElementById('blockEnd').value = '10:00';
             document.getElementById('blockActivity').value = '';
@@ -183,49 +164,32 @@
         
         async function saveTimeBlock() {
             const day = parseInt(document.getElementById('blockDay').value);
-            const startTime = document.getElementById('blockStart').value;
-            const endTime = document.getElementById('blockEnd').value;
+            const start = document.getElementById('blockStart').value;
+            const end = document.getElementById('blockEnd').value;
             const activity = document.getElementById('blockActivity').value;
             const goal = document.getElementById('blockGoal').value;
-            
-            if (!activity) {
-                alert('Please enter an activity');
-                return;
-            }
-            if (startTime >= endTime) {
-                alert('End time must be after start time');
-                return;
-            }
-            
+            if (!activity) { alert('Enter activity'); return; }
+            if (start >= end) { alert('End time must be after start'); return; }
             const res = await fetch('/api/v1/timetable', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify({ day_of_week: day, start_time: startTime, end_time: endTime, activity, goal })
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ day_of_week: day, start_time: start, end_time: end, activity, goal })
             });
-            
-            if (res.ok) {
-                closeAddModal();
-                loadTimetable();
-            } else {
-                alert('Failed to add time block');
-            }
+            if (res.ok) { closeAddModal(); loadTimetable(); }
+            else alert('Failed');
         }
         
         async function deleteBlock(id) {
-            if (!confirm('Delete this time block?')) return;
-            const res = await fetch(`/api/v1/timetable/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (res.ok) loadTimetable();
+            if (!confirm('Delete this block?')) return;
+            await fetch(`/api/v1/timetable/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+            loadTimetable();
         }
         
-        function openReflection(blockId, activity) {
+        function openReflection(blockId, activity, date) {
             currentBlockId = blockId;
+            currentBlockDate = date;
             document.getElementById('reflectionTitle').innerHTML = `Reflection: ${activity}`;
+            document.getElementById('reflectionDate').innerHTML = `For: ${date}`;
             document.getElementById('reflectionSummary').value = '';
             document.getElementById('reflectionChallenges').value = '';
             document.getElementById('reflectionLearnings').value = '';
@@ -242,35 +206,14 @@
             const summary = document.getElementById('reflectionSummary').value;
             const challenges = document.getElementById('reflectionChallenges').value;
             const learnings = document.getElementById('reflectionLearnings').value;
-            const today = new Date().toISOString().split('T')[0];
-            
-            if (!summary) {
-                alert('Please add a summary of what you did');
-                return;
-            }
-            
+            if (!summary) { alert('Please add a summary'); return; }
             const res = await fetch('/api/v1/reflections', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify({
-                    timetable_id: currentBlockId,
-                    log_date: today,
-                    summary: summary,
-                    challenges: challenges,
-                    learnings: learnings
-                })
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ timetable_id: currentBlockId, log_date: currentBlockDate, summary, challenges, learnings })
             });
-            
-            if (res.ok) {
-                closeReflectionModal();
-                loadTimetable();
-                alert('Reflection saved! You can view it in Reflections page.');
-            } else {
-                alert('Failed to save reflection');
-            }
+            if (res.ok) { closeReflectionModal(); loadTimetable(); alert('Reflection saved!'); }
+            else alert('Failed');
         }
         
         function escapeHtml(str) {
