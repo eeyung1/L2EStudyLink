@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Reflections - L2EStudyLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <h1 class="text-xl font-bold text-blue-600">L2EStudyLink</h1>
+                <div class="flex space-x-4">
+                    <a href="/dashboard" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+                    <a href="/search-page" class="text-gray-700 hover:text-blue-600">Find Tutors</a>
+                    <a href="/my-bookings" class="text-gray-700 hover:text-blue-600">My Bookings</a>
+                    <a href="/timetable" class="text-gray-700 hover:text-blue-600">Timetable</a>
+                    <a href="/reflections" class="text-blue-600 font-bold">Reflections</a>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-800">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-2xl font-bold mb-4">My Reflections History</h2>
+            <p class="text-gray-600 mb-6">Track what you've learned and what challenges you faced.</p>
+            
+            <div id="reflectionsList" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/page/login';
+        
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        
+        async function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/page/login';
+        }
+        
+        async function loadReflections() {
+            const res = await fetch('/api/v1/reflections', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const reflections = await res.json();
+            
+            const container = document.getElementById('reflectionsList');
+            
+            if (!reflections || reflections.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500">No reflections yet. Complete activities on your timetable and add reflections!</div>';
+                return;
+            }
+            
+            let html = '';
+            for (const r of reflections) {
+                html += `
+                    <div class="border rounded-lg p-4 hover:shadow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg">${days[r.day_of_week]} at ${r.start_time} - ${r.end_time}</h3>
+                            <span class="text-sm text-gray-500">${r.log_date}</span>
+                        </div>
+                        <p class="text-gray-700"><strong>Activity:</strong> ${escapeHtml(r.activity)}</p>
+                        <div class="mt-3 bg-gray-50 p-3 rounded">
+                            <p><strong>📝 What I did:</strong> ${escapeHtml(r.summary) || 'Not specified'}</p>
+                            ${r.challenges ? `<p class="mt-2"><strong>⚠️ Challenges:</strong> ${escapeHtml(r.challenges)}</p>` : ''}
+                            ${r.learnings ? `<p class="mt-2"><strong>💡 What I learned:</strong> ${escapeHtml(r.learnings)}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        loadReflections();
+    </script>
+</body>
+</html>

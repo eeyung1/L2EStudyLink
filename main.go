@@ -52,6 +52,10 @@ func main() {
         c.HTML(200, "admin.html", nil)
     })
     
+    router.GET("/timetable", func(c *gin.Context) {
+        c.HTML(200, "timetable.html", nil)
+    })
+    
     router.GET("/page/:name", func(c *gin.Context) {
         name := c.Param("name")
         c.HTML(200, name+".html", nil)
@@ -94,6 +98,13 @@ func main() {
             protected.PUT("/admin/users/:id/suspend", handlers.AdminToggleSuspend)
             protected.GET("/admin/bookings", handlers.AdminBookings)
             protected.POST("/admin/reset-password", handlers.ResetAdminPassword)
+            
+            // Timetable routes
+            protected.GET("/timetable", handlers.GetTimetable)
+            protected.POST("/timetable", handlers.AddTimeBlock)
+            protected.DELETE("/timetable/:id", handlers.DeleteTimeBlock)
+            protected.POST("/reflections", handlers.AddReflection)
+            protected.GET("/reflections", handlers.GetReflections)
         }
     }
 
