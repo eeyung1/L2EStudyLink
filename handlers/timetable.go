@@ -123,7 +123,7 @@ func AddReflection(c *gin.Context) {
     `, input.TimetableID, input.LogDate, userID).Scan(&existingID)
 
     if err == nil {
-        // Update existing reflection
+        // Update existing reflection (don't change ID)
         _, err = db.Exec(`
             UPDATE activity_logs 
             SET summary = $1, challenges = $2, learnings = $3, completed = true
@@ -137,7 +137,7 @@ func AddReflection(c *gin.Context) {
         return
     }
 
-    // Insert new reflection
+    // Insert new reflection - let database auto-generate ID
     var id int64
     err = db.QueryRow(`
         INSERT INTO activity_logs (timetable_id, user_id, log_date, summary, challenges, learnings, completed)
