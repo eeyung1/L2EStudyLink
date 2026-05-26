@@ -27,7 +27,6 @@ type ActivityLog struct {
     Completed   bool   `json:"completed"`
 }
 
-// Get user's timetable for current week
 func GetTimetable(c *gin.Context) {
     userID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
@@ -40,7 +39,7 @@ func GetTimetable(c *gin.Context) {
     `, userID)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch timetable"})
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error: " + err.Error()})
         return
     }
     defer rows.Close()
@@ -49,7 +48,10 @@ func GetTimetable(c *gin.Context) {
     for rows.Next() {
         var b TimeBlock
         var startTime, endTime time.Time
-        rows.Scan(&b.ID, &b.DayOfWeek, &startTime, &endTime, &b.Activity, &b.Goal)
+        err := rows.Scan(&b.ID, &b.DayOfWeek, &startTime, &endTime, &b.Activity, &b.Goal)
+        if err != nil {
+            continue
+        }
         b.StartTime = startTime.Format("15:04")
         b.EndTime = endTime.Format("15:04")
         blocks = append(blocks, b)
@@ -58,7 +60,6 @@ func GetTimetable(c *gin.Context) {
     c.JSON(http.StatusOK, blocks)
 }
 
-// Add a time block to timetable
 func AddTimeBlock(c *gin.Context) {
     userID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
@@ -77,14 +78,13 @@ func AddTimeBlock(c *gin.Context) {
     `, userID, input.DayOfWeek, input.StartTime, input.EndTime, input.Activity, input.Goal).Scan(&id)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add time block"})
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add: " + err.Error()})
         return
     }
 
     c.JSON(http.StatusCreated, gin.H{"message": "Time block added", "id": id})
 }
 
-// Delete a time block
 func DeleteTimeBlock(c *gin.Context) {
     userID := c.GetInt64("user_id")
     blockID := c.Param("id")
@@ -92,7 +92,7 @@ func DeleteTimeBlock(c *gin.Context) {
 
     result, err := db.Exec("DELETE FROM timetable WHERE id = $1 AND user_id = $2", blockID, userID)
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete"})
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
 
@@ -105,7 +105,6 @@ func DeleteTimeBlock(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 }
 
-// Add reflection log for a completed time block
 func AddReflection(c *gin.Context) {
     userID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
@@ -116,22 +115,44 @@ func AddReflection(c *gin.Context) {
         return
     }
 
-    var id int64
+    // Check if reflection already exists for this timetable_id and log_date
+    var existingID int64
     err := db.QueryRow(`
+        SELECT id FROM activity_logs 
+        WHERE timetable_id = $1 AND log_date = $2 AND user_id = $3
+    `, input.TimetableID, input.LogDate, userID).Scan(&existingID)
+
+    if err == nil {
+        // Update existing reflection
+        _, err = db.Exec(`
+            UPDATE activity_logs 
+            SET summary = $1, challenges = $2, learnings = $3, completed = true
+            WHERE id = $4
+        `, input.Summary, input.Challenges, input.Learnings, existingID)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update reflection"})
+            return
+        }
+        c.JSON(http.StatusOK, gin.H{"message": "Reflection updated", "id": existingID})
+        return
+    }
+
+    // Insert new reflection
+    var id int64
+    err = db.QueryRow(`
         INSERT INTO activity_logs (timetable_id, user_id, log_date, summary, challenges, learnings, completed)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        VALUES ($1, $2, $3, $4, $5, $6, true)
         RETURNING id
-    `, input.TimetableID, userID, input.LogDate, input.Summary, input.Challenges, input.Learnings, true).Scan(&id)
+    `, input.TimetableID, userID, input.LogDate, input.Summary, input.Challenges, input.Learnings).Scan(&id)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save reflection"})
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save reflection: " + err.Error()})
         return
     }
 
     c.JSON(http.StatusCreated, gin.H{"message": "Reflection saved", "id": id})
 }
 
-// Get reflections for a user
 func GetReflections(c *gin.Context) {
     userID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
@@ -146,7 +167,7 @@ func GetReflections(c *gin.Context) {
     `, userID)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch reflections"})
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
     defer rows.Close()
@@ -161,8 +182,11 @@ func GetReflections(c *gin.Context) {
         var dayOfWeek int
         var startTime, endTime time.Time
 
-        rows.Scan(&id, &timetableID, &logDate, &summary, &challenges, &learnings, &completed,
+        err := rows.Scan(&id, &timetableID, &logDate, &summary, &challenges, &learnings, &completed,
             &activity, &dayOfWeek, &startTime, &endTime)
+        if err != nil {
+            continue
+        }
 
         reflections = append(reflections, gin.H{
             "id":           id,
