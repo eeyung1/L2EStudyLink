@@ -70,6 +70,7 @@ func AddTimeBlock(c *gin.Context) {
         return
     }
 
+    // Do NOT use the ID from frontend - let database generate it
     var id int64
     err := db.QueryRow(`
         INSERT INTO timetable (user_id, day_of_week, start_time, end_time, activity, goal)
@@ -123,7 +124,7 @@ func AddReflection(c *gin.Context) {
     `, input.TimetableID, input.LogDate, userID).Scan(&existingID)
 
     if err == nil {
-        // Update existing reflection (don't change ID)
+        // Update existing reflection
         _, err = db.Exec(`
             UPDATE activity_logs 
             SET summary = $1, challenges = $2, learnings = $3, completed = true
