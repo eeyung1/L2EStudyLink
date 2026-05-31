@@ -113,6 +113,10 @@
             return date.getDay(); // 0 = Sunday, 1 = Monday, etc.
         }
         
+        // Cache tutors returned by the last search so viewTutor() doesn't need
+        // another network request — availability is already in the payload.
+        let cachedTutors = {};
+
         async function searchTutors() {
             const skill = document.getElementById('skillSearch').value;
             const selectedDate = document.getElementById('dateSearch').value;
@@ -131,42 +135,25 @@
             resultsDiv.innerHTML = '<div class="text-center text-gray-500">Searching...</div>';
             
             try {
-                // First, get all tutors with the skill
-                const res = await fetch(`/api/v1/search?skill=${encodeURIComponent(skill)}`);
-                let tutors = await res.json();
+                // ONE request — tutors + their full availability in a single JOIN query.
+                const res = await fetch(`/api/v1/search-with-availability?skill=${encodeURIComponent(skill)}`);
+                const tutors = await res.json();
                 
                 if (!tutors || tutors.length === 0) {
                     resultsDiv.innerHTML = '<div class="text-center text-gray-500">No tutors found for "' + skill + '"</div>';
                     return;
                 }
-                
-                // Get the day of week from selected date (0 = Sunday, needs conversion)
+
+                // Convert JS Date.getDay() (0=Sun) → our DB format (0=Mon … 6=Sun)
                 let selectedDay = getDayOfWeekFromDate(selectedDate);
-                // Convert Sunday from 0 to 6 to match our availability format (0=Monday)
-                if (selectedDay === 0) {
-                    selectedDay = 6; // Sunday becomes day 6
-                } else {
-                    selectedDay = selectedDay - 1; // Monday=1 becomes 0, Tuesday=2 becomes 1, etc.
-                }
+                selectedDay = selectedDay === 0 ? 6 : selectedDay - 1;
                 
-                // Filter tutors by availability on the selected day
-                const filteredTutors = [];
-                for (const tutor of tutors) {
-                    const tutorRes = await fetch(`/api/v1/tutors/${tutor.id}`);
-                    const tutorDetails = await tutorRes.json();
-                    
-                    const availableOnDay = tutorDetails.availability?.some(slot => slot.day_of_week === selectedDay);
-                    if (availableOnDay) {
-                        filteredTutors.push({
-                            id: tutor.id,
-                            name: tutor.name,
-                            rating: tutor.rating,
-                            total_reviews: tutor.total_reviews,
-                            bio: tutor.bio,
-                            discord_username: tutor.discord_username
-                        });
-                    }
-                }
+                // Filter entirely in the browser — no extra requests needed
+                cachedTutors = {};
+                const filteredTutors = tutors.filter(t => {
+                    cachedTutors[t.id] = t; // cache while we iterate
+                    return t.availability && t.availability.some(slot => slot.day_of_week === selectedDay);
+                });
                 
                 if (filteredTutors.length === 0) {
                     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -175,8 +162,7 @@
                 }
                 
                 let html = '';
-                for (let i = 0; i < filteredTutors.length; i++) {
-                    const t = filteredTutors[i];
+                for (const t of filteredTutors) {
                     html += `
                         <div class="border rounded-lg p-4 mb-3 hover:shadow">
                             <div class="flex justify-between items-start">
@@ -198,8 +184,13 @@
         
         async function viewTutor(tutorId, selectedDate) {
             try {
-                const res = await fetch(`/api/v1/tutors/${tutorId}`);
-                const tutor = await res.json();
+                // Use cached data from the search if available; fall back to API only
+                // when the modal is opened directly (e.g. page refresh edge-case).
+                let tutor = cachedTutors[tutorId];
+                if (!tutor) {
+                    const res = await fetch(`/api/v1/tutors/${tutorId}`);
+                    tutor = await res.json();
+                }
                 currentTutor = tutor;
                 currentAvailability = tutor.availability || [];
                 

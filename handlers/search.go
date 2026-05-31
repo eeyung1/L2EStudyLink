@@ -8,6 +8,125 @@ import (
     "github.com/gin-gonic/gin"
 )
 
+// SearchTutorsWithAvailability returns tutors matching a skill, with their
+// availability already embedded. One SQL query + in-Go grouping = no N+1.
+func SearchTutorsWithAvailability(c *gin.Context) {
+    db := c.MustGet("db").(*sql.DB)
+    skillQuery := c.Query("skill")
+    if skillQuery == "" {
+        c.JSON(http.StatusOK, []gin.H{})
+        return
+    }
+
+    // Single JOIN query: fetch every (tutor, availability_slot) row at once.
+    // availability columns are nullable because of the LEFT JOIN — a tutor
+    // with no availability rows still appears once with NULL slot columns.
+    rows, err := db.Query(`
+        SELECT
+            u.id,
+            u.name,
+            u.bio,
+            u.rating,
+            u.total_reviews,
+            COALESCE(u.discord_username, ''),
+            a.day_of_week,
+            a.start_time,
+            a.end_time
+        FROM users u
+        JOIN skills s ON u.id = s.user_id
+        LEFT JOIN availability a ON u.id = a.user_id
+        WHERE s.skill_name ILIKE $1
+        ORDER BY u.id, a.day_of_week, a.start_time
+    `, "%"+skillQuery+"%")
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    defer rows.Close()
+
+    // Group rows by tutor in Go — avoids json_agg / CTE complexity entirely.
+    type AvailSlot struct {
+        DayOfWeek int    `json:"day_of_week"`
+        StartTime string `json:"start_time"`
+        EndTime   string `json:"end_time"`
+    }
+    type Tutor struct {
+        ID              int64       `json:"id"`
+        Name            string      `json:"name"`
+        Bio             string      `json:"bio"`
+        Rating          float64     `json:"rating"`
+        TotalReviews    int         `json:"total_reviews"`
+        DiscordUsername string      `json:"discord_username"`
+        Availability    []AvailSlot `json:"availability"`
+    }
+
+    tutorMap := map[int64]*Tutor{}
+    tutorOrder := []int64{} // preserve ORDER BY u.id result order
+
+    for rows.Next() {
+        var (
+            id      int64
+            name, bio, discord string
+            rating  float64
+            reviews int
+            // nullable availability columns
+            dayOfWeek         sql.NullInt64
+            rawStart, rawEnd  sql.NullString
+        )
+        if err := rows.Scan(&id, &name, &bio, &rating, &reviews, &discord,
+            &dayOfWeek, &rawStart, &rawEnd); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+
+        tutor, exists := tutorMap[id]
+        if !exists {
+            tutor = &Tutor{
+                ID:              id,
+                Name:            name,
+                Bio:             bio,
+                Rating:          rating,
+                TotalReviews:    reviews,
+                DiscordUsername: discord,
+                Availability:    []AvailSlot{},
+            }
+            tutorMap[id] = tutor
+            tutorOrder = append(tutorOrder, id)
+        }
+
+        if dayOfWeek.Valid && rawStart.Valid && rawEnd.Valid {
+            tutor.Availability = append(tutor.Availability, AvailSlot{
+                DayOfWeek: int(dayOfWeek.Int64),
+                StartTime: normaliseTime(rawStart.String),
+                EndTime:   normaliseTime(rawEnd.String),
+            })
+        }
+    }
+
+    result := make([]*Tutor, 0, len(tutorOrder))
+    for _, id := range tutorOrder {
+        result = append(result, tutorMap[id])
+    }
+
+    c.JSON(http.StatusOK, result)
+}
+
+// normaliseTime trims a time value to HH:MM regardless of whether Postgres
+// returns it as "15:04", "15:04:05", or a full timestamp string.
+func normaliseTime(t string) string {
+    if strings.Contains(t, "T") {
+        parts := strings.SplitN(t, "T", 2)
+        if len(parts) == 2 {
+            t = strings.TrimSuffix(parts[1], "Z")
+        }
+    }
+    if len(t) > 5 {
+        return t[:5]
+    }
+    return t
+}
+
 func SearchTutors(c *gin.Context) {
     db := c.MustGet("db").(*sql.DB)
     skillQuery := c.Query("skill")
