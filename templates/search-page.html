@@ -138,8 +138,14 @@
                 // ONE request — tutors + their full availability in a single JOIN query.
                 const res = await fetch(`/api/v1/search-with-availability?skill=${encodeURIComponent(skill)}`);
                 const tutors = await res.json();
-                
-                if (!tutors || tutors.length === 0) {
+
+                if (!res.ok || !Array.isArray(tutors)) {
+                    const errMsg = (tutors && tutors.error) ? tutors.error : `Server returned ${res.status}`;
+                    resultsDiv.innerHTML = `<div class="text-center text-red-600">Search error: ${errMsg}</div>`;
+                    return;
+                }
+
+                if (tutors.length === 0) {
                     resultsDiv.innerHTML = '<div class="text-center text-gray-500">No tutors found for "' + skill + '"</div>';
                     return;
                 }
