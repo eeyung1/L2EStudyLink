@@ -67,7 +67,8 @@ func SearchTutorsWithAvailability(c *gin.Context) {
     for rows.Next() {
         var (
             id      int64
-            name, bio, discord string
+            name    string
+            bio, discord sql.NullString
             rating  float64
             reviews int
             // nullable availability columns
@@ -85,10 +86,10 @@ func SearchTutorsWithAvailability(c *gin.Context) {
             tutor = &Tutor{
                 ID:              id,
                 Name:            name,
-                Bio:             bio,
+                Bio:             bio.String,
                 Rating:          rating,
                 TotalReviews:    reviews,
-                DiscordUsername: discord,
+                DiscordUsername: discord.String,
                 Availability:    []AvailSlot{},
             }
             tutorMap[id] = tutor
