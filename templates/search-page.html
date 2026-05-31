@@ -3,6 +3,60 @@
 <head>
     <title>Find Study Partners - L2EStudyLink</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Dark mode: apply before paint to avoid flash
+        (function() {
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <style>
+        html.dark body { background-color: #111827 !important; color: #f3f4f6; }
+        html.dark nav { background-color: #1f2937 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        html.dark nav a { color: #d1d5db !important; }
+        html.dark nav a:hover { color: #60a5fa !important; }
+        html.dark .bg-white { background-color: #1f2937 !important; }
+        html.dark .bg-gray-100 { background-color: #111827 !important; }
+        html.dark .bg-gray-50 { background-color: #1f2937 !important; }
+        html.dark .text-gray-700 { color: #d1d5db !important; }
+        html.dark .text-gray-600 { color: #9ca3af !important; }
+        html.dark .text-gray-500 { color: #6b7280 !important; }
+        html.dark .text-gray-800 { color: #f3f4f6 !important; }
+        html.dark .text-gray-900 { color: #f9fafb !important; }
+        html.dark .border { border-color: #374151 !important; }
+        html.dark .border-gray-200 { border-color: #374151 !important; }
+        html.dark .border-gray-300 { border-color: #4b5563 !important; }
+        html.dark .shadow, html.dark .shadow-lg { box-shadow: 0 1px 6px rgba(0,0,0,0.6) !important; }
+        html.dark input, html.dark select, html.dark textarea {
+            background-color: #374151 !important;
+            color: #f3f4f6 !important;
+            border-color: #4b5563 !important;
+        }
+        html.dark input::placeholder { color: #9ca3af !important; }
+        html.dark .rounded-lg { border-color: #374151; }
+        html.dark table th { background-color: #374151 !important; color: #f3f4f6 !important; }
+        html.dark table td { border-color: #374151 !important; color: #d1d5db !important; }
+        html.dark .divide-gray-200 > * { border-color: #374151 !important; }
+        html.dark .bg-blue-50 { background-color: #1e3a5f !important; }
+        html.dark .bg-green-50 { background-color: #14532d !important; }
+        html.dark .bg-red-50 { background-color: #7f1d1d !important; }
+        html.dark .bg-yellow-50 { background-color: #78350f !important; }
+        html.dark .text-blue-800 { color: #93c5fd !important; }
+        html.dark .text-green-800 { color: #86efac !important; }
+        html.dark .text-red-800 { color: #fca5a5 !important; }
+        html.dark .text-yellow-800 { color: #fde68a !important; }
+        #darkToggle {
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 18px;
+            background: transparent;
+            border: none;
+            transition: transform 0.2s;
+        }
+        #darkToggle:hover { transform: scale(1.15); }
+    </style>
 </head>
 <body class="bg-gray-100">
     <nav class="bg-white shadow-lg">
@@ -16,6 +70,7 @@
                     <div id="adminNavLink" class="hidden">
                         <a href="/admin" class="text-gray-700 hover:text-blue-600">Admin</a>
                     </div>
+                    <button id="darkToggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
                     <button onclick="logout()" class="text-red-600 hover:text-red-800">Logout</button>
                 </div>
             </div>
@@ -336,6 +391,18 @@
                 searchTutors();
             }
         });
+    
+        function toggleDark() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', isDark);
+            document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
+        }
+        // Sync icon on load
+        if (localStorage.getItem('darkMode') === 'true') {
+            const btn = document.getElementById('darkToggle');
+            if (btn) btn.textContent = '☀️';
+        }
+
     </script>
 </body>
 </html>
