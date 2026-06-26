@@ -3,7 +3,6 @@ package handlers
 import (
     "database/sql"
     "net/http"
-    "time"
 
     "github.com/gin-gonic/gin"
 )
@@ -24,36 +23,48 @@ func SetAvailability(c *gin.Context) {
         return
     }
 
-    // Delete existing availability
-    _, err := db.Exec("DELETE FROM availability WHERE user_id = $1", userID)
+    // Wrap DELETE + INSERT in a transaction so a failed insert
+    // never leaves the user with zero availability rows.
+    tx, err := db.Begin()
     if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start transaction"})
+        return
+    }
+    // If anything below fails, roll back — restoring the old rows.
+    defer tx.Rollback()
+
+    if _, err := tx.Exec("DELETE FROM availability WHERE user_id = $1", userID); err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clear availability"})
         return
     }
 
-    // Insert new slots
     for _, slot := range slots {
-        // Ensure time format is HH:MM:SS
         startTime := slot.StartTime
         endTime := slot.EndTime
-        
-        // Add seconds if missing
+
+        // Normalise HH:MM → HH:MM:SS for Postgres TIME columns
         if len(startTime) == 5 {
             startTime = startTime + ":00"
         }
         if len(endTime) == 5 {
             endTime = endTime + ":00"
         }
-        
-        _, err := db.Exec(`
-            INSERT INTO availability (user_id, day_of_week, start_time, end_time) 
+
+        _, err := tx.Exec(`
+            INSERT INTO availability (user_id, day_of_week, start_time, end_time)
             VALUES ($1, $2, $3, $4)
         `, userID, slot.DayOfWeek, startTime, endTime)
-        
+
         if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save availability: " + err.Error()})
+            // Rollback is called by defer — old rows are restored.
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save slot: " + err.Error()})
             return
         }
+    }
+
+    if err := tx.Commit(); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit availability"})
+        return
     }
 
     c.JSON(http.StatusOK, gin.H{"message": "Availability saved successfully", "slots": slots})
@@ -64,32 +75,29 @@ func GetAvailability(c *gin.Context) {
     db := c.MustGet("db").(*sql.DB)
 
     rows, err := db.Query(`
-        SELECT day_of_week, start_time, end_time 
-        FROM availability 
-        WHERE user_id = $1 
+        SELECT day_of_week,
+               TO_CHAR(start_time, 'HH24:MI') AS start_time,
+               TO_CHAR(end_time,   'HH24:MI') AS end_time
+        FROM availability
+        WHERE user_id = $1
         ORDER BY day_of_week, start_time
     `, userID)
-    
+
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch availability"})
         return
     }
     defer rows.Close()
 
-    var slots []AvailabilitySlot
+    slots := []AvailabilitySlot{}
     for rows.Next() {
         var slot AvailabilitySlot
-        var startTime, endTime time.Time
-        rows.Scan(&slot.DayOfWeek, &startTime, &endTime)
-        
-        // Format times as HH:MM
-        slot.StartTime = startTime.Format("15:04")
-        slot.EndTime = endTime.Format("15:04")
+        // Scan directly into strings — TO_CHAR already formatted them as HH:MM
+        if err := rows.Scan(&slot.DayOfWeek, &slot.StartTime, &slot.EndTime); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read slot: " + err.Error()})
+            return
+        }
         slots = append(slots, slot)
-    }
-
-    if slots == nil {
-        slots = []AvailabilitySlot{}
     }
 
     c.JSON(http.StatusOK, slots)
