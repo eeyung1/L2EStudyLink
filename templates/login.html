@@ -56,54 +56,75 @@
             transition: transform 0.2s;
         }
         #darkToggle:hover { transform: scale(1.15); }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #17181d;
+background-image:
+    repeating-radial-gradient(
+        circle at 100% 100%,
+        rgba(255,255,255,0.05) 0px,
+        rgba(255,255,255,0.05) 1px,
+        transparent 1px,
+        transparent 42px
+    );
+            font-family: 'Courier New', monospace;
+        }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div class="max-w-md mx-auto mt-20">
-        <div class="bg-white rounded-lg shadow p-8">
-            <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">L2EStudyLink</h1>
+<body>
+    <div class="max-w-md mx-auto">
+        <div class="rounded-lg shadow p-8" style="background:#12151f; color:#e5e7eb; border:1px solid rgba(255,255,255,0.08);">
+            <h1 class="text-2xl font-bold text-center mb-6" style="color:#7c3aed;">L2EStudyLink</h1>
             <h2 class="text-xl font-bold mb-6 text-center">Login</h2>
-            
+
             <form id="loginForm">
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                    <input type="email" id="email" required class="w-full p-2 border rounded focus:outline-none focus:border-blue-500">
+                    <label class="block text-sm font-bold mb-2" style="color:#d1d5db;">Email</label>
+                    <input type="email" id="email" required class="w-full p-2 rounded focus:outline-none" style="background:#1f2330; color:#f3f4f6; border:1px solid #374151;">
                 </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input type="password" id="password" required class="w-full p-2 border rounded focus:outline-none focus:border-blue-500">
+                <div class="mb-2">
+                    <label class="block text-sm font-bold mb-2" style="color:#d1d5db;">Password</label>
+                    <input type="password" id="password" required class="w-full p-2 rounded focus:outline-none" style="background:#1f2330; color:#f3f4f6; border:1px solid #374151;">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
+                <p class="text-right text-sm mb-6">
+                    <a href="/page/forgot-password" style="color:#a78bfa;" class="hover:underline">Forgot password?</a>
+                </p>
+                <button type="submit" class="w-full text-white py-2 rounded" style="background:#7c3aed;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'">Login</button>
             </form>
-            
-            <p class="text-center text-gray-600 mt-4 text-sm">
-                Don't have an account? 
-                <a href="/page/signup" class="text-blue-600 hover:underline">Sign up</a>
+
+            <p class="text-center mt-4 text-sm" style="color:#9ca3af;">
+                Don't have an account?
+                <a href="/page/signup" style="color:#a78bfa;" class="hover:underline">Sign up</a>
             </p>
-            
-            <div id="error" class="mt-4 text-red-600 text-sm text-center hidden"></div>
+
+            <div id="error" class="mt-4 text-sm text-center hidden" style="color:#f87171;"></div>
         </div>
     </div>
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('error');
-            
+
             errorDiv.classList.add('hidden');
-            
+
             try {
                 const response = await fetch('/api/v1/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.token) {
                     localStorage.setItem('token', data.token);
                     window.location.href = '/dashboard';
@@ -116,7 +137,7 @@
                 errorDiv.classList.remove('hidden');
             }
         });
-    
+
         function toggleDark() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('darkMode', isDark);

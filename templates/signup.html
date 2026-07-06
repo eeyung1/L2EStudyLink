@@ -3,14 +3,15 @@
 <head>
     <title>Sign Up - L2EStudyLink</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Dark mode: apply before paint to avoid flash
-        (function() {
-            if (localStorage.getItem('darkMode') === 'true') {
-                document.documentElement.classList.add('dark');
-            }
-        })();
-    </script>
+<script>
+    // Dark mode: apply before paint to avoid flash
+    // Defaults to dark unless the user has explicitly chosen light mode
+    (function() {
+        if (localStorage.getItem('darkMode') !== 'false') {
+            document.documentElement.classList.add('dark');
+        }
+    })();
+</script>
     <style>
         html.dark body { background-color: #111827 !important; color: #f3f4f6; }
         html.dark nav { background-color: #1f2937 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
