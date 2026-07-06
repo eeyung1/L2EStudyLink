@@ -8,9 +8,8 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/golang-jwt/jwt/v5"
     "golang.org/x/crypto/bcrypt"
+    "L2EStudyLink/config"
 )
-
-var jwtSecret = []byte("your-super-secret-key-change-this-later")
 
 func Signup(c *gin.Context) {
     var input struct {
@@ -87,7 +86,7 @@ func Login(c *gin.Context) {
         "exp":     time.Now().Add(time.Hour * 24).Unix(),
     })
 
-    tokenString, err := token.SignedString(jwtSecret)
+    tokenString, err := token.SignedString(config.JWTSecret())
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
         return

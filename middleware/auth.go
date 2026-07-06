@@ -6,9 +6,9 @@ import (
 
     "github.com/gin-gonic/gin"
     "github.com/golang-jwt/jwt/v5"
-)
 
-var jwtSecret = []byte("your-super-secret-key-change-this-later")
+    "L2EStudyLink/config"
+)
 
 func AuthRequired(c *gin.Context) {
     authHeader := c.GetHeader("Authorization")
@@ -28,7 +28,7 @@ func AuthRequired(c *gin.Context) {
     tokenString := parts[1]
 
     token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-        return jwtSecret, nil
+        return config.JWTSecret(), nil
     })
 
     if err != nil || !token.Valid {
