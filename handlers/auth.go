@@ -5,6 +5,7 @@ import (
     "net/http"
     "time"
 
+    "github.com/lib/pq"
     "github.com/gin-gonic/gin"
     "github.com/golang-jwt/jwt/v5"
     "golang.org/x/crypto/bcrypt"
@@ -38,7 +39,11 @@ func Signup(c *gin.Context) {
     ).Scan(&userID)
 
     if err != nil {
-        c.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
+        if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+            c.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
+            return
+        }
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create account. Please try again."})
         return
     }
 
@@ -71,8 +76,12 @@ func Login(c *gin.Context) {
         input.Email,
     ).Scan(&user.ID, &user.Name, &user.PasswordHash)
 
-    if err != nil {
+    if err == sql.ErrNoRows {
         c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+        return
+    }
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong. Please try again."})
         return
     }
 
