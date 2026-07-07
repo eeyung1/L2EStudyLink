@@ -51,7 +51,15 @@ func main() {
     router.GET("/admin", func(c *gin.Context) {
         c.HTML(200, "admin.html", nil)
     })
+
+    router.GET("/page/forgot-password", func(c *gin.Context) {
+    c.HTML(200, "forgot-password.html", nil)
+    })
     
+    router.GET("/page/reset-password", func(c *gin.Context) {
+        c.HTML(200, "reset-password.html", nil)
+    })
+        
     router.GET("/timetable", func(c *gin.Context) {
         c.HTML(200, "timetable.html", nil)
     })
@@ -77,6 +85,8 @@ func main() {
     {
         api.POST("/signup", handlers.Signup)
         api.POST("/login", handlers.Login)
+        api.POST("/forgot-password", handlers.ForgotPassword)
+        api.POST("/reset-password", handlers.ResetPassword)
         api.GET("/ping", func(c *gin.Context) {
             c.JSON(200, gin.H{"message": "pong"})
         })

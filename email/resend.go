@@ -15,9 +15,10 @@ type ResendRequest struct {
     Html    string `json:"html"`
 }
 
-var apiKey = os.Getenv("RESEND_API_KEY")
+// var apiKey = os.Getenv("RESEND_API_KEY")
 
 func SendEmail(to, subject, htmlContent string) error {
+    apiKey := os.Getenv("RESEND_API_KEY")
     if apiKey == "" {
         return fmt.Errorf("RESEND_API_KEY not set")
     }

@@ -80,30 +80,34 @@ background-image:
 <body>
     <div class="max-w-md mx-auto">
         <div class="rounded-lg shadow p-8" style="background:#12151f; color:#e5e7eb; border:1px solid rgba(255,255,255,0.08);">
-            <h1 class="text-2xl font-bold text-center mb-6" style="color:#7c3aed;">L2EStudyLink</h1>
-            <h2 class="text-xl font-bold mb-6 text-center">Login</h2>
+    <div class="flex justify-center mb-6">
+        <div class="flex items-center justify-center" style="width:64px; height:64px; border-radius:16px; background:#1f2330; border:1px solid rgba(255,255,255,0.08);">
+    <span style="font-size:28px;"></span>        </div>
+    </div>
+    <h1 class="text-2xl font-bold text-center mb-2" style="color:#f3f4f6;">Welcome back</h1>
+    <p class="text-center text-sm mb-6" style="color:#9ca3af;">Log in to L2EStudyLink to continue</p>
 
-            <form id="loginForm">
-                <div class="mb-4">
-                    <label class="block text-sm font-bold mb-2" style="color:#d1d5db;">Email</label>
-                    <input type="email" id="email" required class="w-full p-2 rounded focus:outline-none" style="background:#1f2330; color:#f3f4f6; border:1px solid #374151;">
-                </div>
-                <div class="mb-2">
-                    <label class="block text-sm font-bold mb-2" style="color:#d1d5db;">Password</label>
-                    <input type="password" id="password" required class="w-full p-2 rounded focus:outline-none" style="background:#1f2330; color:#f3f4f6; border:1px solid #374151;">
-                </div>
-                <p class="text-right text-sm mb-6">
-                    <a href="/page/forgot-password" style="color:#a78bfa;" class="hover:underline">Forgot password?</a>
-                </p>
-                <button type="submit" class="w-full text-white py-2 rounded" style="background:#7c3aed;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'">Login</button>
-            </form>
+          <form id="loginForm">
+    <div class="mb-4">
+        <label class="block text-sm font-medium mb-2" style="color:#9ca3af;">Email</label>
+        <input type="email" id="email" required placeholder="you@example.com" class="w-full px-3 py-2.5 rounded-lg focus:outline-none" style="background:#1f2330; color:#f3f4f6; border:1px solid #374151;">
+    </div>
+    <div class="mb-3">
+        <label class="block text-sm font-medium mb-2" style="color:#9ca3af;">Password</label>
+        <input type="password" id="password" required placeholder="••••••••" class="w-full px-3 py-2.5 rounded-lg focus:outline-none" style="background:#1f2330; color:#f3f4f6; border:1px solid #374151;">
+    </div>
+    <p class="text-right text-sm mb-6">
+        <a href="/page/forgot-password" style="color:#a78bfa;" class="hover:underline">Forgot password?</a>
+    </p>
+    <button type="submit" class="w-full font-medium text-white py-2.5 rounded-lg" style="background:#7c3aed;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'">Log in</button>
+    </form>
 
-            <p class="text-center mt-4 text-sm" style="color:#9ca3af;">
-                Don't have an account?
-                <a href="/page/signup" style="color:#a78bfa;" class="hover:underline">Sign up</a>
-            </p>
+       <p class="text-center mt-6 text-sm" style="color:#9ca3af;">
+    Don't have an account?
+    <a href="/page/signup" style="color:#a78bfa; font-weight:500;" class="hover:underline">Sign up</a>
+    </p>
 
-            <div id="error" class="mt-4 text-sm text-center hidden" style="color:#f87171;"></div>
+    <div id="error" class="mt-4 text-sm text-center hidden" style="color:#f87171;"></div>
         </div>
     </div>
 
