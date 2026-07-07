@@ -20,3 +20,13 @@
 
 then run `http://localhost:8080/`
 
+
+# Database
+
+start: 
+
+sudo service postgresql start
+
+confirm:
+sudo service postgresql status
+
