@@ -29,6 +29,9 @@ func main() {
         c.Next()
     })
 
+    // Static assets (CSS, JS, images)
+    router.Static("/static", "./static")
+
     // Static HTML pages
     router.LoadHTMLGlob("templates/*.html")
     
