@@ -3,50 +3,92 @@
 <head>
     <title>Login - L2EStudyLink</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Dark mode: apply before paint to avoid flash
-        (function() {
-            if (localStorage.getItem('darkMode') === 'true') {
-                document.documentElement.classList.add('dark');
-            }
-        })();
-    </script>
-   <link rel="stylesheet" href="/static/css/dark-mode.css">
-    <link rel="stylesheet" href="/static/css/auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/login.css">
 </head>
 <body>
-    <div class="max-w-md mx-auto">
-        <div class="rounded-lg shadow p-8" style="background:#12151f; color:#e5e7eb; border:1px solid rgba(255,255,255,0.08);">
-    <div class="flex justify-center mb-6">
-        <div class="flex items-center justify-center" style="width:64px; height:64px; border-radius:16px; background:#1f2330; border:1px solid rgba(255,255,255,0.08);">
-    <span style="font-size:28px;"></span>        </div>
-    </div>
-    <h1 class="text-2xl font-bold text-center mb-2" style="color:#f3f4f6;">Welcome back</h1>
-    <p class="text-center text-sm mb-6" style="color:#9ca3af;">Log in to L2EStudyLink to continue</p>
+    <div class="login-shell">
+        <aside class="login-hero">
+            <svg class="hero-network" viewBox="0 0 500 800" preserveAspectRatio="xMidYMid slice">
+                <line x1="60" y1="120" x2="180" y2="220"></line>
+                <line x1="180" y1="220" x2="120" y2="360"></line>
+                <line x1="180" y1="220" x2="320" y2="180"></line>
+                <line x1="320" y1="180" x2="420" y2="280"></line>
+                <line x1="120" y1="360" x2="260" y2="420"></line>
+                <line x1="260" y1="420" x2="320" y2="180"></line>
+                <line x1="260" y1="420" x2="180" y2="560"></line>
+                <line x1="180" y1="560" x2="340" y2="600"></line>
+                <line x1="340" y1="600" x2="420" y2="280"></line>
+                <line x1="60" y1="120" x2="320" y2="180"></line>
+                <line x1="120" y1="360" x2="340" y2="600"></line>
+                <circle cx="60" cy="120" r="4"></circle>
+                <circle cx="180" cy="220" r="5" class="node-accent"></circle>
+                <circle cx="120" cy="360" r="4"></circle>
+                <circle cx="320" cy="180" r="4"></circle>
+                <circle cx="420" cy="280" r="4"></circle>
+                <circle cx="260" cy="420" r="5" class="node-accent"></circle>
+                <circle cx="180" cy="560" r="4"></circle>
+                <circle cx="340" cy="600" r="4"></circle>
+            </svg>
+            <div class="hero-content">
+                <p class="hero-wordmark">L2EStudyLink</p>
+                <p class="hero-tagline">Where students connect and learn together</p>
+            </div>
+        </aside>
 
-          <form id="loginForm">
-    <div class="mb-4">
-        <label class="block text-sm font-medium mb-2" style="color:#9ca3af;">Email</label>
-        <input type="email" id="email" required placeholder="you@example.com" class="w-full px-3 py-2.5 rounded-lg focus:outline-none" style="background:#1f2330; color:#f3f4f6; border:1px solid #374151;">
-    </div>
-    <div class="mb-3">
-        <label class="block text-sm font-medium mb-2" style="color:#9ca3af;">Password</label>
-        <input type="password" id="password" required placeholder="••••••••" class="w-full px-3 py-2.5 rounded-lg focus:outline-none" style="background:#1f2330; color:#f3f4f6; border:1px solid #374151;">
-    </div>
-    <p class="text-right text-sm mb-6">
-        <a href="/page/forgot-password" style="color:#a78bfa;" class="hover:underline">Forgot password?</a>
-    </p>
-    <button type="submit" class="w-full font-medium text-white py-2.5 rounded-lg" style="background:#7c3aed;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'">Log in</button>
-    </form>
+        <main class="login-panel">
+            <div class="login-card">
+                <div class="login-icon-badge">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                </div>
+                <h1 class="login-title">Welcome back</h1>
+                <p class="login-subtitle">Sign in to continue your study journey</p>
 
-       <p class="text-center mt-6 text-sm" style="color:#9ca3af;">
-    Don't have an account?
-    <a href="/page/signup" style="color:#a78bfa; font-weight:500;" class="hover:underline">Sign up</a>
-    </p>
+                <form id="loginForm">
+                    <label class="field-label" for="email">Email</label>
+                    <div class="input-group">
+                        <span class="field-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                            </svg>
+                        </span>
+                        <input type="email" id="email" required placeholder="you@example.com">
+                    </div>
 
-    <div id="error" class="mt-4 text-sm text-center hidden" style="color:#f87171;"></div>
-        </div>
+                    <label class="field-label" for="password">Password</label>
+                    <div class="input-group">
+                        <span class="field-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </span>
+                        <input type="password" id="password" required placeholder="••••••••">
+                        <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="form-row-between">
+                        <a href="/page/forgot-password" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Sign in</button>
+                </form>
+
+                <p class="signup-note">Don't have an account? <a href="/page/signup">Sign up</a></p>
+
+                <div id="error" class="login-error hidden"></div>
+            </div>
+        </main>
     </div>
 
     <script>
@@ -81,17 +123,12 @@
             }
         });
 
-        function toggleDark() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('darkMode', isDark);
-            document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
-        }
-        // Sync icon on load
-        if (localStorage.getItem('darkMode') === 'true') {
-            const btn = document.getElementById('darkToggle');
-            if (btn) btn.textContent = '☀️';
-        }
-
+        document.getElementById('togglePw').addEventListener('click', function() {
+            const pwInput = document.getElementById('password');
+            const isPassword = pwInput.type === 'password';
+            pwInput.type = isPassword ? 'text' : 'password';
+            this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+        });
     </script>
 </body>
 </html>
