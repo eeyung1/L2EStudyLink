@@ -3,128 +3,176 @@
 <head>
     <title>Dashboard - L2EStudyLink</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-<script>
-    // Dark mode: apply before paint to avoid flash
-    // Defaults to dark unless the user has explicitly chosen light mode
-    (function() {
-        if (localStorage.getItem('darkMode') !== 'false') {
-            document.documentElement.classList.add('dark');
-        }
-    })();
-</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            if (localStorage.getItem('darkMode') !== 'false') {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="/static/css/dark-mode.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <style>body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; }</style>
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <h1 class="text-xl font-bold text-blue-600">L2EStudyLink</h1>
-                </div>
-                <div class="flex space-x-4">
-                    <a href="/dashboard" class="text-gray-700 hover:text-blue-600">Dashboard</a>
-                    <a href="/search-page" class="text-gray-700 hover:text-blue-600">Find Study Partners</a>
-                    <a href="/my-bookings" class="text-gray-700 hover:text-blue-600">My Study Sessions</a>
-                    <a href="/timetable" class="text-gray-700 hover:text-blue-600">Timetable</a>
-                    <a href="/reflections" class="text-gray-700 hover:text-blue-600">Reflections</a>
-                    <div id="adminNavLink" class="hidden">
-                        <a href="/admin" class="text-gray-700 hover:text-blue-600">Admin</a>
-                    </div>
-                    <button id="darkToggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
-                    <button onclick="logout()" class="text-red-600 hover:text-red-800">Logout</button>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <p class="sidebar-brand">L2E<span>Study</span>Link</p>
 
-    <div class="max-w-7xl mx-auto px-4 py-8">
-        <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 mb-6 text-white shadow-lg">
-            <div class="flex items-center justify-between">
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="sidebar-link active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
+                    Dashboard
+                </a>
+                <a href="/search-page" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    Find Study Partners
+                </a>
+                <a href="/my-bookings" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path><path d="m9 15 2 2 4-4"></path></svg>
+                    My Study Sessions
+                </a>
+                <a href="/timetable" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+                    Timetable
+                </a>
+                <a href="/reflections" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg>
+                    Reflections
+                </a>
+                <div id="adminNavLink" class="hidden">
+                    <a href="/admin" class="sidebar-link">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3Z"></path></svg>
+                        Admin
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-foot">
+                <button class="logout-link" onclick="logout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+                    Logout
+                </button>
+                <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
                 <div>
-                    <h2 class="text-2xl font-bold mb-2">🚀 Make Peer Learning Work!</h2>
-                    <p class="text-lg mb-1">Add your skills and availability to start getting booked.</p>
-                    <p class="text-sm opacity-90">The more you share, the more others can learn from you.</p>
+                    <h1 class="page-title" id="greeting">Welcome back</h1>
+                    <p class="page-sub">Here's what's happening with your peer learning.</p>
                 </div>
-                <div class="text-5xl">📚</div>
             </div>
-            <div class="mt-4 flex gap-3">
-                <button onclick="scrollToSkills()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition">+ Add Skill</button>
-                <button onclick="scrollToAvailability()" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition">📅 Set Availability</button>
-            </div>
-        </div>
 
-        <div id="profile" class="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 class="text-2xl font-bold mb-4">Loading profile...</h2>
-        </div>
-        
-        <div id="skillsSection" class="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 class="text-xl font-bold mb-4">Your Skills</h3>
-            <div id="skills" class="mb-4"></div>
-            <div class="flex gap-2">
-                <input type="text" id="newSkillName" placeholder="Skill name (e.g., Go, Python)" class="border rounded p-2 flex-1">
-                <select id="newSkillProficiency" class="border rounded p-2">
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                </select>
-                <button onclick="addSkill()" class="bg-green-600 text-white px-4 py-2 rounded">+ Add Skill</button>
-            </div>
-        </div>
-        
-        <div id="availabilitySection" class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-xl font-bold mb-4">Your Availability (When can you tutor?)</h3>
-            <div id="availability" class="mb-4"></div>
-            <div class="bg-gray-50 p-4 rounded-lg mt-4">
-                <h4 class="font-bold mb-3">Add New Availability Slot</h4>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    <select id="availDay" class="p-2 border rounded">
-                        <option value="0">Monday</option>
-                        <option value="1">Tuesday</option>
-                        <option value="2">Wednesday</option>
-                        <option value="3">Thursday</option>
-                        <option value="4">Friday</option>
-                        <option value="5">Saturday</option>
-                        <option value="6">Sunday</option>
-                    </select>
-                    <select id="availStartHour" class="p-2 border rounded">
-                        <option value="00">12:00 AM</option><option value="01">01:00 AM</option><option value="02">02:00 AM</option>
-                        <option value="03">03:00 AM</option><option value="04">04:00 AM</option><option value="05">05:00 AM</option>
-                        <option value="06">06:00 AM</option><option value="07">07:00 AM</option><option value="08">08:00 AM</option>
-                        <option value="09">09:00 AM</option><option value="10">10:00 AM</option><option value="11">11:00 AM</option>
-                        <option value="12">12:00 PM</option><option value="13">01:00 PM</option><option value="14">02:00 PM</option>
-                        <option value="15">03:00 PM</option><option value="16">04:00 PM</option><option value="17">05:00 PM</option>
-                        <option value="18">06:00 PM</option><option value="19">07:00 PM</option><option value="20">08:00 PM</option>
-                        <option value="21">09:00 PM</option><option value="22">10:00 PM</option><option value="23">11:00 PM</option>
-                    </select>
-                    <select id="availEndHour" class="p-2 border rounded">
-                        <option value="01">01:00 AM</option><option value="02">02:00 AM</option><option value="03">03:00 AM</option>
-                        <option value="04">04:00 AM</option><option value="05">05:00 AM</option><option value="06">06:00 AM</option>
-                        <option value="07">07:00 AM</option><option value="08">08:00 AM</option><option value="09">09:00 AM</option>
-                        <option value="10">10:00 AM</option><option value="11">11:00 AM</option><option value="12">12:00 PM</option>
-                        <option value="13">01:00 PM</option><option value="14">02:00 PM</option><option value="15">03:00 PM</option>
-                        <option value="16">04:00 PM</option><option value="17">05:00 PM</option><option value="18">06:00 PM</option>
-                        <option value="19">07:00 PM</option><option value="20">08:00 PM</option><option value="21">09:00 PM</option>
-                        <option value="22">10:00 PM</option><option value="23">11:00 PM</option><option value="00">12:00 AM</option>
-                    </select>
-                    <button onclick="addAvailabilitySlot()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Slot</button>
+            <div class="activation-banner">
+                <div>
+                    <h2>Make peer learning work</h2>
+                    <p>Add your skills and availability so other students can find and book you.</p>
+                </div>
+                <div class="activation-actions">
+                    <button class="activation-btn" onclick="scrollToSkills()">+ Add skill</button>
+                    <button class="activation-btn" onclick="scrollToAvailability()">Set availability</button>
                 </div>
             </div>
-        </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <p class="stat-label">Rating</p>
+                    <p class="stat-value" id="statRating">—</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Reviews</p>
+                    <p class="stat-value" id="statReviews">—</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Skills listed</p>
+                    <p class="stat-value" id="statSkills">—</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Availability slots</p>
+                    <p class="stat-value" id="statAvailability">—</p>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div>
+                    <div id="skillsSection" class="card">
+                        <h3>Your skills</h3>
+                        <div id="skills" class="mb-4"></div>
+                        <div class="field-row">
+                            <input type="text" id="newSkillName" placeholder="Skill name (e.g., Go, Python)">
+                            <select id="newSkillProficiency">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                            <button onclick="addSkill()" class="btn-add">+ Add</button>
+                        </div>
+                    </div>
+
+                    <div id="availabilitySection" class="card">
+                        <h3>Your availability (when can you tutor?)</h3>
+                        <div id="availability"></div>
+                        <div class="avail-form">
+                            <h4>Add new availability slot</h4>
+                            <div class="avail-form-grid">
+                                <select id="availDay">
+                                    <option value="0">Monday</option>
+                                    <option value="1">Tuesday</option>
+                                    <option value="2">Wednesday</option>
+                                    <option value="3">Thursday</option>
+                                    <option value="4">Friday</option>
+                                    <option value="5">Saturday</option>
+                                    <option value="6">Sunday</option>
+                                </select>
+                                <select id="availStartHour">
+                                    <option value="00">12:00 AM</option><option value="01">01:00 AM</option><option value="02">02:00 AM</option>
+                                    <option value="03">03:00 AM</option><option value="04">04:00 AM</option><option value="05">05:00 AM</option>
+                                    <option value="06">06:00 AM</option><option value="07">07:00 AM</option><option value="08">08:00 AM</option>
+                                    <option value="09" selected>09:00 AM</option><option value="10">10:00 AM</option><option value="11">11:00 AM</option>
+                                    <option value="12">12:00 PM</option><option value="13">01:00 PM</option><option value="14">02:00 PM</option>
+                                    <option value="15">03:00 PM</option><option value="16">04:00 PM</option><option value="17">05:00 PM</option>
+                                    <option value="18">06:00 PM</option><option value="19">07:00 PM</option><option value="20">08:00 PM</option>
+                                    <option value="21">09:00 PM</option><option value="22">10:00 PM</option><option value="23">11:00 PM</option>
+                                </select>
+                                <select id="availEndHour">
+                                    <option value="01">01:00 AM</option><option value="02">02:00 AM</option><option value="03">03:00 AM</option>
+                                    <option value="04">04:00 AM</option><option value="05">05:00 AM</option><option value="06">06:00 AM</option>
+                                    <option value="07">07:00 AM</option><option value="08">08:00 AM</option><option value="09">09:00 AM</option>
+                                    <option value="10">10:00 AM</option><option value="11">11:00 AM</option><option value="12">12:00 PM</option>
+                                    <option value="13">01:00 PM</option><option value="14">02:00 PM</option><option value="15">03:00 PM</option>
+                                    <option value="16">04:00 PM</option><option value="17" selected>05:00 PM</option><option value="18">06:00 PM</option>
+                                    <option value="19">07:00 PM</option><option value="20">08:00 PM</option><option value="21">09:00 PM</option>
+                                    <option value="22">10:00 PM</option><option value="23">11:00 PM</option><option value="00">12:00 AM</option>
+                                </select>
+                                <button onclick="addAvailabilitySlot()">Add slot</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="profile" class="card">
+                    <p class="page-sub">Loading profile...</p>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/page/login';
-        
+
         let currentAvailability = [];
         let currentUser = {};
-        
+
         function scrollToSkills() { document.getElementById('skillsSection').scrollIntoView({ behavior: 'smooth' }); }
         function scrollToAvailability() { document.getElementById('availabilitySection').scrollIntoView({ behavior: 'smooth' }); }
-        
+
         async function logout() { localStorage.removeItem('token'); window.location.href = '/page/login'; }
-        
+
         function formatTime(timeStr) {
             if (!timeStr) return '';
             if (timeStr.includes('T')) {
@@ -136,7 +184,7 @@
             }
             return convertTo12Hour(timeStr.substring(0, 5));
         }
-        
+
         function convertTo12Hour(time24) {
             const [hours, minutes] = time24.split(':');
             const hour = parseInt(hours);
@@ -144,32 +192,52 @@
             const hour12 = hour % 12 || 12;
             return `${hour12}:${minutes} ${ampm}`;
         }
-        
+
+        function initials(name) {
+            if (!name) return '?';
+            return name.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('');
+        }
+
         async function loadProfile() {
             const res = await fetch('/api/v1/me', { headers: { 'Authorization': `Bearer ${token}` } });
             currentUser = await res.json();
             if (currentUser.is_admin) document.getElementById('adminNavLink').classList.remove('hidden');
-            
-            const discordDisplay = currentUser.discord_username ? currentUser.discord_username : '<span class="text-red-500">Not set</span>';
+
+            document.getElementById('greeting').textContent = `Welcome back, ${currentUser.name}`;
+            document.getElementById('statRating').textContent = `${currentUser.rating ?? '—'} ★`;
+            document.getElementById('statReviews').textContent = currentUser.total_reviews ?? 0;
+
+            const discordDisplay = currentUser.discord_username ? currentUser.discord_username : 'Not set';
             document.getElementById('profile').innerHTML = `
-                <h2 class="text-2xl font-bold mb-4">Welcome, ${currentUser.name}!</h2>
-                <p><strong>Email:</strong> ${currentUser.email}</p>
-                <p><strong>Discord ID:</strong> ${discordDisplay}</p>
-                <p><strong>Bio:</strong> ${currentUser.bio || 'Not set'}</p>
-                <p><strong>Rating:</strong> ⭐ ${currentUser.rating} (${currentUser.total_reviews} reviews)</p>
-                <button onclick="showEditProfile()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Edit Profile</button>
+                <div class="profile-avatar">${initials(currentUser.name)}</div>
+                <p class="profile-name">${currentUser.name}</p>
+                <p class="profile-rating">★ ${currentUser.rating} · ${currentUser.total_reviews} reviews</p>
+                <div class="profile-row">
+                    <span class="profile-row-label">Email</span>
+                    <span class="profile-row-value">${currentUser.email}</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-row-label">Discord ID</span>
+                    <span class="profile-row-value">${discordDisplay}</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-row-label">Bio</span>
+                    <span class="profile-row-value">${currentUser.bio || 'Not set'}</span>
+                </div>
+                <button onclick="showEditProfile()" class="btn-outline">Edit profile</button>
             `;
             await loadSkills();
             await loadAvailability();
         }
-        
+
         async function loadSkills() {
             const res = await fetch('/api/v1/me', { headers: { 'Authorization': `Bearer ${token}` } });
             const user = await res.json();
-            const skillsHtml = user.skills?.map(s => `<span class="bg-blue-100 px-3 py-1 rounded-full text-sm mr-2 inline-block mb-2">${s.name} (${s.proficiency})</span>`).join('') || 'No skills yet';
+            const skillsHtml = user.skills?.map(s => `<span class="skill-pill">${s.name} (${s.proficiency})</span>`).join('') || '<p class="page-sub">No skills yet</p>';
             document.getElementById('skills').innerHTML = skillsHtml;
+            document.getElementById('statSkills').textContent = user.skills?.length || 0;
         }
-        
+
         async function addSkill() {
             const skillName = document.getElementById('newSkillName').value;
             const proficiency = document.getElementById('newSkillProficiency').value;
@@ -181,23 +249,23 @@
             if (res.ok) { document.getElementById('newSkillName').value = ''; await loadSkills(); }
             else alert('Failed to add skill');
         }
-        
+
         async function loadAvailability() {
             const res = await fetch('/api/v1/availability', { headers: { 'Authorization': `Bearer ${token}` } });
             currentAvailability = await res.json();
+            document.getElementById('statAvailability').textContent = currentAvailability.length;
             const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-            if (!currentAvailability.length) { document.getElementById('availability').innerHTML = '<div class="text-gray-500">No availability set.</div>'; return; }
-            let html = '<div class="space-y-2">';
+            if (!currentAvailability.length) { document.getElementById('availability').innerHTML = '<p class="page-sub">No availability set.</p>'; return; }
+            let html = '';
             for (let i = 0; i < currentAvailability.length; i++) {
                 const slot = currentAvailability[i];
                 const startTime = formatTime(slot.start_time);
                 const endTime = formatTime(slot.end_time);
-                html += `<div class="bg-gray-100 p-2 rounded flex justify-between"><span>${days[slot.day_of_week]}: ${startTime} - ${endTime}</span><button onclick="deleteAvailability(${i})" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Delete</button></div>`;
+                html += `<div class="avail-slot"><span>${days[slot.day_of_week]}: ${startTime} - ${endTime}</span><button onclick="deleteAvailability(${i})" class="btn-delete">Delete</button></div>`;
             }
-            html += '</div>';
             document.getElementById('availability').innerHTML = html;
         }
-        
+
         async function deleteAvailability(index) {
             if (!confirm('Remove this slot?')) return;
             const newAvailability = [...currentAvailability];
@@ -206,7 +274,7 @@
             if (res.ok) await loadAvailability();
             else alert('Failed');
         }
-        
+
         async function addAvailabilitySlot() {
             const day = parseInt(document.getElementById('availDay').value);
             const startHour = document.getElementById('availStartHour').value;
@@ -219,7 +287,7 @@
             if (res.ok) { await loadAvailability(); document.getElementById('availStartHour').value = '09'; document.getElementById('availEndHour').value = '17'; }
             else alert('Failed');
         }
-        
+
         function showEditProfile() {
             const discord = prompt('Discord ID:', currentUser.discord_username || '');
             const bio = prompt('Bio:', currentUser.bio || '');
@@ -227,20 +295,18 @@
                 fetch('/api/v1/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ discord_username: discord, bio: bio }) }).then(() => loadProfile());
             }
         }
-        
+
         loadProfile();
-    
+
         function toggleDark() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('darkMode', isDark);
             document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
         }
-        // Sync icon on load
         if (localStorage.getItem('darkMode') === 'true') {
             const btn = document.getElementById('darkToggle');
             if (btn) btn.textContent = '☀️';
         }
-
     </script>
 </body>
 </html>
