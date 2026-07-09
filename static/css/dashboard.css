@@ -431,6 +431,48 @@
     background: #1d4ed8;
 }
 
+/* Day-chip picker (timetable multi-day add block) ------------------- */
+.day-picker {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.day-chip {
+    padding: 8px 0;
+    width: 44px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.day-chip:hover {
+    border-color: #94a3b8;
+}
+
+.day-chip.selected {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+html.dark .day-chip {
+    background: #111827;
+    border-color: #374151;
+    color: #d1d5db;
+}
+
+html.dark .day-chip.selected {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
 /* Responsive: collapse sidebar to a top bar on narrow screens -------- */
 @media (max-width: 860px) {
     .sidebar {
