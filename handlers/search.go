@@ -2,6 +2,7 @@ package handlers
 
 import (
     "database/sql"
+    "fmt"
     "net/http"
     "strings"
 
@@ -18,9 +19,13 @@ func SearchTutorsWithAvailability(c *gin.Context) {
         return
     }
 
-    // Single JOIN query: fetch every (tutor, availability_slot) row at once.
-    // availability columns are nullable because of the LEFT JOIN — a tutor
-    // with no availability rows still appears once with NULL slot columns.
+    // Single query: fetch every (tutor, availability_slot) row at once.
+    // Skill matching is done via EXISTS rather than a JOIN — joining the
+    // skills table directly would multiply each availability row once per
+    // matching skill (e.g. a tutor with 2 skills matching the search term
+    // would show every availability slot twice). availability columns are
+    // nullable because of the LEFT JOIN — a tutor with no availability rows
+    // still appears once with NULL slot columns.
     rows, err := db.Query(`
         SELECT
             u.id,
@@ -33,9 +38,10 @@ func SearchTutorsWithAvailability(c *gin.Context) {
             a.start_time,
             a.end_time
         FROM users u
-        JOIN skills s ON u.id = s.user_id
         LEFT JOIN availability a ON u.id = a.user_id
-        WHERE s.skill_name ILIKE $1
+        WHERE EXISTS (
+            SELECT 1 FROM skills s WHERE s.user_id = u.id AND s.skill_name ILIKE $1
+        )
         ORDER BY u.id, a.day_of_week, a.start_time
     `, "%"+skillQuery+"%")
 
@@ -63,6 +69,7 @@ func SearchTutorsWithAvailability(c *gin.Context) {
 
     tutorMap := map[int64]*Tutor{}
     tutorOrder := []int64{} // preserve ORDER BY u.id result order
+    seenSlot := map[int64]map[string]bool{} // per-tutor dedup, belt-and-braces against duplicate rows
 
     for rows.Next() {
         var (
@@ -97,11 +104,20 @@ func SearchTutorsWithAvailability(c *gin.Context) {
         }
 
         if dayOfWeek.Valid && rawStart.Valid && rawEnd.Valid {
-            tutor.Availability = append(tutor.Availability, AvailSlot{
-                DayOfWeek: int(dayOfWeek.Int64),
-                StartTime: normaliseTime(rawStart.String),
-                EndTime:   normaliseTime(rawEnd.String),
-            })
+            start := normaliseTime(rawStart.String)
+            end := normaliseTime(rawEnd.String)
+            key := fmt.Sprintf("%d|%s|%s", dayOfWeek.Int64, start, end)
+            if seenSlot[id] == nil {
+                seenSlot[id] = map[string]bool{}
+            }
+            if !seenSlot[id][key] {
+                seenSlot[id][key] = true
+                tutor.Availability = append(tutor.Availability, AvailSlot{
+                    DayOfWeek: int(dayOfWeek.Int64),
+                    StartTime: start,
+                    EndTime:   end,
+                })
+            }
         }
     }
 
