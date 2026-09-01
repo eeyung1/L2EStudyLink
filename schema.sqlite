@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     total_sessions INTEGER DEFAULT 0,
     no_show_count INTEGER DEFAULT 0,
     is_suspended INTEGER DEFAULT 0,
+    is_admin INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -85,6 +86,35 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
 
 CREATE INDEX IF NOT EXISTS idx_password_reset_token ON password_reset_tokens(token);
 
+-- Timetable table (personal weekly study blocks)
+CREATE TABLE IF NOT EXISTS timetable (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    day_of_week INTEGER CHECK (day_of_week >= 0 AND day_of_week <= 6),
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    activity TEXT NOT NULL,
+    goal TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Activity logs (reflections on timetable blocks)
+CREATE TABLE IF NOT EXISTS activity_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timetable_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    log_date TEXT NOT NULL,
+    summary TEXT NOT NULL DEFAULT '',
+    challenges TEXT NOT NULL DEFAULT '',
+    learnings TEXT NOT NULL DEFAULT '',
+    completed INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (timetable_id) REFERENCES timetable(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(timetable_id, user_id, log_date)
+);
+
 -- Indexes
 CREATE INDEX idx_skills_user ON skills(user_id);
 CREATE INDEX idx_skills_name ON skills(skill_name);
@@ -93,3 +123,6 @@ CREATE INDEX idx_bookings_tutor ON bookings(tutor_id);
 CREATE INDEX idx_bookings_student ON bookings(student_id);
 CREATE INDEX idx_bookings_date ON bookings(session_date);
 CREATE INDEX idx_reviews_reviewee ON reviews(reviewee_id);
+CREATE INDEX idx_timetable_user ON timetable(user_id);
+CREATE INDEX idx_activity_logs_timetable ON activity_logs(timetable_id);
+CREATE INDEX idx_activity_logs_user ON activity_logs(user_id);
