@@ -39,6 +39,8 @@ func main() {
         c.Redirect(302, "/page/login")
     })
     
+    router.GET("/skills", func(c *gin.Context) { c.HTML(200, "skills.html", nil) })
+    router.GET("/availability", func(c *gin.Context) { c.HTML(200, "availability.html", nil) })
     router.GET("/dashboard", func(c *gin.Context) {
         c.HTML(200, "dashboard.html", nil)
     })

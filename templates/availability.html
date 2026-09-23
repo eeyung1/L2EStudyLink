@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Availability - L2EStudyLink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            if (localStorage.getItem('darkMode') !== 'false') {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="/static/css/dark-mode.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <script src="/static/js/mobile-nav.js" defer></script>
+    <style>body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; }</style>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-heading">
+                <a class="sidebar-brand" href="/dashboard" aria-label="L2EStudyLink dashboard">L2E<span>Study</span>Link</a>
+                <button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false">
+                    <span class="menu-icon" aria-hidden="true">☰</span>
+                    <span class="menu-label">Menu</span>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav" id="mobile-navigation">
+                <a href="/dashboard" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
+                    Dashboard
+                </a>
+                <a href="/search-page" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    Find Study Partners
+                </a>
+                <a href="/my-bookings" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path><path d="m9 15 2 2 4-4"></path></svg>
+                    My Study Sessions
+                </a>
+                <a href="/skills" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></svg> Skills</a>
+                <a href="/availability" class="sidebar-link active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Availability</a>
+                <a href="/projects" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
+                    Projects
+                </a>
+                <a href="/masterclass" class="sidebar-link">✦ <span>Masterclass</span></a>
+                <a href="/timetable" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+                    Timetable
+                </a>
+                <a href="/reflections" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg>
+                    Reflections
+                </a>
+                <div id="adminNavLink" class="hidden">
+                    <a href="/admin" class="sidebar-link">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3Z"></path></svg>
+                        Admin
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-foot">
+                <button class="logout-link" onclick="logout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+                    Logout
+                </button>
+                <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+            </div>
+        </aside>
+
+        <main class="main-content settings-page"><div id="settingsNotice" class="settings-notice" role="status" aria-live="polite"></div><div class="page-header"><div><h1 class="page-title">Your availability</h1><p class="page-sub">Choose the weekly times when other fellows can book you.</p></div></div>
+                    <div id="availabilitySection" class="card">
+                        <h3>Your availability (when can you tutor?)</h3>
+                        <div id="availability"></div>
+                        <div class="avail-form">
+                            <h4>Add new availability slot</h4>
+                            <form id="availabilityForm" class="avail-form-grid">
+                                <label class="sr-only" for="availDay">Day of week</label><select id="availDay">
+                                    <option value="0">Monday</option>
+                                    <option value="1">Tuesday</option>
+                                    <option value="2">Wednesday</option>
+                                    <option value="3">Thursday</option>
+                                    <option value="4">Friday</option>
+                                    <option value="5">Saturday</option>
+                                    <option value="6">Sunday</option>
+                                </select>
+                                <label class="sr-only" for="availStartHour">Start time</label><select id="availStartHour">
+                                    <option value="00">12:00 AM</option><option value="01">01:00 AM</option><option value="02">02:00 AM</option>
+                                    <option value="03">03:00 AM</option><option value="04">04:00 AM</option><option value="05">05:00 AM</option>
+                                    <option value="06">06:00 AM</option><option value="07">07:00 AM</option><option value="08">08:00 AM</option>
+                                    <option value="09" selected>09:00 AM</option><option value="10">10:00 AM</option><option value="11">11:00 AM</option>
+                                    <option value="12">12:00 PM</option><option value="13">01:00 PM</option><option value="14">02:00 PM</option>
+                                    <option value="15">03:00 PM</option><option value="16">04:00 PM</option><option value="17">05:00 PM</option>
+                                    <option value="18">06:00 PM</option><option value="19">07:00 PM</option><option value="20">08:00 PM</option>
+                                    <option value="21">09:00 PM</option><option value="22">10:00 PM</option><option value="23">11:00 PM</option>
+                                </select>
+                                <label class="sr-only" for="availEndHour">End time</label><select id="availEndHour">
+                                    <option value="01">01:00 AM</option><option value="02">02:00 AM</option><option value="03">03:00 AM</option>
+                                    <option value="04">04:00 AM</option><option value="05">05:00 AM</option><option value="06">06:00 AM</option>
+                                    <option value="07">07:00 AM</option><option value="08">08:00 AM</option><option value="09">09:00 AM</option>
+                                    <option value="10">10:00 AM</option><option value="11">11:00 AM</option><option value="12">12:00 PM</option>
+                                    <option value="13">01:00 PM</option><option value="14">02:00 PM</option><option value="15">03:00 PM</option>
+                                    <option value="16">04:00 PM</option><option value="17" selected>05:00 PM</option><option value="18">06:00 PM</option>
+                                    <option value="19">07:00 PM</option><option value="20">08:00 PM</option><option value="21">09:00 PM</option>
+                                    <option value="22">10:00 PM</option><option value="23">11:00 PM</option><option value="00">12:00 AM</option>
+                                </select>
+                                <button type="submit">Add slot</button>
+                            </form>
+                        </div>
+                    </div>
+        </main></div>
+<script src="/static/js/settings.js" defer></script>
+</body></html>

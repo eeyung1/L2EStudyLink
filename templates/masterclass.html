@@ -41,6 +41,8 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path><path d="m9 15 2 2 4-4"></path></svg>
                     My Study Sessions
                 </a>
+                <a href="/skills" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></svg> Skills</a>
+                <a href="/availability" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Availability</a>
                 <a href="/projects" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
                     Projects
@@ -50,7 +52,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
                     Timetable
                 </a>
-                <a href="/reflections" class="sidebar-link active">
+                <a href="/reflections" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg>
                     Reflections
                 </a>
@@ -71,11 +73,19 @@
             </div>
         </aside>
 
-        <main class="main-content">
-          <div class="page-header"><div><h1 class="page-title">Masterclass</h1><p class="page-sub">Explore a skill with a fellow, then choose a time to learn together.</p></div></div>
-          <section class="card"><h2>What would you like to learn?</h2><p class="page-sub">Find fellows by skill and review their weekly availability. Booking happens on Find Study Partners.</p>
-            <form id="masterclassSearch" class="field-row"><label for="topic">Skill or topic</label><input id="topic" required maxlength="50" placeholder="Try Go, Python, design…"><button type="submit" class="btn-add">Find fellows</button></form>
-            <div id="masterclassResults" class="discovery-grid" role="status" aria-live="polite"></div>
+        <main class="main-content masterclass-page">
+          <div class="page-header"><div><p class="dashboard-eyebrow">LEARN FROM YOUR COMMUNITY</p><h1 class="page-title">Masterclass</h1><p class="page-sub">Find a fellow who knows your topic and book time together right here.</p></div></div>
+          <section class="card"><h2>What would you like to learn?</h2><form id="masterclassSearch" class="field-row"><label class="sr-only" for="topicSearch">Skill or topic</label><input id="topicSearch" required maxlength="50" placeholder="Search a skill, like Go or design"><button type="submit" class="btn-add">Find fellows →</button></form></section>
+          <section aria-labelledby="fellowsTitle"><h2 id="fellowsTitle">Fellows to learn with</h2><div id="masterclassResults" class="discovery-grid" role="status" aria-live="polite">Search a skill to discover available fellows.</div></section>
+          <section class="card masterclass-booking" id="bookingPanel" hidden aria-labelledby="bookingTitle">
+            <h2 id="bookingTitle">Book a learning session</h2><p id="selectedFellow" class="page-sub"></p><p id="bookingMessage" role="status" aria-live="polite"></p>
+            <form id="bookingForm" class="booking-grid">
+              <label for="bookingDate">Date</label><input id="bookingDate" type="date" required>
+              <label for="bookingSlot">Available time</label><select id="bookingSlot" required></select>
+              <label for="sessionTopic">What do you want to learn?</label><input id="sessionTopic" maxlength="200" required placeholder="e.g. Go interfaces">
+              <label for="meetingType">Meeting type</label><select id="meetingType"><option value="online">Online</option><option value="in_person">In person</option></select>
+              <button type="submit" class="btn-add" id="bookButton">Request this session</button>
+            </form>
           </section>
         </main>
     </div>
@@ -83,10 +93,43 @@
     const token=localStorage.getItem('token');if(!token)location.href='/page/login';
     const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const localToday=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+    let fellows=[],chosen=null,myID=null;
+    fetch('/api/v1/me',{headers:{Authorization:'Bearer '+token}}).then(r=>r.json()).then(me=>{myID=me.id;if(me.is_admin)document.getElementById('adminNavLink').classList.remove('hidden');}).catch(()=>{});
+    document.getElementById('bookingDate').min=localToday();document.getElementById('bookingDate').value=localToday();
     document.getElementById('masterclassSearch').addEventListener('submit',async e=>{
-      e.preventDefault();const topic=document.getElementById('topic').value.trim();if(!topic)return;
-      const box=document.getElementById('masterclassResults');box.textContent='Finding fellows…';
-      try {const response=await fetch('/api/v1/search-with-availability?skill='+encodeURIComponent(topic));if(!response.ok)throw Error('Could not search fellows');const fellows=await response.json();box.innerHTML=fellows.length?fellows.filter(f=>Array.isArray(f.availability)&&f.availability.length).map(f=>`<article class="discovery-item"><h3>${escapeHtml(f.name)}</h3><p>${escapeHtml(f.bio)}</p><p>Weekly availability: ${escapeHtml(f.availability.map(a=>`${days[a.day_of_week]} ${a.start_time}–${a.end_time}`).join(' · '))}</p><a href="/search-page?skill=${encodeURIComponent(topic)}">Choose a date &amp; book →</a></article>`).join(''):'<p>No fellows with listed availability for this skill yet. Try another topic.</p>';if(fellows.length&&!box.innerHTML.includes('discovery-item'))box.textContent='No fellows with listed availability for this skill yet. Try another topic.';}catch(error){box.textContent=error.message;}
+      e.preventDefault();const topic=document.getElementById('topicSearch').value.trim();if(!topic)return;
+      const box=document.getElementById('masterclassResults');box.textContent='Finding fellows…';document.getElementById('bookingPanel').hidden=true;chosen=null;
+      try {const response=await fetch('/api/v1/search-with-availability?skill='+encodeURIComponent(topic));if(!response.ok)throw Error('Could not search fellows');
+        fellows=(await response.json()).filter(f=>f.id!==myID && f.availability?.length);
+        box.innerHTML=fellows.length?fellows.map((f,i)=>`<article class="discovery-item"><span class="masterclass-badge">FELLOW-LED LEARNING</span><h3>${escapeHtml(f.name)}</h3><p>${escapeHtml(f.bio || 'Ready to share what they know.')}</p><p><strong>Weekly hours</strong><br>${escapeHtml(f.availability.map(a=>`${days[a.day_of_week]} ${a.start_time}–${a.end_time}`).join(' · '))}</p><button type="button" data-fellow="${i}" class="btn-add">Book with ${escapeHtml(f.name)} →</button></article>`).join(''):'<p>No fellows with listed hours for this skill yet. Try another topic.</p>';
+      }catch(error){box.textContent=error.message;}
+    });
+    document.getElementById('masterclassResults').addEventListener('click',event=>{
+      const button=event.target.closest('[data-fellow]');if(!button)return;
+      chosen=fellows[Number(button.dataset.fellow)];if(!chosen)return;
+      document.getElementById('selectedFellow').textContent='Learning with '+chosen.name;
+      document.getElementById('bookingPanel').hidden=false;document.getElementById('sessionTopic').value=document.getElementById('topicSearch').value.trim();
+      document.getElementById('bookingDate').value=localToday();updateSlots();document.getElementById('bookingPanel').scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    function updateSlots(){
+      const date=document.getElementById('bookingDate').value,select=document.getElementById('bookingSlot');select.replaceChildren();
+      if(!chosen||!date||date<localToday()){document.getElementById('bookingMessage').textContent='Choose today or a future date.';return;}
+      const weekday=(new Date(date+'T12:00:00').getDay()+6)%7;
+      for(const slot of chosen.availability.filter(a=>a.day_of_week===weekday)){
+        const option=document.createElement('option');option.value=slot.start_time+'|'+slot.end_time;option.textContent=slot.start_time+'–'+slot.end_time;select.append(option);
+      }
+      document.getElementById('bookingMessage').textContent=select.options.length?'Select a time and request your session.':'No listed hours on this date. Try another day.';
+    }
+    document.getElementById('bookingDate').addEventListener('change',updateSlots);
+    document.getElementById('bookingForm').addEventListener('submit',async event=>{
+      event.preventDefault();if(!chosen||!document.getElementById('bookingSlot').value)return;
+      const button=document.getElementById('bookButton');button.disabled=true;
+      const [start_time,end_time]=document.getElementById('bookingSlot').value.split('|');
+      try {const response=await fetch('/api/v1/bookings',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({tutor_id:chosen.id,date:document.getElementById('bookingDate').value,start_time,end_time,topic:document.getElementById('sessionTopic').value.trim(),meeting_type:document.getElementById('meetingType').value})});
+        const result=await response.json();if(!response.ok)throw Error(result.error||'Could not book this time');
+        location.href='/my-bookings';
+      }catch(error){document.getElementById('bookingMessage').textContent=error.message;button.disabled=false;}
     });
     async function logout(){localStorage.removeItem('token');location.href='/page/login';}
     function toggleDark(){const dark=document.documentElement.classList.toggle('dark');localStorage.setItem('darkMode',dark);document.getElementById('darkToggle').textContent=dark?'☀️':'🌙';}
