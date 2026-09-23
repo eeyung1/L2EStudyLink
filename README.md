@@ -21,7 +21,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - `templates/` — one `.html` file per page, Tailwind CDN + inline `<script>` blocks calling the JSON API. `static/js/read-api.js` handles safe retries for timetable and reflections GET requests.
 - `db/postgres.go` — connection setup only.
 - `email/`, `notifications/` — Brevo email and Discord webhook integrations.
-- `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool; Postgres and SQLite dialects kept in sync. Fresh databases created from either file are complete; existing databases need manual migration (see Known Issues).
+- `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool; Postgres and SQLite dialects kept in sync. Existing PostgreSQL databases automatically create the missing `password_reset_tokens` table and index at startup. Other existing schema changes still need manual migration (see Known Issues).
 
 ## Features Implemented So Far
 
