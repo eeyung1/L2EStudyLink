@@ -34,7 +34,11 @@
     color: #0f172a;
     padding: 0 10px;
     margin: 0 0 28px;
+    display: block;
+    text-decoration: none;
 }
+
+.sidebar-brand:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
 
 .sidebar-brand span {
     color: #2563eb;
