@@ -114,6 +114,16 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 ---
 
+## Dashboard discovery, skills and Masterclass — Implemented
+
+The signed-in dashboard previews open projects and fellows who opted in to project invitations. Matches are ordered by overlap with the viewer's listed skills; when no skills match, other open projects and opted-in fellows remain discoverable. Project cards link to the Projects page. Fellow cards show skills and weekly availability; the full opted-in fellow list and availability are on `/projects#fellows`. Availability is visible in this collaboration list only after the fellow opts in. The existing study-partner search shows tutors' availability separately.
+
+A fellow can add, rename, change proficiency, and remove skills on the dashboard. `PUT /api/v1/skills/:skill` updates only their own existing skill; conflicts and invalid levels are rejected. Existing weekly availability management remains on the dashboard.
+
+`/masterclass` is the first learning discovery page: search a topic to see fellows with that skill and their weekly availability, then choose a date and book an individual session through the existing Find Study Partners flow. This version does not create or advertise group classes, scheduled events, or class seats. The Masterclass link appears in the signed-in navigation; a follow-up can add hosted group sessions after the individual learning flow is validated.
+
+---
+
 ## Project Collaboration — Implemented
 
 Fellows can post projects with a description, needed roles, expected time commitment and optional repository link. Project listings are available to signed-in fellows; owners can close and reopen recruitment. Members of a closed project and its owner can still view it.

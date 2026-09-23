@@ -45,6 +45,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
                     Projects
                 </a>
+                <a href="/masterclass" class="sidebar-link">✦ <span>Masterclass</span></a>
                 <a href="/timetable" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
                     Timetable
@@ -92,6 +93,7 @@
                 </section>
                 <section class="card"><h2>Requests and invitations</h2><div id="requestInbox">Loading…</div></section>
                 <section class="card"><h2>Projects</h2><div id="projectList">Loading…</div></section>
+                <section class="card" id="fellows"><h2>Fellows open to collaborating</h2><p class="page-sub">Only people who opted in appear here. Times are their weekly availability.</p><div id="fellowList">Loading…</div></section>
                 <section class="card" id="projectDetails" hidden aria-live="polite"></section>
             </div>
         </main>
@@ -101,6 +103,11 @@
         if (!token) window.location.href = '/page/login';
         let myID = 0;
         let collaborators = [];
+        const daysShort = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        function availabilityLabel(slots) { return slots?.length ? slots.map(a=>`${daysShort[a.day_of_week]} ${a.start_time}–${a.end_time}`).join(' · ') : 'Schedule not set'; }
+        function renderFellows() {
+            document.getElementById('fellowList').innerHTML = collaborators.length ? collaborators.map(u=>`<article class="project-card"><h3>${escapeHtml(u.name)}</h3><p>${escapeHtml(u.bio)}</p><p><strong>Skills:</strong> ${escapeHtml(u.skills || 'Not listed')}</p><p><strong>Available:</strong> ${escapeHtml(availabilityLabel(u.availability))}</p></article>`).join('') : '<p>No fellows have opted in yet.</p>';
+        }
         function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
         function message(value, error = false) { const box = document.getElementById('projectMessage'); box.textContent = value; box.className = error ? 'project-error' : 'project-success'; }
         async function api(path, options = {}) {
@@ -143,11 +150,13 @@
         async function initialize() {
             try {
                 const [me, preference, users] = await Promise.all([api('/me'),api('/collaboration/preferences'),api('/collaborators')]);
-                myID = me.id; collaborators = users;
+                myID = me.id; collaborators = users; renderFellows();
                 document.getElementById('inviteOptIn').checked = preference.open_to_invites;
                 if (me.is_admin) document.getElementById('adminNavLink').classList.remove('hidden');
             } catch (e) { message(e.message, true); }
             await Promise.all([refreshProjects(), refreshInbox()]);
+            const selected = Number(new URLSearchParams(location.search).get('project'));
+            if (Number.isSafeInteger(selected) && selected > 0) await viewProject(selected);
         }
         document.getElementById('inviteOptIn').addEventListener('change', async function () {
             this.disabled = true;

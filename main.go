@@ -70,6 +70,7 @@ func main() {
     router.GET("/reflections", func(c *gin.Context) {
         c.HTML(200, "reflections.html", nil)
     })
+    router.GET("/masterclass", func(c *gin.Context) { c.HTML(200, "masterclass.html", nil) })
     router.GET("/projects", func(c *gin.Context) {
         c.HTML(200, "projects.html", nil)
     })
@@ -107,6 +108,7 @@ func main() {
             protected.PUT("/profile", handlers.UpdateProfile)
             protected.POST("/skills", handlers.AddSkill)
             protected.DELETE("/skills/:skill", handlers.RemoveSkill)
+            protected.PUT("/skills/:skill", handlers.EditSkill)
             protected.GET("/availability", handlers.GetAvailability)
             protected.PUT("/availability", handlers.SetAvailability)
             protected.POST("/bookings", handlers.CreateBooking)

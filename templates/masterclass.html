@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Masterclass - L2EStudyLink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+<script>
+    // Dark mode: apply before paint to avoid flash
+    // Defaults to dark unless the user has explicitly chosen light mode
+    (function() {
+        if (localStorage.getItem('darkMode') !== 'false') {
+            document.documentElement.classList.add('dark');
+        }
+    })();
+</script>
+    <link rel="stylesheet" href="/static/css/dark-mode.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <script src="/static/js/mobile-nav.js" defer></script>
+</head>
+<body class="bg-gray-100">
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-heading">
+                <a class="sidebar-brand" href="/dashboard" aria-label="L2EStudyLink dashboard">L2E<span>Study</span>Link</a>
+                <button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false">
+                    <span class="menu-icon" aria-hidden="true">☰</span>
+                    <span class="menu-label">Menu</span>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav" id="mobile-navigation">
+                <a href="/dashboard" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
+                    Dashboard
+                </a>
+                <a href="/search-page" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    Find Study Partners
+                </a>
+                <a href="/my-bookings" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path><path d="m9 15 2 2 4-4"></path></svg>
+                    My Study Sessions
+                </a>
+                <a href="/projects" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
+                    Projects
+                </a>
+                <a href="/masterclass" class="sidebar-link active">✦ <span>Masterclass</span></a>
+                <a href="/timetable" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+                    Timetable
+                </a>
+                <a href="/reflections" class="sidebar-link active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg>
+                    Reflections
+                </a>
+                <div id="adminNavLink" class="hidden">
+                    <a href="/admin" class="sidebar-link">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3Z"></path></svg>
+                        Admin
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-foot">
+                <button class="logout-link" onclick="logout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+                    Logout
+                </button>
+                <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+          <div class="page-header"><div><h1 class="page-title">Masterclass</h1><p class="page-sub">Explore a skill with a fellow, then choose a time to learn together.</p></div></div>
+          <section class="card"><h2>What would you like to learn?</h2><p class="page-sub">Find fellows by skill and review their weekly availability. Booking happens on Find Study Partners.</p>
+            <form id="masterclassSearch" class="field-row"><label for="topic">Skill or topic</label><input id="topic" required maxlength="50" placeholder="Try Go, Python, design…"><button type="submit" class="btn-add">Find fellows</button></form>
+            <div id="masterclassResults" class="discovery-grid" role="status" aria-live="polite"></div>
+          </section>
+        </main>
+    </div>
+    <script>
+    const token=localStorage.getItem('token');if(!token)location.href='/page/login';
+    const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    document.getElementById('masterclassSearch').addEventListener('submit',async e=>{
+      e.preventDefault();const topic=document.getElementById('topic').value.trim();if(!topic)return;
+      const box=document.getElementById('masterclassResults');box.textContent='Finding fellows…';
+      try {const response=await fetch('/api/v1/search-with-availability?skill='+encodeURIComponent(topic));if(!response.ok)throw Error('Could not search fellows');const fellows=await response.json();box.innerHTML=fellows.length?fellows.filter(f=>Array.isArray(f.availability)&&f.availability.length).map(f=>`<article class="discovery-item"><h3>${escapeHtml(f.name)}</h3><p>${escapeHtml(f.bio)}</p><p>Weekly availability: ${escapeHtml(f.availability.map(a=>`${days[a.day_of_week]} ${a.start_time}–${a.end_time}`).join(' · '))}</p><a href="/search-page?skill=${encodeURIComponent(topic)}">Choose a date &amp; book →</a></article>`).join(''):'<p>No fellows with listed availability for this skill yet. Try another topic.</p>';if(fellows.length&&!box.innerHTML.includes('discovery-item'))box.textContent='No fellows with listed availability for this skill yet. Try another topic.';}catch(error){box.textContent=error.message;}
+    });
+    async function logout(){localStorage.removeItem('token');location.href='/page/login';}
+    function toggleDark(){const dark=document.documentElement.classList.toggle('dark');localStorage.setItem('darkMode',dark);document.getElementById('darkToggle').textContent=dark?'☀️':'🌙';}
+    if(localStorage.getItem('darkMode')==='true')document.getElementById('darkToggle').textContent='☀️';
+    </script>
+</body></html>

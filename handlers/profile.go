@@ -3,6 +3,7 @@ package handlers
 import (
     "database/sql"
     "net/http"
+    "strings"
 
     "github.com/gin-gonic/gin"
 )
@@ -143,4 +144,19 @@ func RemoveSkill(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, gin.H{"message": "Skill removed successfully"})
+}
+
+// EditSkill updates only the signed-in user's existing skill.
+func EditSkill(c *gin.Context) {
+    var input struct {
+        SkillName string `json:"skill_name" binding:"required"`
+        Proficiency string `json:"proficiency" binding:"required,oneof=beginner intermediate advanced"`
+    }
+    if err := c.ShouldBindJSON(&input); err != nil { c.JSON(400, gin.H{"error":"Enter a skill and a valid proficiency"}); return }
+    name := strings.TrimSpace(input.SkillName)
+    if len(name) < 1 || len(name) > 50 { c.JSON(400,gin.H{"error":"Skill name must be 1–50 characters"}); return }
+    result,err := c.MustGet("db").(*sql.DB).ExecContext(c.Request.Context(),`UPDATE skills SET skill_name=$1,proficiency=$2 WHERE user_id=$3 AND skill_name=$4`,name,input.Proficiency,c.GetInt64("user_id"),c.Param("skill"))
+    if err != nil { c.JSON(409,gin.H{"error":"This skill already exists or could not be updated"}); return }
+    count,_:=result.RowsAffected(); if count==0 { c.JSON(404,gin.H{"error":"Skill not found"}); return }
+    c.JSON(200,gin.H{"message":"Skill updated"})
 }
