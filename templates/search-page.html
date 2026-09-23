@@ -45,6 +45,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
                     Projects
                 </a>
+                <a href="/masterclass" class="sidebar-link">✦ <span>Masterclass</span></a>
                 <a href="/timetable" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
                     Timetable
@@ -202,6 +203,8 @@
 
         document.getElementById('bookingDate').addEventListener('change', updateBookingSlots);
         
+        const requestedSkill = new URLSearchParams(location.search).get('skill');
+        if (requestedSkill) document.getElementById('skillSearch').value = requestedSkill.slice(0,50);
         // Cache tutors returned by the last search so viewTutor() doesn't need
         // another network request — availability is already in the payload.
         let cachedTutors = {};

@@ -45,6 +45,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
                     Projects
                 </a>
+                <a href="/masterclass" class="sidebar-link">✦ <span>Masterclass</span></a>
                 <a href="/timetable" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
                     Timetable
@@ -107,6 +108,12 @@
                     <p class="stat-value" id="statAvailability">—</p>
                 </div>
             </div>
+
+            <section class="card" aria-labelledby="discoveryTitle">
+                <div class="discovery-heading"><div><h2 id="discoveryTitle">Find your next collaboration</h2><p class="page-sub">Open projects and fellows who opted in to invitations, with matches based on your skills.</p></div><a href="/projects">See all projects →</a></div>
+                <h3>Projects for you</h3><div id="discoveryProjects" class="discovery-grid" aria-live="polite">Loading projects…</div>
+                <h3>Fellows available to collaborate</h3><div id="discoveryPeople" class="discovery-grid" aria-live="polite">Loading fellows…</div>
+            </section>
 
             <div class="content-grid">
                 <div>
@@ -176,6 +183,23 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/page/login';
 
+        function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        const daysShort = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        function availabilityLabel(slots) { return slots?.length ? slots.map(a => `${daysShort[a.day_of_week]} ${a.start_time}–${a.end_time}`).join(' · ') : 'Schedule not set'; }
+        async function loadDiscovery() {
+            try {
+                const headers = {'Authorization': `Bearer ${token}`};
+                const responses = await Promise.all(['/api/v1/projects','/api/v1/collaborators'].map(url => fetch(url,{headers})));
+                if (responses.some(r => !r.ok)) throw Error('Could not load recommendations');
+                const [projects,people] = await Promise.all(responses.map(r=>r.json()));
+                const skills = (currentUser.skills || []).map(s=>s.name.toLowerCase());
+                const score = text => skills.reduce((n,skill)=>n+(skill && text.toLowerCase().includes(skill) ? 1 : 0),0);
+                const rankedProjects = projects.filter(p=>p.status==='open' && p.owner_id!==currentUser.id).sort((a,b)=>score(b.roles_needed+' '+b.description)-score(a.roles_needed+' '+a.description)).slice(0,3);
+                const rankedPeople = people.sort((a,b)=>score(b.skills)-score(a.skills)).slice(0,3);
+                document.getElementById('discoveryProjects').innerHTML = rankedProjects.length ? rankedProjects.map(p=>`<article class="discovery-item"><h4>${escapeHtml(p.title)}</h4><p>${escapeHtml(p.roles_needed)} · ${escapeHtml(p.time_commitment)}</p><a href="/projects?project=${p.id}">View project →</a></article>`).join('') : '<p>No open projects yet. <a href="/projects">Post one on Projects</a>.</p>';
+                document.getElementById('discoveryPeople').innerHTML = rankedPeople.length ? rankedPeople.map(u=>`<article class="discovery-item"><h4>${escapeHtml(u.name)}</h4><p>Skills: ${escapeHtml(u.skills || 'Not listed')}</p><p>Available: ${escapeHtml(availabilityLabel(u.availability))}</p><a href="/projects#fellows">Explore fellows →</a></article>`).join('') : '<p>No fellows have opted in yet. <a href="/projects">Set your collaboration preference</a>.</p>';
+            } catch(e) { document.getElementById('discoveryProjects').textContent=e.message; document.getElementById('discoveryPeople').textContent=e.message; }
+        }
         let currentAvailability = [];
         let currentUser = {};
 
@@ -239,12 +263,14 @@
             `;
             await loadSkills();
             await loadAvailability();
+            await loadDiscovery();
         }
 
         async function loadSkills() {
             const res = await fetch('/api/v1/me', { headers: { 'Authorization': `Bearer ${token}` } });
             const user = await res.json();
-            const skillsHtml = user.skills?.map(s => `<span class="skill-pill">${s.name} (${s.proficiency})</span>`).join('') || '<p class="page-sub">No skills yet</p>';
+            const skillsHtml = user.skills?.map((s,i) => `<span class="skill-pill">${escapeHtml(s.name)} (${escapeHtml(s.proficiency)}) <button type="button" onclick="editSkill(${i})" aria-label="Edit ${escapeHtml(s.name)}">Edit</button> <button type="button" onclick="removeSkill(${i})" aria-label="Remove ${escapeHtml(s.name)}">Remove</button></span>`).join('') || '<p class="page-sub">No skills yet</p>';
+            currentUser.skills = user.skills || [];
             document.getElementById('skills').innerHTML = skillsHtml;
             document.getElementById('statSkills').textContent = user.skills?.length || 0;
         }
@@ -257,10 +283,22 @@
                 method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ skill_name: skillName, proficiency })
             });
-            if (res.ok) { document.getElementById('newSkillName').value = ''; await loadSkills(); }
+            if (res.ok) { document.getElementById('newSkillName').value = ''; await loadSkills(); await loadDiscovery(); }
             else alert('Failed to add skill');
         }
 
+        async function editSkill(index) {
+            const skill = currentUser.skills[index]; if (!skill) return;
+            const name = prompt('Skill name',skill.name); if (name === null) return;
+            const level = prompt('Proficiency: beginner, intermediate, or advanced',skill.proficiency); if (level === null) return;
+            const res = await fetch('/api/v1/skills/'+encodeURIComponent(skill.name),{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({skill_name:name.trim(),proficiency:level.trim().toLowerCase()})});
+            if (res.ok) { await loadSkills(); await loadDiscovery(); } else { const data=await res.json(); alert(data.error || 'Could not edit skill'); }
+        }
+        async function removeSkill(index) {
+            const skill = currentUser.skills[index]; if (!skill || !confirm(`Remove ${skill.name}?`)) return;
+            const res = await fetch('/api/v1/skills/'+encodeURIComponent(skill.name),{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});
+            if (res.ok) { await loadSkills(); await loadDiscovery(); } else alert('Could not remove skill');
+        }
         async function loadAvailability() {
             const res = await fetch('/api/v1/availability', { headers: { 'Authorization': `Bearer ${token}` } });
             currentAvailability = await res.json();

@@ -678,3 +678,11 @@ html.dark .project-success { color: #86efac; }
     .projects-page .project-card button, .projects-page .project-form button { width: 100%; }
     .project-actions button { flex: 1 1 120px; }
 }
+
+.discovery-heading { display:flex; justify-content:space-between; align-items:start; gap:12px; flex-wrap:wrap; }
+.discovery-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr)); gap:12px; margin:12px 0 20px; }
+.discovery-item { border:1px solid #cbd5e1; border-radius:12px; padding:14px; min-width:0; }
+.discovery-item h4 {font-weight:700; margin-bottom:6px;}
+.discovery-item p {overflow-wrap:anywhere; margin-bottom:8px;}
+.discovery-item a,.discovery-heading a {color:#2563eb; font-weight:600;}
+.skill-pill button {margin-left:6px; text-decoration:underline; cursor:pointer;}
