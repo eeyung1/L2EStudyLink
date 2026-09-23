@@ -96,12 +96,16 @@
             </div>
             <p class="text-xs text-gray-500 mb-3">Select one day, or several to add the same block to each at once.</p>
 
-            <input type="time" id="blockStart" class="w-full p-2 border rounded mb-3" step="60" value="09:00">
-            <input type="time" id="blockEnd" class="w-full p-2 border rounded mb-3" step="60" value="10:00">
-            <input type="text" id="blockActivity" placeholder="Activity" class="w-full p-2 border rounded mb-3">
-            <textarea id="blockGoal" rows="2" placeholder="Goal (optional)" class="w-full p-2 border rounded mb-3"></textarea>
-            <button onclick="saveTimeBlock()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
-            <button onclick="closeAddModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
+            <label for="blockStart" class="block text-sm font-medium mb-1 text-gray-700">Start time</label>
+            <input type="time" id="blockStart" class="timetable-form-field w-full p-2 border rounded mb-3" step="60" value="09:00">
+            <label for="blockEnd" class="block text-sm font-medium mb-1 text-gray-700">End time</label>
+            <input type="time" id="blockEnd" class="timetable-form-field w-full p-2 border rounded mb-3" step="60" value="10:00">
+            <label for="blockActivity" class="block text-sm font-medium mb-1 text-gray-700">Activity</label>
+            <input type="text" id="blockActivity" placeholder="Activity" class="timetable-form-field w-full p-2 border rounded mb-3">
+            <label for="blockGoal" class="block text-sm font-medium mb-1 text-gray-700">Goal (optional)</label>
+            <textarea id="blockGoal" rows="2" placeholder="Goal (optional)" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
+            <button onclick="saveTimeBlock()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
+            <button onclick="closeAddModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
         </div>
     </div>
 
@@ -109,11 +113,14 @@
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 id="reflectionTitle" class="text-xl font-bold mb-4">Add Reflection</h3>
             <p id="reflectionDate" class="text-sm text-gray-600 mb-3"></p>
-            <textarea id="reflectionSummary" rows="3" placeholder="What did you actually do?" class="w-full p-2 border rounded mb-3"></textarea>
-            <textarea id="reflectionChallenges" rows="2" placeholder="Challenges faced?" class="w-full p-2 border rounded mb-3"></textarea>
-            <textarea id="reflectionLearnings" rows="2" placeholder="What did you learn?" class="w-full p-2 border rounded mb-3"></textarea>
-            <button onclick="saveReflection()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
-            <button onclick="closeReflectionModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
+            <label for="reflectionSummary" class="block text-sm font-medium mb-1 text-gray-700">What did you actually do?</label>
+            <textarea id="reflectionSummary" rows="3" placeholder="What did you actually do?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
+            <label for="reflectionChallenges" class="block text-sm font-medium mb-1 text-gray-700">Challenges faced?</label>
+            <textarea id="reflectionChallenges" rows="2" placeholder="Challenges faced?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
+            <label for="reflectionLearnings" class="block text-sm font-medium mb-1 text-gray-700">What did you learn?</label>
+            <textarea id="reflectionLearnings" rows="2" placeholder="What did you learn?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
+            <button onclick="saveReflection()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
+            <button onclick="closeReflectionModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
         </div>
     </div>
 
