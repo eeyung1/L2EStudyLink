@@ -6,28 +6,40 @@ import (
     "fmt"
     "net/http"
     "os"
+    "time"
 )
 
-type ResendRequest struct {
-    From    string `json:"from"`
-    To      string `json:"to"`
-    Subject string `json:"subject"`
-    Html    string `json:"html"`
+type brevoAddress struct {
+    Email string `json:"email"`
+    Name  string `json:"name,omitempty"`
 }
 
-// var apiKey = os.Getenv("RESEND_API_KEY")
+type brevoRequest struct {
+    Sender brevoAddress   `json:"sender"`
+    To     []brevoAddress `json:"to"`
+    Subject string        `json:"subject"`
+    HTML    string        `json:"htmlContent"`
+}
 
 func SendEmail(to, subject, htmlContent string) error {
-    apiKey := os.Getenv("RESEND_API_KEY")
+    return sendEmail(&http.Client{Timeout: 10 * time.Second}, "https://api.brevo.com/v3/smtp/email", to, subject, htmlContent)
+}
+
+func sendEmail(client *http.Client, endpoint, to, subject, htmlContent string) error {
+    apiKey := os.Getenv("BREVO_API_KEY")
     if apiKey == "" {
-        return fmt.Errorf("RESEND_API_KEY not set")
+        return fmt.Errorf("BREVO_API_KEY not set")
+    }
+    sender := os.Getenv("BREVO_FROM_EMAIL")
+    if sender == "" {
+        return fmt.Errorf("BREVO_FROM_EMAIL not set")
     }
 
-    request := ResendRequest{
-        From:    "StudyLink <onboarding@resend.dev>",
-        To:      to,
+    request := brevoRequest{
+        Sender: brevoAddress{Email: sender, Name: os.Getenv("BREVO_FROM_NAME")},
+        To: []brevoAddress{{Email: to}},
         Subject: subject,
-        Html:    htmlContent,
+        HTML: htmlContent,
     }
 
     jsonData, err := json.Marshal(request)
@@ -35,23 +47,22 @@ func SendEmail(to, subject, htmlContent string) error {
         return err
     }
 
-    req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewBuffer(jsonData))
+    req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(jsonData))
     if err != nil {
         return err
     }
 
-    req.Header.Set("Authorization", "Bearer "+apiKey)
+    req.Header.Set("api-key", apiKey)
     req.Header.Set("Content-Type", "application/json")
 
-    client := &http.Client{}
     resp, err := client.Do(req)
     if err != nil {
         return err
     }
     defer resp.Body.Close()
 
-    if resp.StatusCode != 200 {
-        return fmt.Errorf("Resend API error: %d", resp.StatusCode)
+    if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+        return fmt.Errorf("Brevo API error: %d", resp.StatusCode)
     }
 
     return nil

@@ -10,7 +10,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - **Database**: PostgreSQL in production, SQLite schema is maintained for local use (`schema.sql` / `schema.sqlite`); the current `db/postgres.go` connection code uses PostgreSQL.
 - **Frontend**: plain HTML + Tailwind CDN + vanilla JavaScript `fetch()` calls. No build step, no npm, no React/Vue. Dark mode via a `localStorage` flag toggling a `dark` class on `<html>`, with manual per-utility-class overrides (not Tailwind's built-in `dark:` variants).
 - **Hosting**: Render (`render.yaml`, `Procfile`, `start.sh`), also has a `Dockerfile`.
-- **Email**: Resend (`email/resend.go`). **Notifications**: Discord webhook (`notifications/discord.go`).
+- **Email**: Brevo transactional API (`email/brevo.go`). **Notifications**: Discord webhook (`notifications/discord.go`).
 
 ## Architecture
 
@@ -20,7 +20,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - `config/` — `JWTSecret()`, read from the `JWT_SECRET` env var; the app refuses to start if it's unset or still the old placeholder value.
 - `templates/` — one `.html` file per page, Tailwind CDN + inline `<script>` blocks calling the JSON API. `static/js/read-api.js` handles safe retries for timetable and reflections GET requests.
 - `db/postgres.go` — connection setup only.
-- `email/`, `notifications/` — Resend email and Discord webhook integrations.
+- `email/`, `notifications/` — Brevo email and Discord webhook integrations.
 - `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool; Postgres and SQLite dialects kept in sync. Fresh databases created from either file are complete; existing databases need manual migration (see Known Issues).
 
 ## Features Implemented So Far
@@ -28,7 +28,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 ### Auth
 - Signup (`POST /api/v1/signup`) — bcrypt-hashed passwords, unique email enforced.
 - Login (`POST /api/v1/login`) — issues a 24-hour JWT.
-- Self-service password reset (`POST /api/v1/forgot-password`, `POST /api/v1/reset-password`) — random 32-byte token, 1-hour expiry, single-use, generic response regardless of whether the email exists (no account enumeration), reset link emailed via Resend.
+- Self-service password reset (`POST /api/v1/forgot-password`, `POST /api/v1/reset-password`) — six-digit email code, 10-minute expiry, five attempts, one-minute resend cooldown and single-use reset. The code is stored as a keyed digest; the request endpoint gives the same response for known and unknown accounts. Successful reset signs the user in and opens their dashboard.
 - JWT secret is loaded from an environment variable and validated at startup (fails fast if missing or left as the old placeholder).
 
 ### Profile
@@ -103,7 +103,7 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 - Should the analysis be triggered on-demand by the user, or run automatically on a schedule (e.g. every Saturday, per the reference prompt's rhythm) via a background job?
 - Does every user get the same fixed weekly/daily target and block structure, or is the timetable (and therefore what "adherence" means) fully user-defined, given `timetable` is already a per-user, freeform table? The reference prompt assumes a fixed personal schedule (07:00–08:00 Daily Study, etc.) — that won't generalize as-is to 770 fellows with different schedules.
 - How much of the "metrics history" and "recurring flags" logic should be computed deterministically in Go before the prompt is built (hours logged, adherence %, streaks) versus left for the model to infer from raw reflection text? Deterministic computation will be more reliable for the dashboard numbers; the model is better suited to the qualitative block-by-block analysis and priorities.
-- Cost/rate-limiting: this is now the first paid third-party AI dependency in the app (alongside Resend and Discord, which are cheap/free) — needs its own error handling and probably a per-user request cap.
+- Cost/rate-limiting: this is now the first paid third-party AI dependency in the app (alongside Brevo and Discord) — needs its own error handling and probably a per-user request cap.
 
 **Reference document:** `L2E_PLANNER_PROMPT_v2.md` is described here as the planner reference, but it is not currently committed in this repository. Obtain it before implementing the planner; do not treat the description above as the full specification.
 
@@ -150,9 +150,12 @@ sudo service postgresql status   # confirm it's running
 Required environment variables (see `.gitignore` — `.env` is not committed):
 - `DATABASE_URL` — falls back to a local Postgres connection string if unset.
 - `JWT_SECRET` — required; the app will not start without it.
-- `RESEND_API_KEY` — required for password-reset and booking emails to send.
+- `BREVO_API_KEY` — Brevo API key; required for password-reset and booking emails.
+- `BREVO_FROM_EMAIL` — a sender address you have added and verified in Brevo, such as an email account you control at Gmail. Verify it with the code Brevo emails to that address. Use only the email address here, without a display name.
+- `BREVO_FROM_NAME` — optional sender display name, such as `L2EStudyLink`.
+
+On Render, add the Brevo variables to the web service and confirm transactional email sending is activated in your Brevo account. Brevo's free tier currently includes up to 300 sends per day. If you use a free sender address, Brevo may replace the displayed sender with one of its own technical domains (transactional mail commonly uses `t-sender-sib.com`); `brevosend.com` is a Brevo-managed replacement domain, not an address you can choose yourself. Check delivery in Brevo's transactional logs and in the recipient's inbox or spam folder. A 201 API response means Brevo accepted the request, not that the recipient has received it. Existing reset codes issued before switching providers remain usable until they expire.
 - `DISCORD_WEBHOOK_URL` — optional; notifications are skipped (logged, not sent) if unset.
-- `APP_BASE_URL` — used to build the password-reset link; falls back to `http://localhost:8080`.
 - `LLM_API_KEY` *(planned — not yet used in code)* — will be required once the AI Planner integration lands.
 
 ### Useful commands
