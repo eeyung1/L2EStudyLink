@@ -6,6 +6,7 @@ import (
     "fmt"
     "net/http"
     "os"
+    "time"
 )
 
 type ResendRequest struct {
@@ -15,16 +16,18 @@ type ResendRequest struct {
     Html    string `json:"html"`
 }
 
-// var apiKey = os.Getenv("RESEND_API_KEY")
-
 func SendEmail(to, subject, htmlContent string) error {
     apiKey := os.Getenv("RESEND_API_KEY")
     if apiKey == "" {
         return fmt.Errorf("RESEND_API_KEY not set")
     }
+    sender := os.Getenv("RESEND_FROM_EMAIL")
+    if sender == "" {
+        return fmt.Errorf("RESEND_FROM_EMAIL not set")
+    }
 
     request := ResendRequest{
-        From:    "StudyLink <onboarding@resend.dev>",
+        From:    sender,
         To:      to,
         Subject: subject,
         Html:    htmlContent,
@@ -43,14 +46,14 @@ func SendEmail(to, subject, htmlContent string) error {
     req.Header.Set("Authorization", "Bearer "+apiKey)
     req.Header.Set("Content-Type", "application/json")
 
-    client := &http.Client{}
+    client := &http.Client{Timeout: 10 * time.Second}
     resp, err := client.Do(req)
     if err != nil {
         return err
     }
     defer resp.Body.Close()
 
-    if resp.StatusCode != 200 {
+    if resp.StatusCode < 200 || resp.StatusCode >= 300 {
         return fmt.Errorf("Resend API error: %d", resp.StatusCode)
     }
 
