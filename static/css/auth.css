@@ -25,3 +25,7 @@ body {
     input { box-sizing: border-box; min-height: 44px; }
     button[type="submit"] { min-height: 44px; }
 }
+
+.auth-brand-link { color: inherit; text-decoration: none; }
+.auth-brand-link:hover { text-decoration: underline; }
+.auth-brand-link:focus-visible { outline: 2px solid #a78bfa; outline-offset: 3px; }
