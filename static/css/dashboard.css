@@ -581,7 +581,17 @@ html.dark .day-chip.selected {
     .booking-list-card { overflow-wrap: anywhere; }
     .booking-list-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .booking-list-actions button { min-height: 44px; flex: 1 1 110px; }
+    .admin-table-hint { margin-bottom: 8px; }
+    .admin-users-table { min-width: 760px; }
+    .admin-bookings-table { min-width: 560px; }
+    .admin-row-action { min-height: 44px; }
 }
+
+@media (min-width: 481px) {
+    .admin-table-hint { display: none; }
+}
+
+.admin-table-scroll:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
 
 html.dark .mobile-menu-toggle { color: #f3f4f6; border-color: #4b5563; }
 

@@ -85,8 +85,9 @@
         <!-- Users Table -->
         <div class="bg-white rounded-lg shadow p-6 mb-8">
             <h2 class="text-2xl font-bold mb-4">Users</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+            <p class="admin-table-hint text-sm text-gray-600">Swipe sideways to see all user details and actions.</p>
+            <div class="admin-table-scroll overflow-x-auto" role="region" aria-label="Users table" tabindex="0">
+                <table class="admin-users-table w-full text-sm">
                     <thead class="bg-gray-100">
                         <tr><th class="p-2 text-left">ID</th><th class="p-2 text-left">Name</th><th class="p-2 text-left">Email</th><th class="p-2 text-left">Rating</th><th class="p-2 text-left">Sessions</th><th class="p-2 text-left">No-Shows</th><th class="p-2 text-left">Status</th><th class="p-2 text-left">Actions</th></tr>
                     </thead>
@@ -98,8 +99,9 @@
         <!-- Bookings Table -->
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-2xl font-bold mb-4">All Bookings</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+            <p class="admin-table-hint text-sm text-gray-600">Swipe sideways to see all booking details.</p>
+            <div class="admin-table-scroll overflow-x-auto" role="region" aria-label="All bookings table" tabindex="0">
+                <table class="admin-bookings-table w-full text-sm">
                     <thead class="bg-gray-100">
                         <tr><th class="p-2 text-left">ID</th><th class="p-2 text-left">Tutor</th><th class="p-2 text-left">Student</th><th class="p-2 text-left">Date</th><th class="p-2 text-left">Time</th><th class="p-2 text-left">Status</th></tr>
                     </thead>
@@ -154,8 +156,8 @@
                         <td class="p-2">${u.no_show_count}</td>
                         <td class="p-2">${statusBadge}</td>
                         <td class="p-2">
-                            <button onclick="toggleSuspend(${u.id})" class="bg-yellow-500 text-white px-2 py-1 rounded text-xs mr-1">${u.is_suspended ? 'Unsuspend' : 'Suspend'}</button>
-                            <button onclick="deleteUser(${u.id})" class="bg-red-600 text-white px-2 py-1 rounded text-xs">Delete</button>
+                            <button onclick="toggleSuspend(${u.id})" class="admin-row-action bg-yellow-500 text-white px-2 py-1 rounded text-xs mr-1">${u.is_suspended ? 'Unsuspend' : 'Suspend'}</button>
+                            <button onclick="deleteUser(${u.id})" class="admin-row-action bg-red-600 text-white px-2 py-1 rounded text-xs">Delete</button>
                         </td>
                     </tr>
                 `;
