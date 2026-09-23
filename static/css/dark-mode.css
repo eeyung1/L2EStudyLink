@@ -45,3 +45,9 @@ html.dark .text-yellow-800 { color: #fde68a !important; }
     transition: transform 0.2s;
 }
 #darkToggle:hover { transform: scale(1.15); }
+@media (max-width: 480px) {
+    .signup-shell { margin: 20px 12px; }
+    .signup-shell > div { padding: 24px 18px; }
+    .signup-shell input { box-sizing: border-box; min-height: 44px; }
+    .signup-shell button[type="submit"] { min-height: 44px; }
+}

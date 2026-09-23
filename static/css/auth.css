@@ -18,3 +18,10 @@ body {
         );
     font-family: 'Courier New', monospace;
 }
+@media (max-width: 480px) {
+    body { box-sizing: border-box; padding: 16px; }
+    body > div { width: 100%; min-width: 0; }
+    body > div > div { padding: 24px 18px; }
+    input { box-sizing: border-box; min-height: 44px; }
+    button[type="submit"] { min-height: 44px; }
+}

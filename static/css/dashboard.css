@@ -24,6 +24,9 @@
     z-index: 20;
 }
 
+.sidebar-heading { flex-shrink: 0; }
+.mobile-menu-toggle { display: none; }
+
 .sidebar-brand {
     font-family: 'Fraunces', Georgia, serif;
     font-size: 20px;
@@ -473,26 +476,101 @@ html.dark .day-chip.selected {
     color: #ffffff;
 }
 
-/* Responsive: collapse sidebar to a top bar on narrow screens -------- */
+/* Phone and tablet navigation ------------------------------------------ */
 @media (max-width: 860px) {
     .sidebar {
-        position: static;
-        width: auto;
+        position: sticky;
+        top: 0;
+        bottom: auto;
+        width: 100%;
+        box-sizing: border-box;
         height: auto;
-        flex-direction: row;
-        align-items: center;
-        overflow-x: auto;
-        padding: 12px 16px;
-        border-right: none;
+        min-height: 64px;
+        padding: 10px 16px;
+        border-right: 0;
         border-bottom: 1px solid #e2e8f0;
+        z-index: 50;
     }
-    .sidebar-brand { margin: 0 20px 0 0; }
-    .sidebar-nav { flex-direction: row; }
-    .sidebar-foot { border-top: none; margin: 0 0 0 16px; padding: 0; }
-    .main-content { margin-left: 0; padding: 24px 20px 48px; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .content-grid { grid-template-columns: 1fr; }
+    .sidebar-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+    }
+    .sidebar-brand { margin: 0; padding: 0; font-size: 19px; }
+    .mobile-menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 44px;
+        padding: 0 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        background: transparent;
+        color: #334155;
+        font: inherit;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .menu-icon { font-size: 20px; line-height: 1; }
+    .sidebar-nav, .sidebar-foot { display: none; }
+    .sidebar.menu-open {
+        position: fixed;
+        inset: 0;
+        height: 100vh;
+        height: 100dvh;
+        flex-direction: column;
+        overflow-y: auto;
+        align-items: stretch;
+    }
+    .sidebar.menu-open .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        flex: 1 0 auto;
+        gap: 4px;
+        margin-top: 20px;
+    }
+    .sidebar.menu-open .sidebar-foot {
+        display: flex;
+        margin: 16px 0 0;
+        padding-top: 12px;
+    }
+    .sidebar-link { min-height: 44px; box-sizing: border-box; }
+    body.mobile-menu-open { overflow: hidden; }
+    .main-content { margin-left: 0; max-width: none; min-width: 0; padding: 20px 16px 40px; }
+    .main-content > [class*="max-w-"] { padding: 0; }
+    .content-grid { grid-template-columns: minmax(0, 1fr); }
+    .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .activation-banner { flex-direction: column; align-items: flex-start; }
+    .avail-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .page-header { flex-wrap: wrap; gap: 10px; }
+    .card, .stat-card { min-width: 0; }
+    .field-row { flex-wrap: wrap; }
+    .field-row input { min-width: 0; }
+    .main-content .overflow-x-auto { max-width: 100%; }
+    #addModal, #reflectionModal, #tutorModal { padding: 16px; overflow-y: auto; }
+    #addModal > div, #reflectionModal > div, #tutorModal > div {
+        max-height: calc(100dvh - 32px);
+        overflow-y: auto;
+    }
 }
+
+@media (max-width: 480px) {
+    .main-content { padding: 16px 12px 32px; }
+    .main-content > div > .bg-white, .card { padding: 16px; }
+    .activation-banner { padding: 20px; }
+    .activation-actions { width: 100%; flex-wrap: wrap; }
+    .activation-btn { white-space: normal; }
+    .avail-form-grid { grid-template-columns: minmax(0, 1fr); }
+    .avail-form-grid button { min-height: 44px; }
+    .page-title { font-size: 23px; }
+    .day-chip { width: 42px; min-height: 44px; }
+    #timetable .flex.gap-2 { flex-wrap: wrap; }
+}
+
+html.dark .mobile-menu-toggle { color: #f3f4f6; border-color: #4b5563; }
 
 /* Dark mode ------------------------------------------------------------ */
 html.dark .app-shell { background: #111827; }
