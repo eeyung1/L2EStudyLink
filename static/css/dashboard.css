@@ -575,6 +575,8 @@ html.dark .day-chip.selected {
     .search-result-layout { flex-direction: column; align-items: stretch; }
     .search-result-details { min-width: 0; overflow-wrap: anywhere; }
     .search-result-action { width: 100%; min-height: 44px; }
+    .booking-modal-close { min-width: 44px; min-height: 44px; }
+    .booking-field, .booking-confirm { min-height: 44px; }
 }
 
 html.dark .mobile-menu-toggle { color: #f3f4f6; border-color: #4b5563; }
