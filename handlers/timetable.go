@@ -2,8 +2,8 @@ package handlers
 
 import (
     "database/sql"
+    "log"
     "net/http"
-    "time"
 
     "github.com/gin-gonic/gin"
 )
@@ -31,32 +31,36 @@ func GetTimetable(c *gin.Context) {
     userID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
 
-    rows, err := db.Query(`
-        SELECT id, day_of_week, start_time, end_time, activity, COALESCE(goal, '')
+    rows, err := db.QueryContext(c.Request.Context(), `
+        SELECT id, day_of_week, to_char(start_time, 'HH24:MI'), to_char(end_time, 'HH24:MI'), activity, COALESCE(goal, '')
         FROM timetable
         WHERE user_id = $1
         ORDER BY day_of_week, start_time
     `, userID)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error: " + err.Error()})
+        log.Printf("GetTimetable query: %v", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to load timetable"})
         return
     }
     defer rows.Close()
 
-    var blocks []TimeBlock
+    blocks := make([]TimeBlock, 0)
     for rows.Next() {
         var b TimeBlock
-        var startTime, endTime time.Time
-        err := rows.Scan(&b.ID, &b.DayOfWeek, &startTime, &endTime, &b.Activity, &b.Goal)
-        if err != nil {
-            continue
+        if err := rows.Scan(&b.ID, &b.DayOfWeek, &b.StartTime, &b.EndTime, &b.Activity, &b.Goal); err != nil {
+            log.Printf("GetTimetable scan: %v", err)
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to load timetable"})
+            return
         }
-        b.StartTime = startTime.Format("15:04")
-        b.EndTime = endTime.Format("15:04")
         blocks = append(blocks, b)
     }
 
+    if err := rows.Err(); err != nil {
+        log.Printf("GetTimetable rows: %v", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to load timetable"})
+        return
+    }
     c.JSON(http.StatusOK, blocks)
 }
 
@@ -158,9 +162,10 @@ func GetReflections(c *gin.Context) {
     userID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
 
-    rows, err := db.Query(`
-        SELECT al.id, al.timetable_id, al.log_date, al.summary, al.challenges, al.learnings, al.completed,
-               t.activity, t.day_of_week, t.start_time, t.end_time
+    rows, err := db.QueryContext(c.Request.Context(), `
+        SELECT al.id, al.timetable_id, to_char(al.log_date, 'YYYY-MM-DD'), al.summary,
+               al.challenges, al.learnings, al.completed,
+               t.activity, t.day_of_week, to_char(t.start_time, 'HH24:MI'), to_char(t.end_time, 'HH24:MI')
         FROM activity_logs al
         JOIN timetable t ON al.timetable_id = t.id
         WHERE al.user_id = $1
@@ -168,12 +173,13 @@ func GetReflections(c *gin.Context) {
     `, userID)
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        log.Printf("GetReflections query: %v", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to load reflections"})
         return
     }
     defer rows.Close()
 
-    var reflections []gin.H
+    reflections := make([]gin.H, 0)
     for rows.Next() {
         var id, timetableID int
         var logDate string
@@ -181,12 +187,13 @@ func GetReflections(c *gin.Context) {
         var completed bool
         var activity string
         var dayOfWeek int
-        var startTime, endTime time.Time
+        var startTime, endTime string
 
-        err := rows.Scan(&id, &timetableID, &logDate, &summary, &challenges, &learnings, &completed,
-            &activity, &dayOfWeek, &startTime, &endTime)
-        if err != nil {
-            continue
+        if err := rows.Scan(&id, &timetableID, &logDate, &summary, &challenges, &learnings, &completed,
+            &activity, &dayOfWeek, &startTime, &endTime); err != nil {
+            log.Printf("GetReflections scan: %v", err)
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to load reflections"})
+            return
         }
 
         reflections = append(reflections, gin.H{
@@ -199,10 +206,15 @@ func GetReflections(c *gin.Context) {
             "completed":    completed,
             "activity":     activity,
             "day_of_week":  dayOfWeek,
-            "start_time":   startTime.Format("15:04"),
-            "end_time":     endTime.Format("15:04"),
+            "start_time":   startTime,
+            "end_time":     endTime,
         })
     }
 
+    if err := rows.Err(); err != nil {
+        log.Printf("GetReflections rows: %v", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to load reflections"})
+        return
+    }
     c.JSON(http.StatusOK, reflections)
 }
