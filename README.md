@@ -19,7 +19,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - `middleware/` — `AuthRequired` (JWT verification) and `AdminRequired` (checks the current database role and suspension status).
 - `config/` — `JWTSecret()`, read from the `JWT_SECRET` env var; the app refuses to start if it's unset or still the old placeholder value.
 - `templates/` — one `.html` file per page, with inline `<script>` blocks calling the JSON API. `static/js/read-api.js` handles retries for timetable and reflections GET requests; `static/js/mobile-nav.js` controls the signed-in mobile menu. Account pages share `static/css/login.css`.
-- `db/postgres.go` — connection setup only.
+- `db/postgres.go` — connection setup and repeatable startup table creation for password recovery and project collaboration.
 - `email/`, `notifications/` — Brevo email and Discord webhook integrations.
 - `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool; Postgres and SQLite dialects kept in sync. Existing PostgreSQL databases automatically create the missing `password_reset_tokens` table and index at startup. Other existing schema changes still need manual migration (see Known Issues).
 
@@ -66,7 +66,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - The former hardcoded admin password reset route and handler have been removed. `GET /api/v1/admin/users` scans PostgreSQL boolean fields as booleans.
 
 ### Pages
-Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, admin — HTML pages with vanilla JS, with a generic `/page/:name` route for simpler pages. Login, signup and recovery pages share the blue account layout. Six signed-in pages have a compact mobile header and menu, plus narrower card, form, modal and table layouts. The brand links to the dashboard on signed-in pages and login on account pages. These responsive changes were merged, but a device-level usability audit is still needed.
+Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, projects, admin — HTML pages with vanilla JS, with a generic `/page/:name` route for simpler pages. Login, signup and recovery pages share the blue account layout. Six signed-in pages have a compact mobile header and menu, plus narrower card, form, modal and table layouts. The brand links to the dashboard on signed-in pages and login on account pages. These responsive changes were merged, but a device-level usability audit is still needed.
 
 ---
 
