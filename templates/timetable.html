@@ -110,6 +110,7 @@
         </div>
     </div>
 
+    <script src="/static/js/read-api.js"></script>
     <script>
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/page/login';
@@ -130,38 +131,22 @@
         
         async function loadTimetable() {
             try {
-                // Load existing reflections - handle non-array response
-                const refRes = await fetch('/api/v1/reflections', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (refRes.ok) {
-                    const reflections = await refRes.json();
-                    // Ensure reflections is an array
-                    if (Array.isArray(reflections)) {
-                        existingReflections = {};
-                        for (const r of reflections) {
-                            existingReflections[`${r.timetable_id}|${r.log_date}`] = r;
-                        }
+                let reflectionsWarning = '';
+                try {
+                    const reflections = await readAPI('/api/v1/reflections', token);
+                    existingReflections = {};
+                    for (const r of reflections) {
+                        existingReflections[`${r.timetable_id}|${r.log_date}`] = r;
                     }
+                } catch (e) {
+                    if (e.message === 'Session expired') return;
+                    console.error('Error loading reflections:', e);
+                    reflectionsWarning = '<p class="text-amber-700 mb-4">Reflections could not be checked. ' +
+                        '<button type="button" onclick="loadTimetable()" class="underline">Try again</button></p>';
                 }
-                
-                const res = await fetch('/api/v1/timetable', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                
-                if (!res.ok) {
-                    document.getElementById('timetable').innerHTML = '<div class="text-red-500">Error loading timetable</div>';
-                    return;
-                }
-                
-                const blocks = await res.json();
-                
-                // Ensure blocks is an array
-                if (!Array.isArray(blocks)) {
-                    document.getElementById('timetable').innerHTML = '<div class="text-red-500">Invalid data format</div>';
-                    return;
-                }
-                
+
+                const blocks = await readAPI('/api/v1/timetable', token);
+
                 const grouped = {};
                 for (let i = 0; i < 7; i++) grouped[i] = [];
                 for (const b of blocks) {
@@ -205,10 +190,13 @@
                     }
                     html += `</div>`;
                 }
-                document.getElementById('timetable').innerHTML = html;
+                document.getElementById('timetable').innerHTML = reflectionsWarning + html;
             } catch(e) {
                 console.error('Error:', e);
-                document.getElementById('timetable').innerHTML = '<div class="text-red-500">Error loading timetable: ' + e.message + '</div>';
+                if (e.message === 'Session expired') return;
+                document.getElementById('timetable').innerHTML =
+                    `<div class="text-red-500">Could not load timetable (${escapeHtml(e.message)}). ` +
+                    '<button type="button" onclick="loadTimetable()" class="underline">Try again</button></div>';
             }
         }
         
