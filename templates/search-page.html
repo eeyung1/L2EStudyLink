@@ -91,6 +91,7 @@
                 <button onclick="closeModal()" type="button" class="booking-modal-close text-gray-500 text-2xl" aria-label="Close tutor details">&times;</button>
             </div>
             <div id="modalContent"></div>
+            <div id="availabilityDisplay" class="mb-3" aria-live="polite"></div>
             <div class="mt-4">
                 <label for="bookingDate" class="block font-bold mb-1">Select Date</label>
                 <input type="date" id="bookingDate" class="booking-field w-full p-2 border rounded mb-3">
@@ -103,7 +104,7 @@
                     <option value="online">Online</option>
                     <option value="in_person">In person</option>
                 </select>
-                <button onclick="confirmBooking()" class="booking-confirm w-full bg-green-600 text-white py-2 rounded">Confirm Booking</button>
+                <button id="confirmBookingButton" onclick="confirmBooking()" class="booking-confirm w-full bg-green-600 text-white py-2 rounded disabled:opacity-50" disabled>Confirm Booking</button>
             </div>
         </div>
     </div>
@@ -161,9 +162,41 @@
         }
         
         function getDayOfWeekFromDate(dateString) {
-            const date = new Date(dateString);
+            const date = new Date(dateString + 'T12:00:00');
             return date.getDay(); // 0 = Sunday, 1 = Monday, etc.
         }
+
+        function updateBookingSlots() {
+            const selectedDate = document.getElementById('bookingDate').value;
+            const timeSlot = document.getElementById('timeSlot');
+            const confirmButton = document.getElementById('confirmBookingButton');
+            timeSlot.replaceChildren();
+            confirmButton.disabled = true;
+            if (!selectedDate) {
+                document.getElementById('availabilityDisplay').textContent = 'Select a date to see available times.';
+                return;
+            }
+            if (selectedDate < todayDate) {
+                document.getElementById('availabilityDisplay').textContent = 'Choose today or a future date.';
+                return;
+            }
+            const jsDay = getDayOfWeekFromDate(selectedDate);
+            const selectedDay = jsDay === 0 ? 6 : jsDay - 1;
+            const dayAvailability = currentAvailability.filter(slot => slot.day_of_week === selectedDay);
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            document.getElementById('availabilityDisplay').textContent = dayAvailability.length
+                ? `Available on ${days[selectedDay]}: ${dayAvailability.map(slot => `${formatTimeForDisplay(slot.start_time)} - ${formatTimeForDisplay(slot.end_time)}`).join(', ')}`
+                : `No availability on ${days[selectedDay]}`;
+            for (const slot of dayAvailability) {
+                const option = document.createElement('option');
+                option.value = `${slot.start_time}|${slot.end_time}`;
+                option.textContent = `${formatTimeForDisplay(slot.start_time)} - ${formatTimeForDisplay(slot.end_time)}`;
+                timeSlot.appendChild(option);
+            }
+            confirmButton.disabled = dayAvailability.length === 0;
+        }
+
+        document.getElementById('bookingDate').addEventListener('change', updateBookingSlots);
         
         // Cache tutors returned by the last search so viewTutor() doesn't need
         // another network request — availability is already in the payload.
@@ -252,62 +285,18 @@
                 currentTutor = tutor;
                 currentAvailability = tutor.availability || [];
                 
-                // Get day of week from selected date
-                let selectedDay = getDayOfWeekFromDate(selectedDate);
-                if (selectedDay === 0) {
-                    selectedDay = 6;
-                } else {
-                    selectedDay = selectedDay - 1;
-                }
-                
-                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                
-                // Filter availability for the selected day only
-                const dayAvailability = currentAvailability.filter(a => a.day_of_week === selectedDay);
-                
-                let availabilityHtml = '<div class="mb-3">';
-                if (dayAvailability.length > 0) {
-                    availabilityHtml += `<p class="font-bold">Available on ${days[selectedDay]}:</p><ul class="list-disc pl-5">`;
-                    for (const a of dayAvailability) {
-                        availabilityHtml += `<li>${formatTimeForDisplay(a.start_time)} - ${formatTimeForDisplay(a.end_time)}</li>`;
-                    }
-                    availabilityHtml += '</ul>';
-                } else {
-                    availabilityHtml += `<p class="text-red-500">No availability on ${days[selectedDay]}</p>`;
-                }
-                availabilityHtml += '</div>';
-                
-                document.getElementById('modalTitle').innerHTML = tutor.name;
+                document.getElementById('modalTitle').textContent = tutor.name;
                 document.getElementById('modalContent').innerHTML = `
                     <p><strong>Email:</strong> ${escapeHtml(tutor.email)}</p>
                     <p><strong>Discord:</strong> ${escapeHtml(tutor.discord_username) || 'Not set'}</p>
                     <p><strong>Bio:</strong> ${escapeHtml(tutor.bio) || 'No bio'}</p>
-                    ${availabilityHtml}
                 `;
-                
-                // Set date picker to selected date
+
                 const dateInput = document.getElementById('bookingDate');
                 dateInput.value = selectedDate;
                 dateInput.min = todayDate;
-                
-                // Populate time slots for selected day only
-                const timeSlot = document.getElementById('timeSlot');
-                timeSlot.innerHTML = '';
-                if (dayAvailability.length > 0) {
-                    for (let i = 0; i < dayAvailability.length; i++) {
-                        const a = dayAvailability[i];
-                        const option = document.createElement('option');
-                        option.value = `${a.start_time}|${a.end_time}`;
-                        option.text = `${formatTimeForDisplay(a.start_time)} - ${formatTimeForDisplay(a.end_time)}`;
-                        timeSlot.appendChild(option);
-                    }
-                } else {
-                    const option = document.createElement('option');
-                    option.text = 'No availability';
-                    option.disabled = true;
-                    timeSlot.appendChild(option);
-                }
-                
+                updateBookingSlots();
+
                 document.getElementById('topic').value = '';
                 document.getElementById('meetingType').value = 'online';
                 document.getElementById('tutorModal').classList.remove('hidden');
