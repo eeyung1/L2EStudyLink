@@ -70,6 +70,9 @@ func main() {
     router.GET("/reflections", func(c *gin.Context) {
         c.HTML(200, "reflections.html", nil)
     })
+    router.GET("/projects", func(c *gin.Context) {
+        c.HTML(200, "projects.html", nil)
+    })
     
     router.GET("/page/:name", func(c *gin.Context) {
         name := c.Param("name")
@@ -124,6 +127,16 @@ func main() {
             protected.DELETE("/timetable/:id", handlers.DeleteTimeBlock)
             protected.POST("/reflections", handlers.AddReflection)
             protected.GET("/reflections", handlers.GetReflections)
+            protected.GET("/collaboration/preferences", handlers.GetCollaborationPreference)
+            protected.PUT("/collaboration/preferences", handlers.SetCollaborationPreference)
+            protected.GET("/collaborators", handlers.ListCollaborators)
+            protected.GET("/projects", handlers.ListProjects)
+            protected.POST("/projects", handlers.CreateProject)
+            protected.GET("/projects/:id", handlers.GetProject)
+            protected.PUT("/projects/:id/status", handlers.SetProjectStatus)
+            protected.POST("/projects/:id/requests", handlers.CreateProjectRequest)
+            protected.GET("/project-requests", handlers.ListProjectRequests)
+            protected.PUT("/project-requests/:id/status", handlers.RespondProjectRequest)
         }
     }
 

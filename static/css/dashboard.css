@@ -644,3 +644,37 @@ html.dark .field-row input, html.dark .field-row select,
 html.dark .avail-form-grid select, html.dark .btn-outline {
     background: #111827; color: #f3f4f6; border-color: #374151;
 }
+
+/* Project collaboration */
+.projects-page { max-width: 860px; }
+.projects-page .card h2 { margin-bottom: 14px; }
+.projects-page .card[hidden] { display: none; }
+.project-form { display: grid; gap: 8px; margin-top: 12px; }
+.project-form label { color: #334155; font-weight: 600; font-size: 14px; }
+.project-form input, .project-form select, .project-form textarea {
+    width: 100%; box-sizing: border-box; min-width: 0; padding: 10px 12px;
+    border: 1px solid #cbd5e1; border-radius: 8px; font: inherit;
+}
+.project-form button, .project-card button, .project-actions button {
+    border: 0; border-radius: 8px; background: #2563eb; color: #fff;
+    padding: 10px 14px; min-height: 44px; cursor: pointer; font: inherit;
+}
+.project-form button:disabled, .project-actions button:disabled { opacity: .5; cursor: wait; }
+.project-opt-in { display: flex; gap: 12px; align-items: center; min-height: 44px; }
+.project-opt-in input { width: 20px; height: 20px; flex-shrink: 0; }
+.project-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 12px; overflow-wrap: anywhere; }
+.project-card h3 { margin: 0 0 8px; }
+.project-card p { margin: 6px 0; }
+.project-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.project-error, .project-success { margin: 0 0 12px; font-weight: 600; }
+.project-error { color: #b91c1c; }
+.project-success { color: #166534; }
+#projectDetails { scroll-margin-top: 80px; overflow-wrap: anywhere; }
+html.dark .project-card { border-color: #4b5563; }
+html.dark .project-form label { color: #e5e7eb; }
+html.dark .project-error { color: #fca5a5; }
+html.dark .project-success { color: #86efac; }
+@media (max-width: 480px) {
+    .projects-page .project-card button, .projects-page .project-form button { width: 100%; }
+    .project-actions button { flex: 1 1 120px; }
+}

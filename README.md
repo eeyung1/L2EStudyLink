@@ -114,6 +114,18 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 ---
 
+## Project Collaboration — Implemented
+
+Fellows can post projects with a description, needed roles, expected time commitment and optional repository link. Project listings are available to signed-in fellows; owners can close and reopen recruitment. Members of a closed project and its owner can still view it.
+
+A fellow can opt in to invitations on the Projects page. Owners can browse opted-in fellows and invite one; another fellow can request to join an open project with a note. Invitations and applications appear in the relevant person's Projects inbox. The owner decides applications, while the invited fellow decides invitations. Acceptance adds the fellow to the team; duplicate requests and self-joining are blocked. The team and request status are visible in project details. Invitations are opt-in and no email is sent in this first version; fellows check the in-app inbox.
+
+`/projects` is a mobile-friendly page. Authenticated API routes are `GET`/`POST /api/v1/projects`, `GET /api/v1/projects/:id`, `PUT /api/v1/projects/:id/status`, `POST /api/v1/projects/:id/requests`, `GET`/`PUT /api/v1/collaboration/preferences`, `GET /api/v1/collaborators`, `GET /api/v1/project-requests`, and `PUT /api/v1/project-requests/:id/status`. Project tables are added automatically to existing PostgreSQL databases on startup; both schema files define them for fresh databases. GitHub Actions runs Go tests/build and a fresh SQLite schema check.
+
+Project discovery and team membership live here; code, issues and day-to-day team communication remain in the tools fellows already use. Assess real project posts, relevant requests, accepted teammates, and first working sessions during a pilot before expanding to messaging or automated matching.
+
+---
+
 ## Known Issues / Gaps
 
 Ranked roughly by how much they'd block real usage:

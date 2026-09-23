@@ -3,6 +3,7 @@ package db
 import (
     "context"
     "database/sql"
+    _ "embed"
     "fmt"
     "log"
     "os"
@@ -12,6 +13,9 @@ import (
 )
 
 var DB *sql.DB
+
+//go:embed project_schema.sql
+var projectSchema string
 
 func InitDB() error {
     // Get database URL from environment (Render sets this)
@@ -50,6 +54,9 @@ func InitDB() error {
     }
     if _, err = DB.ExecContext(ctx, `CREATE INDEX IF NOT EXISTS idx_password_reset_token ON password_reset_tokens(token)`); err != nil {
         return fmt.Errorf("failed to create password reset index: %w", err)
+    }
+    if _, err = DB.ExecContext(ctx, projectSchema); err != nil {
+        return fmt.Errorf("failed to create project collaboration tables: %w", err)
     }
 
     log.Println("Database connected successfully")

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Projects - L2EStudyLink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+<script>
+    // Dark mode: apply before paint to avoid flash
+    // Defaults to dark unless the user has explicitly chosen light mode
+    (function() {
+        if (localStorage.getItem('darkMode') !== 'false') {
+            document.documentElement.classList.add('dark');
+        }
+    })();
+</script>
+    <link rel="stylesheet" href="/static/css/dark-mode.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <script src="/static/js/mobile-nav.js" defer></script>
+</head>
+<body class="bg-gray-100">
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-heading">
+                <a class="sidebar-brand" href="/dashboard" aria-label="L2EStudyLink dashboard">L2E<span>Study</span>Link</a>
+                <button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false">
+                    <span class="menu-icon" aria-hidden="true">☰</span>
+                    <span class="menu-label">Menu</span>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav" id="mobile-navigation">
+                <a href="/dashboard" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
+                    Dashboard
+                </a>
+                <a href="/search-page" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    Find Study Partners
+                </a>
+                <a href="/my-bookings" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path><path d="m9 15 2 2 4-4"></path></svg>
+                    My Study Sessions
+                </a>
+                <a href="/projects" class="sidebar-link active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
+                    Projects
+                </a>
+                <a href="/timetable" class="sidebar-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+                    Timetable
+                </a>
+                <a href="/reflections" class="sidebar-link active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg>
+                    Reflections
+                </a>
+                <div id="adminNavLink" class="hidden">
+                    <a href="/admin" class="sidebar-link">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3Z"></path></svg>
+                        Admin
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-foot">
+                <button class="logout-link" onclick="logout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+                    Logout
+                </button>
+                <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="projects-page">
+                <div class="page-header"><div><h1 class="page-title">Build together</h1><p class="page-sub">Find fellows to build projects with, or join a team.</p></div></div>
+                <div id="projectMessage" role="status" aria-live="polite"></div>
+                <section class="card">
+                    <h2>Open to invitations</h2>
+                    <label class="project-opt-in"><input type="checkbox" id="inviteOptIn"> Let project owners invite me to collaborate</label>
+                    <p class="page-sub">You can change this at any time. Turning it off stops new invitations.</p>
+                </section>
+                <section class="card">
+                    <h2>Post a project</h2>
+                    <form id="projectForm" class="project-form">
+                        <label for="projectTitle">Project title</label><input id="projectTitle" maxlength="120" required minlength="3" placeholder="e.g. Study group planner">
+                        <label for="projectDescription">What are you building?</label><textarea id="projectDescription" required minlength="20" maxlength="3000" rows="4" placeholder="Describe the project and its current stage"></textarea>
+                        <label for="projectRoles">Who do you need?</label><input id="projectRoles" required maxlength="240" placeholder="e.g. Go developer, designer">
+                        <label for="projectCommitment">Time commitment</label><input id="projectCommitment" required maxlength="120" placeholder="e.g. 3 hours weekly for 6 weeks">
+                        <label for="projectRepo">Repository link (optional)</label><input id="projectRepo" type="url" maxlength="500" placeholder="https://github.com/…">
+                        <button type="submit" class="project-primary">Post project</button>
+                    </form>
+                </section>
+                <section class="card"><h2>Requests and invitations</h2><div id="requestInbox">Loading…</div></section>
+                <section class="card"><h2>Projects</h2><div id="projectList">Loading…</div></section>
+                <section class="card" id="projectDetails" hidden aria-live="polite"></section>
+            </div>
+        </main>
+    </div>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/page/login';
+        let myID = 0;
+        let collaborators = [];
+        function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function message(value, error = false) { const box = document.getElementById('projectMessage'); box.textContent = value; box.className = error ? 'project-error' : 'project-success'; }
+        async function api(path, options = {}) {
+            const response = await fetch('/api/v1' + path, { ...options, headers: {'Authorization':'Bearer ' + token, ...(options.body ? {'Content-Type':'application/json'} : {})} });
+            if (response.status === 401) { window.location.href = '/page/login'; throw Error('Session expired'); }
+            let data; try { data = await response.json(); } catch { throw Error('Unexpected server response'); }
+            if (!response.ok) throw Error(data.error || 'Request failed');
+            return data;
+        }
+        function payload(data) { return JSON.stringify(data); }
+        async function refreshProjects() {
+            const list = document.getElementById('projectList');
+            try {
+                const projects = await api('/projects');
+                list.innerHTML = projects.length ? projects.map(p => `<article class="project-card"><h3>${escapeHtml(p.title)}</h3><p>By ${escapeHtml(p.owner_name)} · ${escapeHtml(p.status)} · ${p.member_count} teammate(s)</p><p>${escapeHtml(p.roles_needed)}</p><p>${escapeHtml(p.time_commitment)}</p><button type="button" data-project="${p.id}">View project</button></article>`).join('') : '<p>No projects yet. Post the first one above.</p>';
+            } catch (e) { list.textContent = e.message + ' — '; const button = document.createElement('button'); button.textContent = 'Try again'; button.onclick = refreshProjects; list.append(button); }
+        }
+        async function refreshInbox() {
+            const box = document.getElementById('requestInbox');
+            try {
+                const requests = await api('/project-requests');
+                box.innerHTML = requests.length ? requests.map(r => `<article class="project-card"><strong>${escapeHtml(r.project_title)}</strong><p>${r.kind === 'invitation' ? (r.user_id === myID ? 'Invitation to you' : 'Invitation sent to ' + escapeHtml(r.user_name)) : 'Application from ' + escapeHtml(r.user_name)} · ${escapeHtml(r.status)}</p><p>${escapeHtml(r.note)}</p>${r.status === 'pending' && (r.kind === 'application' || r.user_id === myID) ? `<div class="project-actions"><button type="button" data-decision="accepted" data-request="${r.id}">Accept</button><button type="button" data-decision="declined" data-request="${r.id}">Decline</button></div>` : ''}</article>`).join('') : '<p>No requests or invitations yet.</p>';
+            } catch (e) { box.textContent = e.message + ' — '; const button = document.createElement('button'); button.textContent = 'Try again'; button.onclick = refreshInbox; box.append(button); }
+        }
+        async function viewProject(id) {
+            const box = document.getElementById('projectDetails');
+            box.hidden = false; box.textContent = 'Loading project…';
+            try {
+                const p = await api('/projects/' + id);
+                const owner = p.owner_id === myID;
+                const member = p.members.some(m => m.id === myID);
+                const canApply = !owner && !member && p.status === 'open' && !p.my_request_id;
+                const eligible = collaborators.filter(u => !p.members.some(m => m.id === u.id) && u.id !== p.owner_id);
+                box.innerHTML = `<h2>${escapeHtml(p.title)}</h2><p>By ${escapeHtml(p.owner_name)} · ${escapeHtml(p.status)}</p><p>${escapeHtml(p.description)}</p><p><strong>Needed:</strong> ${escapeHtml(p.roles_needed)}</p><p><strong>Commitment:</strong> ${escapeHtml(p.time_commitment)}</p>${p.repo_url ? `<p><a href="${escapeHtml(p.repo_url)}" target="_blank" rel="noopener noreferrer">Project repository ↗</a></p>` : ''}<p><strong>Team:</strong> ${escapeHtml(p.owner_name)} (owner)${p.members.length ? ', ' + p.members.map(m => escapeHtml(m.name)).join(', ') : ''}</p>${p.my_request_id ? `<p>Your ${escapeHtml(p.my_request_kind)}: ${escapeHtml(p.my_request_status)}</p>` : ''}
+                ${canApply ? `<div class="project-form"><label for="joinNote">How can you contribute?</label><textarea id="joinNote" minlength="10" maxlength="500" rows="3"></textarea><button type="button" data-apply="${p.id}">Request to join</button></div>` : ''}
+                ${owner ? `<div class="project-form"><button type="button" data-toggle="${p.id}" data-status="${p.status === 'open' ? 'closed' : 'open'}">${p.status === 'open' ? 'Close recruitment' : 'Reopen recruitment'}</button>${p.status === 'open' ? `<label for="inviteUser">Invite an opted-in fellow</label><select id="inviteUser"><option value="">Select a fellow</option>${eligible.map(u => `<option value="${u.id}">${escapeHtml(u.name)} · ${escapeHtml(u.skills)}</option>`).join('')}</select><label for="inviteNote">Invitation note (optional)</label><textarea id="inviteNote" maxlength="500" rows="2"></textarea><button type="button" data-invite="${p.id}">Send invitation</button>` : ''}</div>` : ''}`;
+                box.scrollIntoView({behavior:'smooth', block:'start'});
+            } catch (e) { box.textContent = e.message; message(e.message, true); }
+        }
+        async function initialize() {
+            try {
+                const [me, preference, users] = await Promise.all([api('/me'),api('/collaboration/preferences'),api('/collaborators')]);
+                myID = me.id; collaborators = users;
+                document.getElementById('inviteOptIn').checked = preference.open_to_invites;
+                if (me.is_admin) document.getElementById('adminNavLink').classList.remove('hidden');
+            } catch (e) { message(e.message, true); }
+            await Promise.all([refreshProjects(), refreshInbox()]);
+        }
+        document.getElementById('inviteOptIn').addEventListener('change', async function () {
+            this.disabled = true;
+            try { await api('/collaboration/preferences', {method:'PUT', body:payload({open_to_invites:this.checked})}); message('Invitation preference saved.'); }
+            catch (e) { this.checked = !this.checked; message(e.message,true); }
+            finally { this.disabled = false; }
+        });
+        document.getElementById('projectForm').addEventListener('submit', async function (e) {
+            e.preventDefault(); const button = this.querySelector('button'); button.disabled = true;
+            try { const p = await api('/projects',{method:'POST',body:payload({title:document.getElementById('projectTitle').value,description:document.getElementById('projectDescription').value,roles_needed:document.getElementById('projectRoles').value,time_commitment:document.getElementById('projectCommitment').value,repo_url:document.getElementById('projectRepo').value})}); this.reset(); message('Project posted.'); await refreshProjects(); await viewProject(p.id); }
+            catch (err) { message(err.message,true); } finally { button.disabled = false; }
+        });
+        document.getElementById('projectList').addEventListener('click', e => { const button = e.target.closest('[data-project]'); if (button) viewProject(Number(button.dataset.project)); });
+        document.getElementById('requestInbox').addEventListener('click', async e => {
+            const button = e.target.closest('[data-decision]'); if (!button) return; button.disabled = true;
+            try { await api('/project-requests/' + button.dataset.request + '/status',{method:'PUT',body:payload({status:button.dataset.decision})}); message('Request updated.'); await Promise.all([refreshInbox(),refreshProjects()]); }
+            catch (err) { message(err.message,true); button.disabled = false; }
+        });
+        document.getElementById('projectDetails').addEventListener('click', async e => {
+            const button = e.target.closest('button[data-apply],button[data-invite],button[data-toggle]'); if (!button) return; button.disabled = true;
+            const id = button.dataset.apply || button.dataset.invite || button.dataset.toggle;
+            try {
+                if (button.dataset.apply) await api('/projects/'+id+'/requests',{method:'POST',body:payload({kind:'application',note:document.getElementById('joinNote').value})});
+                else if (button.dataset.invite) { const user_id = Number(document.getElementById('inviteUser').value); if (!user_id) throw Error('Select a fellow'); await api('/projects/'+id+'/requests',{method:'POST',body:payload({kind:'invitation',user_id,note:document.getElementById('inviteNote').value})}); }
+                else await api('/projects/'+id+'/status',{method:'PUT',body:payload({status:button.dataset.status})});
+                message('Saved.'); await Promise.all([refreshProjects(),refreshInbox()]); await viewProject(id);
+            } catch (err) { message(err.message,true); button.disabled = false; }
+        });
+        function logout() { localStorage.removeItem('token'); window.location.href = '/page/login'; }
+        function toggleDark() { const dark = document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode',dark); document.getElementById('darkToggle').textContent=dark?'☀️':'🌙'; }
+        initialize();
+    </script>
+</body>
+</html>
