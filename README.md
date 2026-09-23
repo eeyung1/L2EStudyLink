@@ -7,7 +7,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - **Language**: Go, using the **Gin** web framework (`github.com/gin-gonic/gin`)
 - **Pattern**: hybrid app — server-rendered HTML pages via `router.LoadHTMLGlob("templates/*.html")` for the UI shell, plus a JSON REST API under `/api/v1/*` that page-level JavaScript calls via `fetch()`. Pages are "dumb" wrappers; real logic lives behind the API.
 - **Auth**: JWT (`github.com/golang-jwt/jwt/v5`), issued on login, sent as `Authorization: Bearer <token>`, verified by `middleware.AuthRequired`. Token is stored in the browser via `localStorage`.
-- **Database**: PostgreSQL in production, SQLite intended for local dev (`schema.sql` / `schema.sqlite` — see Known Issues, they're currently out of sync with the code).
+- **Database**: PostgreSQL in production, SQLite schema is maintained for local use (`schema.sql` / `schema.sqlite`); the current `db/postgres.go` connection code uses PostgreSQL.
 - **Frontend**: plain HTML + Tailwind CDN + vanilla JavaScript `fetch()` calls. No build step, no npm, no React/Vue. Dark mode via a `localStorage` flag toggling a `dark` class on `<html>`, with manual per-utility-class overrides (not Tailwind's built-in `dark:` variants).
 - **Hosting**: Render (`render.yaml`, `Procfile`, `start.sh`), also has a `Dockerfile`.
 - **Email**: Resend (`email/resend.go`). **Notifications**: Discord webhook (`notifications/discord.go`).
@@ -16,9 +16,9 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 
 - `main.go` — registers every route directly (page routes and API routes both live here, no separate routes file).
 - `handlers/` — one file per feature area (`auth.go`, `booking.go`, `search.go`, `profile.go`, `availability.go`, `timetable.go`, `admin.go`, `password_reset.go`). Handlers read `db := c.MustGet("db").(*sql.DB)` and write raw SQL inline — no repository layer.
-- `middleware/` — `AuthRequired` (JWT verification).
+- `middleware/` — `AuthRequired` (JWT verification) and `AdminRequired` (checks the current database role and suspension status).
 - `config/` — `JWTSecret()`, read from the `JWT_SECRET` env var; the app refuses to start if it's unset or still the old placeholder value.
-- `templates/` — one `.html` file per page, Tailwind CDN + inline `<script>` blocks calling the JSON API.
+- `templates/` — one `.html` file per page, Tailwind CDN + inline `<script>` blocks calling the JSON API. `static/js/read-api.js` handles safe retries for timetable and reflections GET requests.
 - `db/postgres.go` — connection setup only.
 - `email/`, `notifications/` — Resend email and Discord webhook integrations.
 - `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool; Postgres and SQLite dialects kept in sync. Fresh databases created from either file are complete; existing databases need manual migration (see Known Issues).
@@ -51,16 +51,18 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - Tutor confirms or cancels a booking (`PUT /api/v1/bookings/:id/status`) — only the tutor can change status; notifies both parties.
 
 ### Timetable & Reflections
-- Personal weekly timetable: add/list/delete time blocks (`GET`/`POST /api/v1/timetable`, `DELETE /api/v1/timetable/:id`).
-- Reflections tied to a timetable block and date, upsert-style (creating a reflection for an existing block+date updates it) (`POST`/`GET /api/v1/reflections`).
+- Personal weekly timetable: add/list/delete time blocks (`GET`/`POST /api/v1/timetable`, `DELETE /api/v1/timetable/:id`). The read handler returns `HH:MM` times and an empty JSON array when there are no blocks.
+- Reflections tied to a timetable block and date, upsert-style (creating a reflection for an existing block+date updates it) (`POST`/`GET /api/v1/reflections`). The read handler returns `YYYY-MM-DD` dates, `HH:MM` times, and an empty JSON array when there are no reflections.
+- Both pages retry transient network or server failures on GET requests up to three attempts, redirect to login on an expired session, and show a **Try again** control for errors. The timetable remains viewable when its separate reflections request fails. Database query and scan failures are logged on the server rather than silently dropping rows.
 
 ### Admin
+- Every `/api/v1/admin/*` API route requires authentication and a current database check that `is_admin` is true and `is_suspended` is false. An old JWT does not preserve admin access after a role change or suspension.
 - Stats: total users, bookings, skills (`GET /api/v1/admin/stats`).
 - List all users with session/rating/suspension info (`GET /api/v1/admin/users`).
 - Delete a user (`DELETE /api/v1/admin/users/:id`).
 - Suspend/unsuspend a user (`PUT /api/v1/admin/users/:id/suspend`).
 - List all bookings across the platform (`GET /api/v1/admin/bookings`).
-- Reset the hardcoded admin account's password (`POST /api/v1/admin/reset-password`).
+- The former hardcoded admin password reset route and handler have been removed. `GET /api/v1/admin/users` scans PostgreSQL boolean fields as booleans.
 
 ### Pages
 Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, admin — all server-rendered Tailwind + vanilla JS pages, generic `/page/:name` route for the simpler static ones.
@@ -103,7 +105,7 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 - How much of the "metrics history" and "recurring flags" logic should be computed deterministically in Go before the prompt is built (hours logged, adherence %, streaks) versus left for the model to infer from raw reflection text? Deterministic computation will be more reliable for the dashboard numbers; the model is better suited to the qualitative block-by-block analysis and priorities.
 - Cost/rate-limiting: this is now the first paid third-party AI dependency in the app (alongside Resend and Discord, which are cheap/free) — needs its own error handling and probably a per-user request cap.
 
-**Reference document:** `L2E_PLANNER_PROMPT_v2.md` (included alongside this README) is the source-of-truth for the planner's tone, evaluation format, and flag list — treat it as the spec to genericize, not something to paste in verbatim per-user.
+**Reference document:** `L2E_PLANNER_PROMPT_v2.md` is described here as the planner reference, but it is not currently committed in this repository. Obtain it before implementing the planner; do not treat the description above as the full specification.
 
 ---
 
@@ -113,25 +115,21 @@ Ranked roughly by how much they'd block real usage:
 
 > **Recently resolved:** `timetable`, `activity_logs`, and `users.is_admin` are now defined in both `schema.sql` and `schema.sqlite` (kept in sync, dialect-correct). Fresh databases created from either file fully support `/api/v1/timetable`, `/api/v1/reflections`, `GetProfile`, and `AdminUsers` — this also unblocks the AI Planner work above. ⚠️ **Existing databases are not changed by these files:** `CREATE TABLE IF NOT EXISTS` adds the new tables but won't add `is_admin` to an existing `users` table. Apply it manually — Postgres: `ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE;` plus the two tables from `schema.sql`; SQLite: `ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0;` plus the tables from `schema.sqlite`.
 
-1. **Reviews table exists in schema but has no handler or route at all.** `rating` and `total_reviews` are displayed everywhere (profile, dashboard, search results) but there's no way for a user to actually submit a review after a session — those numbers can never move past their defaults. This is the biggest non-AI "next feature" candidate.
-2. **JWT is stored in `localStorage`**, not an httpOnly cookie — vulnerable to token theft via any XSS elsewhere on the site.
-3. **No rate limiting or lockout on `/api/v1/login`** — unlimited password guesses are possible against any account.
-4. **`ResetAdminPassword` hardcodes a specific email and a fixed new password (`admin123`)** — fine as a one-off recovery tool during early development, but shouldn't stay reachable once real users are on the platform; it currently only requires being logged in (`AuthRequired`), not an admin check.
-5. **No booking completion / no-show flow.** `bookings.status` supports `completed` and `no_show` in the schema, and `users.no_show_count` exists, but nothing in the handlers ever sets a booking to either state — sessions stay `confirmed` forever, and no-show tracking is unused.
-6. **Admin endpoints don't check `is_admin`.** Every `/api/v1/admin/*` route only requires `AuthRequired` (any logged-in user), not an admin check — any authenticated user can currently hit the admin stats, user list, delete-user, suspend, and bookings endpoints.
-7. **`AdminUsers` can't scan Postgres `BOOLEAN` columns.** `handlers/admin.go` scans `is_suspended` and `is_admin` into Go `int`s and tests `== 1`, but on Postgres `lib/pq` returns those columns as `bool` — so `GET /api/v1/admin/users` errors on a Postgres database. Fix: scan into `bool` (as `GetProfile` does) and drop the `== 1` checks. (The SQLite schema uses `INTEGER` for both, which is why this goes unnoticed against SQLite.)
+1. **Intermittent timetable/reflections API failures remain under investigation.** Render logs showed `GET /api/v1/reflections` returning 500 while the HTML page returned 200. The merged read retries improve recovery and the handlers now log database errors, but the underlying production database error has not yet been confirmed. Inspect Render application logs if it recurs.
+2. **Reviews table exists in schema but has no handler or route.** `rating` and `total_reviews` are displayed, but users cannot submit a review.
+3. **JWT is stored in `localStorage`**, not an httpOnly cookie — vulnerable to token theft via XSS.
+4. **No rate limiting or lockout on `/api/v1/login`** — unlimited password guesses are possible.
+5. **No booking completion / no-show flow.** The schema supports `completed` and `no_show`, but no handler transitions bookings to those states.
 
 ## Suggested Next Steps (in priority order)
 
-1. Genericize `L2E_PLANNER_PROMPT_v2.md` into a persona/format template + per-user data interpolation, per the design notes above.
-2. Build the `ai/` client package, `handlers/planner.go`, and the `planner_sessions` table; wire up `POST /api/v1/planner/analyze`.
-3. Build the planner frontend page rendering the structured dashboard from the API's JSON.
-4. Add an actual admin-check middleware (or inline check) to every `/api/v1/admin/*` route — and fix `AdminUsers` to scan `is_admin` / `is_suspended` as `bool` on Postgres (see Known Issues #7).
-5. Build the reviews feature: submit a review after a completed booking, update `users.rating`/`total_reviews` accordingly.
-6. Build a way to mark a booking `completed` (and optionally `no_show`), since nothing currently transitions a booking out of `confirmed`.
-7. Move the JWT out of `localStorage` into an httpOnly cookie.
-8. Add basic rate limiting to `/api/v1/login`.
-9. Retire or lock down `ResetAdminPassword` behind a real admin check before this goes further into production use.
+1. Verify the merged timetable/reflections changes against the live app with an authenticated account; if a 500 recurs, read the new `GetReflections query` / `GetTimetable query` log entry and fix the specific database error.
+2. Add tests for the timetable/reflections handlers and run `go test ./...` (the development workspace used for PR #4 did not have Go installed).
+3. Obtain `L2E_PLANNER_PROMPT_v2.md`, then genericize it into a persona/format template plus per-user context.
+4. Build the planner API, persistence, and frontend described above.
+5. Build a booking completion flow and reviews after completed bookings.
+6. Move the JWT out of `localStorage` into an httpOnly cookie.
+7. Add basic rate limiting to `/api/v1/login`.
 
 ## Running Locally
 
