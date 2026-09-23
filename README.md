@@ -87,7 +87,7 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 ## Mobile UX — Delivery Plan
 
-**Status:** the first implementation pass is merged. The code audit below covers the core phone journeys; actual Android/iPhone viewport and assistive-technology acceptance remains to be done. Continue with the existing Go, HTML, CSS, and vanilla JS stack and review further changes on separate branches.
+**Status:** mobile UX implementation and the owner's live web review are complete (owner replied “NICE ONE” after PRs #13–#23). The code audit below covers the core phone journeys. Specific Android/iPhone browser, screen reader, 200% zoom, and measured task-completion checks have not been reported; keep them as follow-up quality checks.
 
 ### Code audit and implemented changes (2026-09-23)
 
@@ -103,9 +103,9 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 | Timetable navigation | Seven day sections required excessive scrolling. Phone shortcuts jump to each day and highlight today. | PR #21 |
 | Reflection history | A long list had no way to find a date. A local date filter and Show all action were added. | PR #22 |
 
-**Verification completed:** JavaScript syntax and diff checks for affected changes, targeted checks for booking date/slot transitions and reflection filtering, and the project owner's live phone review through PR #16. No Go handlers were changed in this pass. The account forms, admin page, and changes in PRs #17–#22 still need the final live device review.
+**Verification completed:** JavaScript syntax and diff checks for affected changes, targeted checks for booking date/slot transitions and reflection filtering, the project owner's live phone review through PR #16, and the owner's final acceptance of the mobile UX pass after PR #23. No Go handlers were changed in this pass. Acceptance is based on the owner's confirmation; it does not establish that every device and accessibility scenario below was exercised.
 
-**Final acceptance on the deployed site:** check 320px and common phone widths on Android and iPhone where available. Open/close Menu with touch and keyboard; search, change a tutor's booking date, select a meeting type, and submit a test booking; inspect booking actions; add a block and reflection; jump across timetable days; filter and clear reflection history; use login, signup and reset fields; scroll admin tables without moving the whole page. Confirm no horizontal page overflow, clipped modal buttons, keyboard-covered actions, or unreadable light/dark text. Do not submit admin deletion during this audit. Record any device-specific defect as a new focused task.
+**Follow-up device and accessibility checklist (not individually verified):** check 320px and common phone widths on Android and iPhone where available. Open/close Menu with touch and keyboard; search, change a tutor's booking date, select a meeting type, and submit a test booking; inspect booking actions; add a block and reflection; jump across timetable days; filter and clear reflection history; use login, signup and reset fields; scroll admin tables without moving the whole page. Confirm no horizontal page overflow, clipped modal buttons, keyboard-covered actions, or unreadable light/dark text. Do not submit admin deletion during this audit. Record any device-specific defect as a new focused task.
 
 1. **Audit real tasks at phone widths.** Check signup, login, OTP reset, search and tutor profile, booking and cancellation, timetable creation, reflections, and admin (for admins) at 320, 375, 390, and 768 CSS pixels. Record horizontal overflow, clipped controls, keyboard overlap, slow states, and confusing navigation. Test at least one actual phone, including a slow network, before calling the release mobile ready.
 2. **Create a consistent interaction system.** Reuse the existing shared styles for type, spacing, buttons, fields, focus indicators, error and success messages, and touch targets. Keep navigation reachable with one hand; preserve desktop behavior. Ensure menu focus and Escape behavior, visible labels, accessible modal focus, and reduced-motion support.
@@ -128,7 +128,7 @@ Ranked roughly by how much they'd block real usage:
 
 ## Suggested Next Steps (in priority order)
 
-1. Run the final live phone acceptance above for PRs #17–#22 and capture any device-specific defect in a focused branch. Confirm reset with a fresh code because shared account CSS changed in PR #19.
+1. The owner accepted the mobile UX pass after PR #23. If device-specific or accessibility checks above reveal a defect, fix it on a focused branch. Recheck reset with a fresh code when account behavior changes.
 2. Investigate any recurring timetable/reflections 500 using the server's query logs; add focused handler tests and run `go test ./...` in a Go-enabled environment.
 3. Build and test deterministic weekly metrics from the current user’s data; document the week/timezone and missing-reflection rules.
 4. Obtain the planner reference prompt, choose a provider and budget, then deliver the scoped weekly planner API and mobile page in reviewable steps above.
