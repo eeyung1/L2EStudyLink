@@ -1,10 +1,12 @@
 package db
 
 import (
+    "context"
     "database/sql"
     "fmt"
     "log"
     "os"
+    "time"
 
     _ "github.com/lib/pq"
 )
@@ -28,6 +30,26 @@ func InitDB() error {
 
     if err = DB.Ping(); err != nil {
         return fmt.Errorf("failed to ping database: %w", err)
+    }
+
+    // Existing production databases may predate this table. Ensure the
+    // recovery feature has its storage before the server accepts requests.
+    ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+    defer cancel()
+    if _, err = DB.ExecContext(ctx, `
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+            id SERIAL PRIMARY KEY,
+            user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            token VARCHAR(255) UNIQUE NOT NULL,
+            expires_at TIMESTAMP NOT NULL,
+            used BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `); err != nil {
+        return fmt.Errorf("failed to create password reset table: %w", err)
+    }
+    if _, err = DB.ExecContext(ctx, `CREATE INDEX IF NOT EXISTS idx_password_reset_token ON password_reset_tokens(token)`); err != nil {
+        return fmt.Errorf("failed to create password reset index: %w", err)
     }
 
     log.Println("Database connected successfully")
