@@ -19,7 +19,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - `middleware/` — `AuthRequired` (JWT verification) and `AdminRequired` (checks the current database role and suspension status).
 - `config/` — `JWTSecret()`, read from the `JWT_SECRET` env var; the app refuses to start if it's unset or still the old placeholder value.
 - `templates/` — one `.html` file per page, with inline `<script>` blocks calling the JSON API. `static/js/read-api.js` handles retries for timetable and reflections GET requests; `static/js/mobile-nav.js` controls the signed-in mobile menu. Account pages share `static/css/login.css`.
-- `db/postgres.go` — connection setup only.
+- `db/postgres.go` — connection setup and repeatable startup table creation for password recovery and project collaboration.
 - `email/`, `notifications/` — Brevo email and Discord webhook integrations.
 - `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool; Postgres and SQLite dialects kept in sync. Existing PostgreSQL databases automatically create the missing `password_reset_tokens` table and index at startup. Other existing schema changes still need manual migration (see Known Issues).
 
@@ -66,7 +66,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - The former hardcoded admin password reset route and handler have been removed. `GET /api/v1/admin/users` scans PostgreSQL boolean fields as booleans.
 
 ### Pages
-Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, admin — HTML pages with vanilla JS, with a generic `/page/:name` route for simpler pages. Login, signup and recovery pages share the blue account layout. Six signed-in pages have a compact mobile header and menu, plus narrower card, form, modal and table layouts. The brand links to the dashboard on signed-in pages and login on account pages. These responsive changes were merged, but a device-level usability audit is still needed.
+Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, projects, admin — HTML pages with vanilla JS, with a generic `/page/:name` route for simpler pages. Login, signup and recovery pages share the blue account layout. Six signed-in pages have a compact mobile header and menu, plus narrower card, form, modal and table layouts. The brand links to the dashboard on signed-in pages and login on account pages. These responsive changes were merged, but a device-level usability audit is still needed.
 
 ---
 
@@ -111,6 +111,18 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 2. **Create a consistent interaction system.** Reuse the existing shared styles for type, spacing, buttons, fields, focus indicators, error and success messages, and touch targets. Keep navigation reachable with one hand; preserve desktop behavior. Ensure menu focus and Escape behavior, visible labels, accessible modal focus, and reduced-motion support.
 3. **Improve core journeys in small PRs.** First make search results, tutor details, and booking actions easy to scan and tap. Then make timetable and reflections quick to enter and review by date. Show clear loading, empty, validation, success, and retry states. Use mobile cards or scoped horizontal scrolling where data tables cannot fit; never make the whole page scroll sideways.
 4. **Verify each journey.** Test a 320px viewport, keyboard-only navigation, screen reader labels, zoom to 200%, light/dark contrast, and an Android and iPhone browser where available. Measure real task completion and perceived speed with users before considering an installable PWA. A PWA is an optional later milestone, not a prerequisite for phone access through the browser.
+
+---
+
+## Project Collaboration — Implemented
+
+Fellows can post projects with a description, needed roles, expected time commitment and optional repository link. Project listings are available to signed-in fellows; owners can close and reopen recruitment. Members of a closed project and its owner can still view it.
+
+A fellow can opt in to invitations on the Projects page. Owners can browse opted-in fellows and invite one; another fellow can request to join an open project with a note. Invitations and applications appear in the relevant person's Projects inbox. The owner decides applications, while the invited fellow decides invitations. Acceptance adds the fellow to the team; duplicate requests and self-joining are blocked. The team and request status are visible in project details. Invitations are opt-in and no email is sent in this first version; fellows check the in-app inbox.
+
+`/projects` is a mobile-friendly page. Authenticated API routes are `GET`/`POST /api/v1/projects`, `GET /api/v1/projects/:id`, `PUT /api/v1/projects/:id/status`, `POST /api/v1/projects/:id/requests`, `GET`/`PUT /api/v1/collaboration/preferences`, `GET /api/v1/collaborators`, `GET /api/v1/project-requests`, and `PUT /api/v1/project-requests/:id/status`. Project tables are added automatically to existing PostgreSQL databases on startup; both schema files define them for fresh databases. GitHub Actions runs Go tests/build and a fresh SQLite schema check.
+
+Project discovery and team membership live here; code, issues and day-to-day team communication remain in the tools fellows already use. Assess real project posts, relevant requests, accepted teammates, and first working sessions during a pilot before expanding to messaging or automated matching.
 
 ---
 
