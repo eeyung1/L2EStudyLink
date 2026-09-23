@@ -8,7 +8,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - **Pattern**: hybrid app — server-rendered HTML pages via `router.LoadHTMLGlob("templates/*.html")` for the UI shell, plus a JSON REST API under `/api/v1/*` that page-level JavaScript calls via `fetch()`. Pages are "dumb" wrappers; real logic lives behind the API.
 - **Auth**: JWT (`github.com/golang-jwt/jwt/v5`), issued on login, sent as `Authorization: Bearer <token>`, verified by `middleware.AuthRequired`. Token is stored in the browser via `localStorage`.
 - **Database**: PostgreSQL in production, SQLite schema is maintained for local use (`schema.sql` / `schema.sqlite`); the current `db/postgres.go` connection code uses PostgreSQL.
-- **Frontend**: plain HTML + Tailwind CDN + vanilla JavaScript `fetch()` calls. No build step, no npm, no React/Vue. Dark mode via a `localStorage` flag toggling a `dark` class on `<html>`, with manual per-utility-class overrides (not Tailwind's built-in `dark:` variants).
+- **Frontend**: plain HTML, Tailwind CDN on signed-in pages, shared CSS for navigation and account pages, and vanilla JavaScript `fetch()` calls. No build step, no npm, no React/Vue. Dark mode uses a `localStorage` flag and manual style overrides.
 - **Hosting**: Render (`render.yaml`, `Procfile`, `start.sh`), also has a `Dockerfile`.
 - **Email**: Brevo transactional API (`email/brevo.go`). **Notifications**: Discord webhook (`notifications/discord.go`).
 
@@ -18,7 +18,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - `handlers/` — one file per feature area (`auth.go`, `booking.go`, `search.go`, `profile.go`, `availability.go`, `timetable.go`, `admin.go`, `password_reset.go`). Handlers read `db := c.MustGet("db").(*sql.DB)` and write raw SQL inline — no repository layer.
 - `middleware/` — `AuthRequired` (JWT verification) and `AdminRequired` (checks the current database role and suspension status).
 - `config/` — `JWTSecret()`, read from the `JWT_SECRET` env var; the app refuses to start if it's unset or still the old placeholder value.
-- `templates/` — one `.html` file per page, Tailwind CDN + inline `<script>` blocks calling the JSON API. `static/js/read-api.js` handles safe retries for timetable and reflections GET requests.
+- `templates/` — one `.html` file per page, with inline `<script>` blocks calling the JSON API. `static/js/read-api.js` handles retries for timetable and reflections GET requests; `static/js/mobile-nav.js` controls the signed-in mobile menu. Account pages share `static/css/login.css`.
 - `db/postgres.go` — connection setup only.
 - `email/`, `notifications/` — Brevo email and Discord webhook integrations.
 - `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool; Postgres and SQLite dialects kept in sync. Existing PostgreSQL databases automatically create the missing `password_reset_tokens` table and index at startup. Other existing schema changes still need manual migration (see Known Issues).
@@ -29,6 +29,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - Signup (`POST /api/v1/signup`) — bcrypt-hashed passwords, unique email enforced.
 - Login (`POST /api/v1/login`) — issues a 24-hour JWT.
 - Self-service password reset (`POST /api/v1/forgot-password`, `POST /api/v1/reset-password`) — six-digit email code, 10-minute expiry, five attempts, one-minute resend cooldown and single-use reset. The code is stored as a keyed digest; the request endpoint gives the same response for known and unknown accounts. Successful reset signs the user in and opens their dashboard.
+- Password codes and booking emails use Brevo. Existing PostgreSQL databases create the password-reset table and index on startup. The project owner confirmed the live reset flow works after merging PR #11; this is user verification, not an automated end-to-end test.
 - JWT secret is loaded from an environment variable and validated at startup (fails fast if missing or left as the old placeholder).
 
 ### Profile
@@ -65,47 +66,33 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - The former hardcoded admin password reset route and handler have been removed. `GET /api/v1/admin/users` scans PostgreSQL boolean fields as booleans.
 
 ### Pages
-Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, admin — all server-rendered Tailwind + vanilla JS pages, generic `/page/:name` route for the simpler static ones.
+Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, admin — HTML pages with vanilla JS, with a generic `/page/:name` route for simpler pages. Login, signup and recovery pages share the blue account layout. Six signed-in pages have a compact mobile header and menu, plus narrower card, form, modal and table layouts. The brand links to the dashboard on signed-in pages and login on account pages. These responsive changes were merged, but a device-level usability audit is still needed.
 
 ---
 
-## AI Planner Integration — Current Work
+## AI Planner — Delivery Plan
 
-**Goal:** give every L2EStudyLink user an in-app AI planner that analyzes their own timetable + reflections (daily or weekly) and produces the kind of structured evaluation described in `L2E_PLANNER_PROMPT_v2.md` — currently a manual workflow (paste the prompt + reflections into an AI model by hand) — natively inside the platform, for all fellows, not just one user.
+**Status:** planned; no planner routes, AI client, planner storage, or planner page exist yet. The reference `L2E_PLANNER_PROMPT_v2.md` is mentioned in earlier project notes but is not in this repository. Obtain and review it before implementing its detailed feedback format. The first release can use the existing timetable and reflections without waiting for automated scheduling.
 
-### What the reference prompt (`L2E_PLANNER_PROMPT_v2.md`) defines
+**First useful release:** an authenticated user chooses a past week and taps **Analyze my week**. The page shows a factual activity summary and concise coaching based only on that user's timetable and reflections, with a link to prior analyses. It distinguishes scheduled time, reflected activity, and missing reflections; a reflection's existence alone does not prove the full block was completed.
 
-- A planner persona ("30 years of experience," direct/no-flattery tone) that evaluates a user's week against their own history.
-- A fixed five-step evaluation format: acknowledge context → visual dashboard (metric cards, color-coded bar chart, week-over-week comparison table, milestones, alert boxes) → block-by-block analysis → five specific priorities for the coming week → one direct clarifying question.
-- Continuity across sessions — the planner is expected to "remember" prior weeks' metrics and flags (a running metrics history table, recurring-pattern flags to watch).
-- Currently hardcoded to one person (Eeyung) — his timetable blocks, project list, and metrics history are baked directly into the prompt text.
+1. **Define the output and metrics before calling a model.** Specify one user-owned week, timezone, empty-week behavior, and a versioned JSON response: scheduled blocks/minutes, reflected blocks, coverage percentage, factual highlights, suggested priorities, and one follow-up question. Compute counts and scheduled minutes in Go; do not infer actual hours worked or adherence from free-text reflections. Add tests for week boundaries, missing logs, and another user's data.
+2. **Prepare per-user context.** Read only the authenticated user's timetable, reflections, and selected prior summaries. Bound the date range and text size; treat reflection text as untrusted input and never allow it to override system instructions. Write a generic coaching prompt after obtaining the reference document. Keep the model responsible for qualitative feedback, not arithmetic.
+3. **Choose a provider and build a narrow client.** Keep the server-side key in an environment variable and never expose it to page JavaScript. Configure timeouts, output size, retries for transient failures, schema validation, and a useful failure response. Do not make an AI key mandatory for existing app startup while the planner is optional. Test with a fake HTTP provider before using a real key.
+4. **Persist and expose analyses.** Add a versioned PostgreSQL migration for planner analyses, plus the matching SQLite schema. Store user ID, week, deterministic metrics, validated model response, prompt/model version, and timestamps. Add `POST /api/v1/planner/analyze` and `GET /api/v1/planner/history`, scoped to the logged-in user; prevent duplicate submissions for the same week and set a per-user usage limit.
+5. **Build the phone-first planner page.** Render numbers and feedback from validated JSON as text, never model HTML. Show loading, empty, error, retry, and history states. Ensure keyboard access, readable charts/tables on narrow screens, and a clear distinction between observed activity and AI suggestions.
+6. **Pilot before expanding.** Compare generated summaries against sample weeks, check privacy boundaries and costs, and collect feedback from a small group. Only then consider recurring flags, daily views, scheduled reports, or an interactive follow-up conversation.
 
-### Design implications for productizing this in L2EStudyLink
+**Decision for the first release:** on-demand weekly analyses using each user's own schedule. Define the user's timezone and whether they want a weekly goal before adding adherence or streak scores. Provider, budget, and the absent reference prompt still need product decisions; they do not block the deterministic metrics prototype.
 
-1. **Genericize the persona template.** The prompt as written is a personal document, not a reusable system prompt. It needs splitting into (a) a fixed planner-persona/format template (tone, five-step structure, dashboard spec) that's the same for every user, and (b) per-user context (name, program stage, tech stack, project list, metrics history) pulled from the database at request time instead of hardcoded.
-2. **Data the planner needs, per user, per period (day or week):**
-   - Timetable blocks for the period (`timetable` table — now defined in both schema files, see "Recently resolved" in Known Issues).
-   - Reflections logged against those blocks (`activity_logs` — also now defined in both schema files).
-   - Prior periods' metrics for the comparison table and streak tracking — this doesn't exist as stored data yet; hours/adherence per week would need to be computed from timetable + reflections, or stored as a rollup.
-3. **New persistence needed:**
-   - A `planner_sessions` (or similar) table to store each generated analysis — the text/dashboard payload, the period it covers, and enough of the computed metrics (total hours, daily average, adherence %) to feed next period's comparison table and streak checks, without re-deriving history from scratch every time.
-   - Optionally a `planner_flags` table or JSON column for the recurring-pattern watchlist (e.g. "evening session floor," "protected rest window") so flags persist and get checked automatically rather than re-derived by the model each time from scratch.
-4. **New handler + route(s):**
-   - `handlers/planner.go` — e.g. `POST /api/v1/planner/analyze` with a `period: "daily" | "weekly"` and optional date range; reads the user's timetable + reflections for that period plus their stored planner history, calls the LLM, stores the result, returns it.
-   - `GET /api/v1/planner/history` — past analyses, for the dashboard/timeline view.
-5. **LLM integration:**
-   - A small internal client package (e.g. `ai/client.go`) wrapping whichever provider is chosen (the fellow's own tooling already uses Groq elsewhere in the Learn2Earn ecosystem, per prior project notes — worth reusing if consistent) — needs its own API key env var (e.g. `GROQ_API_KEY` or `LLM_API_KEY`) following the same fail-fast-if-unset pattern as `JWT_SECRET`.
-   - System prompt = the genericized persona template with per-user context interpolated in; user message = the timetable + reflections payload for the requested period.
-6. **Frontend:** a planner page/tab (new template, e.g. `planner.html`) rendering the dashboard the prompt spec describes — metric cards, color-coded bar chart, comparison table, alert boxes — client-side from the structured JSON the API returns, rather than the LLM returning raw HTML directly (keeps rendering consistent and avoids trusting model-generated markup).
+## Mobile UX — Delivery Plan
 
-### Open questions to resolve before implementation starts
+**Status:** the merged mobile menu and responsive spacing are a foundation, not proof that every phone workflow is comfortable. Continue with the existing Go, HTML, CSS, and vanilla JS stack and review changes on separate branches.
 
-- Should the analysis be triggered on-demand by the user, or run automatically on a schedule (e.g. every Saturday, per the reference prompt's rhythm) via a background job?
-- Does every user get the same fixed weekly/daily target and block structure, or is the timetable (and therefore what "adherence" means) fully user-defined, given `timetable` is already a per-user, freeform table? The reference prompt assumes a fixed personal schedule (07:00–08:00 Daily Study, etc.) — that won't generalize as-is to 770 fellows with different schedules.
-- How much of the "metrics history" and "recurring flags" logic should be computed deterministically in Go before the prompt is built (hours logged, adherence %, streaks) versus left for the model to infer from raw reflection text? Deterministic computation will be more reliable for the dashboard numbers; the model is better suited to the qualitative block-by-block analysis and priorities.
-- Cost/rate-limiting: this is now the first paid third-party AI dependency in the app (alongside Brevo and Discord) — needs its own error handling and probably a per-user request cap.
-
-**Reference document:** `L2E_PLANNER_PROMPT_v2.md` is described here as the planner reference, but it is not currently committed in this repository. Obtain it before implementing the planner; do not treat the description above as the full specification.
+1. **Audit real tasks at phone widths.** Check signup, login, OTP reset, search and tutor profile, booking and cancellation, timetable creation, reflections, and admin (for admins) at 320, 375, 390, and 768 CSS pixels. Record horizontal overflow, clipped controls, keyboard overlap, slow states, and confusing navigation. Test at least one actual phone, including a slow network, before calling the release mobile ready.
+2. **Create a consistent interaction system.** Reuse the existing shared styles for type, spacing, buttons, fields, focus indicators, error and success messages, and touch targets. Keep navigation reachable with one hand; preserve desktop behavior. Ensure menu focus and Escape behavior, visible labels, accessible modal focus, and reduced-motion support.
+3. **Improve core journeys in small PRs.** First make search results, tutor details, and booking actions easy to scan and tap. Then make timetable and reflections quick to enter and review by date. Show clear loading, empty, validation, success, and retry states. Use mobile cards or scoped horizontal scrolling where data tables cannot fit; never make the whole page scroll sideways.
+4. **Verify each journey.** Test a 320px viewport, keyboard-only navigation, screen reader labels, zoom to 200%, light/dark contrast, and an Android and iPhone browser where available. Measure real task completion and perceived speed with users before considering an installable PWA. A PWA is an optional later milestone, not a prerequisite for phone access through the browser.
 
 ---
 
@@ -123,13 +110,11 @@ Ranked roughly by how much they'd block real usage:
 
 ## Suggested Next Steps (in priority order)
 
-1. Verify the merged timetable/reflections changes against the live app with an authenticated account; if a 500 recurs, read the new `GetReflections query` / `GetTimetable query` log entry and fix the specific database error.
-2. Add tests for the timetable/reflections handlers and run `go test ./...` (the development workspace used for PR #4 did not have Go installed).
-3. Obtain `L2E_PLANNER_PROMPT_v2.md`, then genericize it into a persona/format template plus per-user context.
-4. Build the planner API, persistence, and frontend described above.
-5. Build a booking completion flow and reviews after completed bookings.
-6. Move the JWT out of `localStorage` into an httpOnly cookie.
-7. Add basic rate limiting to `/api/v1/login`.
+1. Audit the live phone journeys and fix the highest-impact usability problem in one review branch. Confirm reset on a fresh code again when that branch changes account pages.
+2. Investigate any recurring timetable/reflections 500 using the server's query logs; add focused handler tests and run `go test ./...` in a Go-enabled environment.
+3. Build and test deterministic weekly metrics from the current user’s data; document the week/timezone and missing-reflection rules.
+4. Obtain the planner reference prompt, choose a provider and budget, then deliver the scoped weekly planner API and mobile page in reviewable steps above.
+5. Add booking completion and reviews. Address JWT storage and login rate limiting before broad rollout.
 
 ## Running Locally
 
@@ -156,7 +141,7 @@ Required environment variables (see `.gitignore` — `.env` is not committed):
 
 On Render, add the Brevo variables to the web service and confirm transactional email sending is activated in your Brevo account. Brevo's free tier currently includes up to 300 sends per day. If you use a free sender address, Brevo may replace the displayed sender with one of its own technical domains (transactional mail commonly uses `t-sender-sib.com`); `brevosend.com` is a Brevo-managed replacement domain, not an address you can choose yourself. Check delivery in Brevo's transactional logs and in the recipient's inbox or spam folder. A 201 API response means Brevo accepted the request, not that the recipient has received it. Existing reset codes issued before switching providers remain usable until they expire.
 - `DISCORD_WEBHOOK_URL` — optional; notifications are skipped (logged, not sent) if unset.
-- `LLM_API_KEY` *(planned — not yet used in code)* — will be required once the AI Planner integration lands.
+- `LLM_API_KEY` *(planned — not yet used in code)* — server-side only for the optional AI planner once a provider is chosen.
 
 ### Useful commands
 
