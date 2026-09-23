@@ -21,7 +21,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - `templates/` — one `.html` file per page, Tailwind CDN + inline `<script>` blocks calling the JSON API.
 - `db/postgres.go` — connection setup only.
 - `email/`, `notifications/` — Resend email and Discord webhook integrations.
-- `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool.
+- `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool; Postgres and SQLite dialects kept in sync. Fresh databases created from either file are complete; existing databases need manual migration (see Known Issues).
 
 ## Features Implemented So Far
 
@@ -82,8 +82,8 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 1. **Genericize the persona template.** The prompt as written is a personal document, not a reusable system prompt. It needs splitting into (a) a fixed planner-persona/format template (tone, five-step structure, dashboard spec) that's the same for every user, and (b) per-user context (name, program stage, tech stack, project list, metrics history) pulled from the database at request time instead of hardcoded.
 2. **Data the planner needs, per user, per period (day or week):**
-   - Timetable blocks for the period (`timetable` table — see Known Issues, this table isn't in the schema yet).
-   - Reflections logged against those blocks (`activity_logs` — also not yet in the schema).
+   - Timetable blocks for the period (`timetable` table — now defined in both schema files, see "Recently resolved" in Known Issues).
+   - Reflections logged against those blocks (`activity_logs` — also now defined in both schema files).
    - Prior periods' metrics for the comparison table and streak tracking — this doesn't exist as stored data yet; hours/adherence per week would need to be computed from timetable + reflections, or stored as a rollup.
 3. **New persistence needed:**
    - A `planner_sessions` (or similar) table to store each generated analysis — the text/dashboard payload, the period it covers, and enough of the computed metrics (total hours, daily average, adherence %) to feed next period's comparison table and streak checks, without re-deriving history from scratch every time.
@@ -111,27 +111,27 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 Ranked roughly by how much they'd block real usage:
 
-1. **Schema drift — `timetable` and `activity_logs` tables are missing from both `schema.sql` and `schema.sqlite`.** `handlers/timetable.go` and `seed_timetable.sql` query these tables, but running either schema file fresh will make `/api/v1/timetable` and `/api/v1/reflections` fail at runtime with "relation does not exist." These need to be added to both schema files (and kept in sync — Postgres and SQLite currently diverge on syntax, e.g. `TEXT[]` vs `TEXT`, `SERIAL` vs `AUTOINCREMENT`). **This also blocks the AI Planner work above**, since the planner reads directly from these tables.
-2. **`is_admin` column is missing from both schema files.** `handlers/admin.go` (`AdminUsers`) and `handlers/profile.go` (`GetProfile`) both select `is_admin` from `users`, but no schema file defines that column. This will also fail at runtime on a fresh database.
-3. **Reviews table exists in schema but has no handler or route at all.** `rating` and `total_reviews` are displayed everywhere (profile, dashboard, search results) but there's no way for a user to actually submit a review after a session — those numbers can never move past their defaults. This is the biggest non-AI "next feature" candidate.
-4. **JWT is stored in `localStorage`**, not an httpOnly cookie — vulnerable to token theft via any XSS elsewhere on the site.
-5. **No rate limiting or lockout on `/api/v1/login`** — unlimited password guesses are possible against any account.
-6. **`ResetAdminPassword` hardcodes a specific email and a fixed new password (`admin123`)** — fine as a one-off recovery tool during early development, but shouldn't stay reachable once real users are on the platform; it currently only requires being logged in (`AuthRequired`), not an admin check.
-7. **No booking completion / no-show flow.** `bookings.status` supports `completed` and `no_show` in the schema, and `users.no_show_count` exists, but nothing in the handlers ever sets a booking to either state — sessions stay `confirmed` forever, and no-show tracking is unused.
-8. **Admin endpoints don't check `is_admin`.** Every `/api/v1/admin/*` route only requires `AuthRequired` (any logged-in user), not an admin check — any authenticated user can currently hit the admin stats, user list, delete-user, suspend, and bookings endpoints.
+> **Recently resolved:** `timetable`, `activity_logs`, and `users.is_admin` are now defined in both `schema.sql` and `schema.sqlite` (kept in sync, dialect-correct). Fresh databases created from either file fully support `/api/v1/timetable`, `/api/v1/reflections`, `GetProfile`, and `AdminUsers` — this also unblocks the AI Planner work above. ⚠️ **Existing databases are not changed by these files:** `CREATE TABLE IF NOT EXISTS` adds the new tables but won't add `is_admin` to an existing `users` table. Apply it manually — Postgres: `ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE;` plus the two tables from `schema.sql`; SQLite: `ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0;` plus the tables from `schema.sqlite`.
+
+1. **Reviews table exists in schema but has no handler or route at all.** `rating` and `total_reviews` are displayed everywhere (profile, dashboard, search results) but there's no way for a user to actually submit a review after a session — those numbers can never move past their defaults. This is the biggest non-AI "next feature" candidate.
+2. **JWT is stored in `localStorage`**, not an httpOnly cookie — vulnerable to token theft via any XSS elsewhere on the site.
+3. **No rate limiting or lockout on `/api/v1/login`** — unlimited password guesses are possible against any account.
+4. **`ResetAdminPassword` hardcodes a specific email and a fixed new password (`admin123`)** — fine as a one-off recovery tool during early development, but shouldn't stay reachable once real users are on the platform; it currently only requires being logged in (`AuthRequired`), not an admin check.
+5. **No booking completion / no-show flow.** `bookings.status` supports `completed` and `no_show` in the schema, and `users.no_show_count` exists, but nothing in the handlers ever sets a booking to either state — sessions stay `confirmed` forever, and no-show tracking is unused.
+6. **Admin endpoints don't check `is_admin`.** Every `/api/v1/admin/*` route only requires `AuthRequired` (any logged-in user), not an admin check — any authenticated user can currently hit the admin stats, user list, delete-user, suspend, and bookings endpoints.
+7. **`AdminUsers` can't scan Postgres `BOOLEAN` columns.** `handlers/admin.go` scans `is_suspended` and `is_admin` into Go `int`s and tests `== 1`, but on Postgres `lib/pq` returns those columns as `bool` — so `GET /api/v1/admin/users` errors on a Postgres database. Fix: scan into `bool` (as `GetProfile` does) and drop the `== 1` checks. (The SQLite schema uses `INTEGER` for both, which is why this goes unnoticed against SQLite.)
 
 ## Suggested Next Steps (in priority order)
 
-1. Add `timetable`, `activity_logs`, and an `is_admin` column to both `schema.sql` and `schema.sqlite`, and reconcile the two files so they define the same tables/columns going forward — this unblocks both the existing timetable/reflections feature *and* the AI Planner work.
-2. Genericize `L2E_PLANNER_PROMPT_v2.md` into a persona/format template + per-user data interpolation, per the design notes above.
-3. Build the `ai/` client package, `handlers/planner.go`, and the `planner_sessions` table; wire up `POST /api/v1/planner/analyze`.
-4. Build the planner frontend page rendering the structured dashboard from the API's JSON.
-5. Add an actual admin-check middleware (or inline check) to every `/api/v1/admin/*` route.
-6. Build the reviews feature: submit a review after a completed booking, update `users.rating`/`total_reviews` accordingly.
-7. Build a way to mark a booking `completed` (and optionally `no_show`), since nothing currently transitions a booking out of `confirmed`.
-8. Move the JWT out of `localStorage` into an httpOnly cookie.
-9. Add basic rate limiting to `/api/v1/login`.
-10. Retire or lock down `ResetAdminPassword` behind a real admin check before this goes further into production use.
+1. Genericize `L2E_PLANNER_PROMPT_v2.md` into a persona/format template + per-user data interpolation, per the design notes above.
+2. Build the `ai/` client package, `handlers/planner.go`, and the `planner_sessions` table; wire up `POST /api/v1/planner/analyze`.
+3. Build the planner frontend page rendering the structured dashboard from the API's JSON.
+4. Add an actual admin-check middleware (or inline check) to every `/api/v1/admin/*` route — and fix `AdminUsers` to scan `is_admin` / `is_suspended` as `bool` on Postgres (see Known Issues #7).
+5. Build the reviews feature: submit a review after a completed booking, update `users.rating`/`total_reviews` accordingly.
+6. Build a way to mark a booking `completed` (and optionally `no_show`), since nothing currently transitions a booking out of `confirmed`.
+7. Move the JWT out of `localStorage` into an httpOnly cookie.
+8. Add basic rate limiting to `/api/v1/login`.
+9. Retire or lock down `ResetAdminPassword` behind a real admin check before this goes further into production use.
 
 ## Running Locally
 

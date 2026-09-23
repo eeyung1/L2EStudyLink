@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     total_sessions INT DEFAULT 0,
     no_show_count INT DEFAULT 0,
     is_suspended BOOLEAN DEFAULT FALSE,
+    is_admin BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -80,6 +81,32 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
 
 CREATE INDEX IF NOT EXISTS idx_password_reset_token ON password_reset_tokens(token);
 
+-- Timetable table (personal weekly study blocks)
+CREATE TABLE IF NOT EXISTS timetable (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    day_of_week INT CHECK (day_of_week >= 0 AND day_of_week <= 6),
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    activity VARCHAR(100) NOT NULL,
+    goal VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Activity logs (reflections on timetable blocks)
+CREATE TABLE IF NOT EXISTS activity_logs (
+    id SERIAL PRIMARY KEY,
+    timetable_id INT NOT NULL REFERENCES timetable(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    log_date DATE NOT NULL,
+    summary TEXT NOT NULL DEFAULT '',
+    challenges TEXT NOT NULL DEFAULT '',
+    learnings TEXT NOT NULL DEFAULT '',
+    completed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(timetable_id, user_id, log_date)
+);
+
 -- Indexes
 CREATE INDEX idx_skills_user ON skills(user_id);
 CREATE INDEX idx_skills_name ON skills(skill_name);
@@ -88,3 +115,6 @@ CREATE INDEX idx_bookings_tutor ON bookings(tutor_id);
 CREATE INDEX idx_bookings_student ON bookings(student_id);
 CREATE INDEX idx_bookings_date ON bookings(session_date);
 CREATE INDEX idx_reviews_reviewee ON reviews(reviewee_id);
+CREATE INDEX idx_timetable_user ON timetable(user_id);
+CREATE INDEX idx_activity_logs_timetable ON activity_logs(timetable_id);
+CREATE INDEX idx_activity_logs_user ON activity_logs(user_id);
