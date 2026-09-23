@@ -28,7 +28,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 ### Auth
 - Signup (`POST /api/v1/signup`) — bcrypt-hashed passwords, unique email enforced.
 - Login (`POST /api/v1/login`) — issues a 24-hour JWT.
-- Self-service password reset (`POST /api/v1/forgot-password`, `POST /api/v1/reset-password`) — random 32-byte token, 1-hour expiry, single-use, generic response regardless of whether the email exists (no account enumeration), reset link emailed via Resend.
+- Self-service password reset (`POST /api/v1/forgot-password`, `POST /api/v1/reset-password`) — six-digit email code, 10-minute expiry, five attempts, one-minute resend cooldown and single-use reset. The code is stored as a keyed digest; the request endpoint gives the same response for known and unknown accounts. Successful reset signs the user in and opens their dashboard.
 - JWT secret is loaded from an environment variable and validated at startup (fails fast if missing or left as the old placeholder).
 
 ### Profile
@@ -151,8 +151,8 @@ Required environment variables (see `.gitignore` — `.env` is not committed):
 - `DATABASE_URL` — falls back to a local Postgres connection string if unset.
 - `JWT_SECRET` — required; the app will not start without it.
 - `RESEND_API_KEY` — required for password-reset and booking emails to send.
+- `RESEND_FROM_EMAIL` — sender address from a domain verified in Resend (for example `L2EStudyLink <help@your-verified-domain.com>`). Set this on Render along with `RESEND_API_KEY`; Resend's `onboarding@resend.dev` testing address cannot deliver codes to arbitrary users.
 - `DISCORD_WEBHOOK_URL` — optional; notifications are skipped (logged, not sent) if unset.
-- `APP_BASE_URL` — used to build the password-reset link; falls back to `http://localhost:8080`.
 - `LLM_API_KEY` *(planned — not yet used in code)* — will be required once the AI Planner integration lands.
 
 ### Useful commands
