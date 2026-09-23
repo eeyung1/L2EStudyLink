@@ -572,6 +572,9 @@ html.dark .day-chip.selected {
     .page-title { font-size: 23px; }
     .day-chip { width: 42px; min-height: 44px; }
     #timetable .flex.gap-2 { flex-wrap: wrap; }
+    .search-result-layout { flex-direction: column; align-items: stretch; }
+    .search-result-details { min-width: 0; overflow-wrap: anywhere; }
+    .search-result-action { width: 100%; min-height: 44px; }
 }
 
 html.dark .mobile-menu-toggle { color: #f3f4f6; border-color: #4b5563; }

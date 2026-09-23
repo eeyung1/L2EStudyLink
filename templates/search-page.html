@@ -217,14 +217,14 @@
                 let html = '';
                 for (const t of filteredTutors) {
                     html += `
-                        <div class="border rounded-lg p-4 mb-3 hover:shadow">
-                            <div class="flex justify-between items-start">
-                                <div>
+                        <div class="search-result-card border rounded-lg p-4 mb-3 hover:shadow">
+                            <div class="search-result-layout flex justify-between items-start gap-4">
+                                <div class="search-result-details">
                                     <h3 class="font-bold text-lg">${escapeHtml(t.name)}</h3>
                                     <p>⭐ ${t.rating} (${t.total_reviews} reviews)</p>
                                     <p class="text-gray-600">${escapeHtml(t.bio) || 'No bio'}</p>
                                 </div>
-                                <button onclick="viewTutor(${t.id}, '${selectedDate}')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">View & Book</button>
+                                <button onclick="viewTutor(${t.id}, '${selectedDate}')" class="search-result-action bg-blue-600 text-white px-4 py-2 rounded text-sm">View & Book</button>
                             </div>
                         </div>
                     `;
