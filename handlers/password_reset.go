@@ -51,8 +51,8 @@ func ForgotPassword(c *gin.Context) {
         return
     }
     // This check applies equally to known and unknown addresses.
-    if os.Getenv("RESEND_API_KEY") == "" || os.Getenv("RESEND_FROM_EMAIL") == "" {
-        log.Print("ForgotPassword: RESEND_API_KEY or RESEND_FROM_EMAIL is missing")
+    if os.Getenv("BREVO_API_KEY") == "" || os.Getenv("BREVO_FROM_EMAIL") == "" {
+        log.Print("ForgotPassword: BREVO_API_KEY or BREVO_FROM_EMAIL is missing")
         c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Password recovery is temporarily unavailable"})
         return
     }
