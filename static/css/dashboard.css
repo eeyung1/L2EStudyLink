@@ -615,6 +615,15 @@ html.dark .day-chip.selected {
 html.dark .timetable-day-nav a { background: #1e3a5f; color: #bfdbfe !important; }
 html.dark .timetable-day-nav a[aria-current="date"] { background: #2563eb; color: #fff !important; }
 
+.reflection-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.reflection-filters.hidden { display: none; }
+.reflection-filters input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; }
+.reflection-filters button { border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; }
+@media (max-width: 480px) {
+    .reflection-filters input, .reflection-filters button { min-height: 44px; }
+    .reflection-list-card { overflow-wrap: anywhere; }
+}
+
 html.dark .mobile-menu-toggle { color: #f3f4f6; border-color: #4b5563; }
 
 /* Dark mode ------------------------------------------------------------ */

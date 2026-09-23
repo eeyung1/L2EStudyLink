@@ -70,6 +70,11 @@
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-2xl font-bold mb-4">My Reflections</h2>
+            <div id="reflectionFilters" class="reflection-filters hidden">
+                <label for="reflectionDateFilter">Show a date</label>
+                <input type="date" id="reflectionDateFilter" aria-controls="reflectionsList">
+                <button type="button" id="clearReflectionFilter">Show all</button>
+            </div>
             <div id="reflectionsList">Loading...</div>
         </div>
     </div>
@@ -86,6 +91,40 @@
             .then(user => { if (user.is_admin) document.getElementById('adminNavLink').classList.remove('hidden'); });
 
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        let allReflections = [];
+
+        document.getElementById('reflectionDateFilter').addEventListener('change', renderReflections);
+        document.getElementById('clearReflectionFilter').addEventListener('click', () => {
+            document.getElementById('reflectionDateFilter').value = '';
+            renderReflections();
+        });
+
+        function renderReflections() {
+            const selectedDate = document.getElementById('reflectionDateFilter').value;
+            const reflections = selectedDate
+                ? allReflections.filter(reflection => reflection.log_date === selectedDate)
+                : allReflections;
+            const container = document.getElementById('reflectionsList');
+            if (!reflections.length) {
+                container.textContent = selectedDate ? 'No reflections for this date.' : 'No reflections yet.';
+                return;
+            }
+            let html = '';
+            for (const r of reflections) {
+                html += `
+                    <div class="reflection-list-card border rounded-lg p-4 mb-4">
+                        <p class="font-bold">${days[r.day_of_week]} at ${r.start_time} - ${r.end_time}</p>
+                        <p><strong>Activity:</strong> ${escapeHtml(r.activity)}</p>
+                        <p><strong>Date:</strong> ${escapeHtml(r.log_date)}</p>
+                        <div class="bg-gray-50 p-3 rounded mt-2">
+                            <p><strong>What I did:</strong> ${escapeHtml(r.summary) || 'Not specified'}</p>
+                            ${r.challenges ? `<p><strong>Challenges:</strong> ${escapeHtml(r.challenges)}</p>` : ''}
+                            ${r.learnings ? `<p><strong>Learned:</strong> ${escapeHtml(r.learnings)}</p>` : ''}
+                        </div>
+                    </div>`;
+            }
+            container.innerHTML = html;
+        }
         
         async function logout() {
             localStorage.removeItem('token');
@@ -96,29 +135,10 @@
             try {
                 const reflections = await readAPI('/api/v1/reflections', token);
                 
-                const container = document.getElementById('reflectionsList');
-                
-                if (!reflections || reflections.length === 0) {
-                    container.innerHTML = '<div class="text-center text-gray-500">No reflections yet.</div>';
-                    return;
-                }
-                
-                let html = '';
-                for (const r of reflections) {
-                    html += `
-                        <div class="border rounded-lg p-4 mb-4">
-                            <p class="font-bold">${days[r.day_of_week]} at ${r.start_time} - ${r.end_time}</p>
-                            <p><strong>Activity:</strong> ${escapeHtml(r.activity)}</p>
-                            <p><strong>Date:</strong> ${r.log_date}</p>
-                            <div class="bg-gray-50 p-3 rounded mt-2">
-                                <p><strong>What I did:</strong> ${escapeHtml(r.summary) || 'Not specified'}</p>
-                                ${r.challenges ? `<p><strong>Challenges:</strong> ${escapeHtml(r.challenges)}</p>` : ''}
-                                ${r.learnings ? `<p><strong>Learned:</strong> ${escapeHtml(r.learnings)}</p>` : ''}
-                            </div>
-                        </div>
-                    `;
-                }
-                container.innerHTML = html;
+                if (!Array.isArray(reflections)) throw new Error('Invalid reflections response');
+                allReflections = reflections;
+                document.getElementById('reflectionFilters').classList.toggle('hidden', !reflections.length);
+                renderReflections();
             } catch(e) {
                 console.error('Error loading reflections:', e);
                 if (e.message === 'Session expired') return;
