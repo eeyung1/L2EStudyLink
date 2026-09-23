@@ -5,7 +5,6 @@ import (
     "net/http"
 
     "github.com/gin-gonic/gin"
-    "golang.org/x/crypto/bcrypt"
 )
 
 func AdminStats(c *gin.Context) {
@@ -47,9 +46,13 @@ func AdminUsers(c *gin.Context) {
         var id int64
         var name, email string
         var rating float64
-        var totalSessions, noShowCount, isSuspended, isAdmin int
+        var totalSessions, noShowCount int
+        var isSuspended, isAdmin bool
         
-        rows.Scan(&id, &name, &email, &rating, &totalSessions, &noShowCount, &isSuspended, &isAdmin)
+        if err := rows.Scan(&id, &name, &email, &rating, &totalSessions, &noShowCount, &isSuspended, &isAdmin); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read users"})
+            return
+        }
         
         users = append(users, gin.H{
             "id": id,
@@ -58,8 +61,8 @@ func AdminUsers(c *gin.Context) {
             "rating": rating,
             "total_sessions": totalSessions,
             "no_show_count": noShowCount,
-            "is_suspended": isSuspended == 1,
-            "is_admin": isAdmin == 1,
+            "is_suspended": isSuspended,
+            "is_admin": isAdmin,
         })
     }
     
@@ -83,10 +86,17 @@ func AdminToggleSuspend(c *gin.Context) {
     db := c.MustGet("db").(*sql.DB)
     userID := c.Param("id")
     
-    var currentStatus int
-    db.QueryRow("SELECT is_suspended FROM users WHERE id = $1", userID).Scan(&currentStatus)
+    var currentStatus bool
+    if err := db.QueryRow("SELECT is_suspended FROM users WHERE id = $1", userID).Scan(&currentStatus); err != nil {
+        if err == sql.ErrNoRows {
+            c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+        } else {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user"})
+        }
+        return
+    }
     
-    newStatus := 1 - currentStatus
+    newStatus := !currentStatus
     _, err := db.Exec("UPDATE users SET is_suspended = $1 WHERE id = $2", newStatus, userID)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
@@ -131,26 +141,4 @@ func AdminBookings(c *gin.Context) {
     }
     
     c.JSON(http.StatusOK, bookings)
-}
-
-func ResetAdminPassword(c *gin.Context) {
-    db := c.MustGet("db").(*sql.DB)
-    
-    hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("admin123"), 10)
-    
-    result, err := db.Exec(`
-        UPDATE users SET password_hash = $1 WHERE email = 'eyungemmanuel@gmail.com'
-    `, string(hashedPassword))
-    
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-    
-    rowsAffected, _ := result.RowsAffected()
-    c.JSON(http.StatusOK, gin.H{
-        "message": "Password reset for eyungemmanuel@gmail.com",
-        "rows_affected": rowsAffected,
-        "new_password": "admin123",
-    })
 }
