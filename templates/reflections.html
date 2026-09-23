@@ -69,6 +69,7 @@
         </main>
     </div>
 
+    <script src="/static/js/read-api.js"></script>
     <script>
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/page/login';
@@ -86,10 +87,7 @@
         
         async function loadReflections() {
             try {
-                const res = await fetch('/api/v1/reflections', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                const reflections = await res.json();
+                const reflections = await readAPI('/api/v1/reflections', token);
                 
                 const container = document.getElementById('reflectionsList');
                 
@@ -115,7 +113,11 @@
                 }
                 container.innerHTML = html;
             } catch(e) {
-                document.getElementById('reflectionsList').innerHTML = '<div class="text-red-500">Error loading reflections</div>';
+                console.error('Error loading reflections:', e);
+                if (e.message === 'Session expired') return;
+                document.getElementById('reflectionsList').innerHTML =
+                    `<div class="text-red-500">Could not load reflections (${escapeHtml(e.message)}). ` +
+                    '<button type="button" onclick="loadReflections()" class="underline">Try again</button></div>';
             }
         }
         
