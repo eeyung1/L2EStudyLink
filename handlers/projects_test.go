@@ -41,6 +41,19 @@ func TestProjectCollaborationFlow(t *testing.T) {
         if err != nil { t.Fatal(err) }
     }
     defer db.Exec(`DELETE FROM users WHERE id IN ($1,$2,$3)`,owner,applicant,invited)
+    t.Run("skill edit belongs to owner", func(t *testing.T) {
+        if _,err:=db.Exec(`INSERT INTO skills(user_id,skill_name,proficiency) VALUES($1,'Go','beginner')`,owner);err!=nil {t.Fatal(err)}
+        r:=gin.New()
+        r.Use(func(c *gin.Context){c.Set("db",db);if c.GetHeader("X-Test-User")=="owner" {c.Set("user_id",owner)} else {c.Set("user_id",applicant)};c.Next()})
+        r.PUT("/skills/:skill",EditSkill)
+        request:=func(who,body string) int {w:=httptest.NewRecorder();req:=httptest.NewRequest("PUT","/skills/Go",strings.NewReader(body));req.Header.Set("X-Test-User",who);req.Header.Set("Content-Type","application/json");r.ServeHTTP(w,req);return w.Code}
+        if code:=request("other",`{"skill_name":"Rust","proficiency":"advanced"}`);code!=404 {t.Fatalf("other user changed skill: %d",code)}
+        if code:=request("owner",`{"skill_name":"Go","proficiency":"expert"}`);code!=400 {t.Fatalf("invalid proficiency: %d",code)}
+        if code:=request("owner",`{"skill_name":"Golang","proficiency":"advanced"}`);code!=200 {t.Fatalf("owner edit: %d",code)}
+        var name,level string
+        if err:=db.QueryRow(`SELECT skill_name,proficiency FROM skills WHERE user_id=$1`,owner).Scan(&name,&level);err!=nil||name!="Golang"||level!="advanced" {t.Fatalf("updated skill: %s %s %v",name,level,err)}
+    })
+
 
     router := gin.New()
     router.Use(func(c *gin.Context) { var uid int64; fmt.Sscan(c.GetHeader("X-Test-User"),&uid); c.Set("user_id",uid); c.Set("db",db); c.Next() })
