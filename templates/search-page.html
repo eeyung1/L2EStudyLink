@@ -88,17 +88,22 @@
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <div class="flex justify-between items-center mb-4">
                 <h3 id="modalTitle" class="text-xl font-bold">Tutor Details</h3>
-                <button onclick="closeModal()" class="text-gray-500 text-2xl">&times;</button>
+                <button onclick="closeModal()" type="button" class="booking-modal-close text-gray-500 text-2xl" aria-label="Close tutor details">&times;</button>
             </div>
             <div id="modalContent"></div>
             <div class="mt-4">
-                <label class="block font-bold mb-1">Select Date</label>
-                <input type="date" id="bookingDate" class="w-full p-2 border rounded mb-3">
-                <label class="block font-bold mb-1">Select Time Slot</label>
-                <select id="timeSlot" class="w-full p-2 border rounded mb-3"></select>
-                <label class="block font-bold mb-1">Topic</label>
-                <input type="text" id="topic" placeholder="What do you need help with?" class="w-full p-2 border rounded mb-3">
-                <button onclick="confirmBooking()" class="w-full bg-green-600 text-white py-2 rounded">Confirm Booking</button>
+                <label for="bookingDate" class="block font-bold mb-1">Select Date</label>
+                <input type="date" id="bookingDate" class="booking-field w-full p-2 border rounded mb-3">
+                <label for="timeSlot" class="block font-bold mb-1">Select Time Slot</label>
+                <select id="timeSlot" class="booking-field w-full p-2 border rounded mb-3"></select>
+                <label for="topic" class="block font-bold mb-1">Topic</label>
+                <input type="text" id="topic" placeholder="What do you need help with?" class="booking-field w-full p-2 border rounded mb-3">
+                <label for="meetingType" class="block font-bold mb-1">Meeting type</label>
+                <select id="meetingType" class="booking-field w-full p-2 border rounded mb-3">
+                    <option value="online">Online</option>
+                    <option value="in_person">In person</option>
+                </select>
+                <button onclick="confirmBooking()" class="booking-confirm w-full bg-green-600 text-white py-2 rounded">Confirm Booking</button>
             </div>
         </div>
     </div>
@@ -304,6 +309,7 @@
                 }
                 
                 document.getElementById('topic').value = '';
+                document.getElementById('meetingType').value = 'online';
                 document.getElementById('tutorModal').classList.remove('hidden');
                 document.getElementById('tutorModal').classList.add('flex');
             } catch(e) {
@@ -331,7 +337,7 @@
                 return;
             }
             
-            const meetingType = confirm('Online session? (OK = Online, Cancel = In Person)') ? 'online' : 'in_person';
+            const meetingType = document.getElementById('meetingType').value;
             
             try {
                 const res = await fetch('/api/v1/bookings', {
