@@ -95,6 +95,7 @@
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 const bookings = await res.json();
+                if (!res.ok || !Array.isArray(bookings)) throw new Error('Bookings unavailable');
                 
                 if (!bookings || bookings.length === 0) {
                     document.getElementById('bookingsList').innerHTML = '<div class="text-center text-gray-500">No bookings yet</div>';
@@ -107,7 +108,7 @@
                     const statusColor = b.status === 'confirmed' ? 'text-green-600' : (b.status === 'pending' ? 'text-yellow-600' : 'text-red-600');
                     
                     html += `
-                        <div class="border rounded-lg p-4 mb-3">
+                        <div class="booking-list-card border rounded-lg p-4 mb-3">
                             <p><strong>${b.role === 'tutor' ? 'Teaching' : 'Learning with'} ${b.role === 'tutor' ? b.student_name : b.tutor_name}</strong></p>
                             <p>📅 ${b.date} at ${b.start_time} - ${b.end_time}</p>
                             <p>📚 ${b.topic}</p>
@@ -115,13 +116,15 @@
                     `;
                     
                     if (b.status === 'pending' && b.role !== 'tutor') {
-                        html += `<button onclick="cancelBooking(${b.id})" class="mt-2 bg-red-500 text-white px-3 py-1 rounded text-sm">Cancel</button>`;
+                        html += `<div class="booking-list-actions"><button onclick="cancelBooking(${b.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Cancel</button></div>`;
                     }
                     
                     if (b.status === 'pending' && b.role === 'tutor') {
                         html += `
-                            <button onclick="updateStatus(${b.id}, 'confirmed')" class="mt-2 bg-green-500 text-white px-3 py-1 rounded text-sm mr-2">Accept</button>
-                            <button onclick="updateStatus(${b.id}, 'cancelled')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded text-sm">Decline</button>
+                            <div class="booking-list-actions">
+                                <button onclick="updateStatus(${b.id}, 'confirmed')" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Accept</button>
+                                <button onclick="updateStatus(${b.id}, 'cancelled')" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Decline</button>
+                            </div>
                         `;
                     }
                     
@@ -129,7 +132,7 @@
                 }
                 document.getElementById('bookingsList').innerHTML = html;
             } catch(e) {
-                document.getElementById('bookingsList').innerHTML = '<div class="text-center text-red-600">Error loading bookings</div>';
+                document.getElementById('bookingsList').innerHTML = '<div class="text-center text-red-600">Could not load bookings. <button type="button" onclick="loadBookings()" class="underline">Try again</button></div>';
             }
         }
         

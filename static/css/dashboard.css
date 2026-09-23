@@ -578,6 +578,9 @@ html.dark .day-chip.selected {
     .booking-modal-close { min-width: 44px; min-height: 44px; }
     .booking-field, .booking-confirm { min-height: 44px; }
     .timetable-form-field, .timetable-form-action { min-height: 44px; }
+    .booking-list-card { overflow-wrap: anywhere; }
+    .booking-list-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .booking-list-actions button { min-height: 44px; flex: 1 1 110px; }
 }
 
 html.dark .mobile-menu-toggle { color: #f3f4f6; border-color: #4b5563; }
