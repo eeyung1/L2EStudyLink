@@ -73,7 +73,10 @@
             <p class="text-gray-600 mb-4">Plan your week, then add reflections after each time block.</p>
             
             <button onclick="showAddBlock()" class="bg-green-600 text-white px-4 py-2 rounded mb-6">+ Add Time Block</button>
-            
+            <nav class="timetable-day-nav" aria-label="Jump to a day">
+                <a href="#day-0">Mon</a><a href="#day-1">Tue</a><a href="#day-2">Wed</a><a href="#day-3">Thu</a>
+                <a href="#day-4">Fri</a><a href="#day-5">Sat</a><a href="#day-6">Sun</a>
+            </nav>
             <div id="timetable">Loading...</div>
         </div>
     </div>
@@ -168,12 +171,17 @@
                 }
                 
                 const today = new Date();
-                const todayStr = today.toISOString().split('T')[0];
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                const todayDay = (today.getDay() + 6) % 7;
+                document.querySelectorAll('.timetable-day-nav a').forEach((link, index) => {
+                    if (index === todayDay) link.setAttribute('aria-current', 'date');
+                    else link.removeAttribute('aria-current');
+                });
                 
                 let html = '';
                 for (let i = 0; i < 7; i++) {
-                    html += `<div class="border rounded-lg p-4 mb-4">`;
-                    html += `<h3 class="text-xl font-bold mb-2">${days[i]}</h3>`;
+                    html += `<section id="day-${i}" class="timetable-day-card border rounded-lg p-4 mb-4">`;
+                    html += `<h3 class="text-xl font-bold mb-2">${days[i]}${i === todayDay ? ' · Today' : ''}</h3>`;
                     
                     if (!grouped[i] || grouped[i].length === 0) {
                         html += `<p class="text-gray-400 italic">No activities planned</p>`;
@@ -202,7 +210,7 @@
                             `;
                         }
                     }
-                    html += `</div>`;
+                    html += `</section>`;
                 }
                 document.getElementById('timetable').innerHTML = reflectionsWarning + html;
             } catch(e) {
