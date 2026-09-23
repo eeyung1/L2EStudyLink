@@ -11,6 +11,8 @@ import (
 
     "github.com/gin-gonic/gin"
     _ "github.com/lib/pq"
+
+    projectdb "L2EStudyLink/db"
 )
 
 func TestProjectCollaborationFlow(t *testing.T) {
@@ -21,6 +23,17 @@ func TestProjectCollaborationFlow(t *testing.T) {
     defer db.Close()
     schema, err := os.ReadFile("../schema.sql")
     if err != nil { t.Fatal(err) }
+    // Render starts against an existing database. Exercise its repeatable
+    // startup migration with only the original users table present.
+    usersSchema := string(schema)[:strings.Index(string(schema), "-- Skills table")]
+    if _, err := db.Exec(usersSchema); err != nil { t.Fatal(err) }
+    t.Setenv("DATABASE_URL", dsn)
+    if err := projectdb.InitDB(); err != nil { t.Fatalf("startup migration: %v", err) }
+    defer projectdb.CloseDB()
+    for _, table := range []string{"projects", "project_requests", "project_members", "collaboration_preferences"} {
+        var exists bool
+        if err := db.QueryRow(`SELECT to_regclass($1) IS NOT NULL`, table).Scan(&exists); err != nil || !exists { t.Fatalf("startup table %s: %v", table, err) }
+    }
     if _, err := db.Exec(string(schema)); err != nil { t.Fatal(err) }
     var owner, applicant, invited int64
     for i, target := range []*int64{&owner, &applicant, &invited} {
