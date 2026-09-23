@@ -445,6 +445,9 @@
     flex-wrap: wrap;
 }
 
+.timetable-day-nav { display: none; }
+.timetable-day-card { scroll-margin-top: 80px; }
+
 .day-chip {
     padding: 8px 0;
     width: 44px;
@@ -585,6 +588,23 @@ html.dark .day-chip.selected {
     .admin-users-table { min-width: 760px; }
     .admin-bookings-table { min-width: 560px; }
     .admin-row-action { min-height: 44px; }
+    .timetable-day-nav {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin: 0 0 16px;
+    }
+    .timetable-day-nav a {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-weight: 600;
+    }
+    .timetable-day-nav a[aria-current="date"] { background: #1d4ed8; color: #fff; }
 }
 
 @media (min-width: 481px) {
@@ -592,6 +612,8 @@ html.dark .day-chip.selected {
 }
 
 .admin-table-scroll:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+html.dark .timetable-day-nav a { background: #1e3a5f; color: #bfdbfe !important; }
+html.dark .timetable-day-nav a[aria-current="date"] { background: #2563eb; color: #fff !important; }
 
 html.dark .mobile-menu-toggle { color: #f3f4f6; border-color: #4b5563; }
 
