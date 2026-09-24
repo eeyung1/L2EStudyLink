@@ -94,7 +94,7 @@ func GetMyBookings(c *gin.Context) {
     rows, err := db.Query(`
         SELECT b.id, b.tutor_id, t.name as tutor_name, b.student_id, s.name as student_name,
                b.session_date, b.start_time, b.end_time, b.topic, b.meeting_type, b.status,
-               b.created_at
+               b.created_at, EXISTS(SELECT 1 FROM reviews r WHERE r.booking_id=b.id AND r.reviewer_id=$1)
         FROM bookings b
         JOIN users t ON b.tutor_id = t.id
         JOIN users s ON b.student_id = s.id
@@ -114,9 +114,10 @@ func GetMyBookings(c *gin.Context) {
         var tutorName, studentName, topic, meetingType, status string
         var sessionDate, startTime, endTime string
         var createdAt time.Time
+        var reviewed bool
 
-        rows.Scan(&id, &tutorID, &tutorName, &studentID, &studentName,
-            &sessionDate, &startTime, &endTime, &topic, &meetingType, &status, &createdAt)
+        if err:=rows.Scan(&id, &tutorID, &tutorName, &studentID, &studentName,
+            &sessionDate, &startTime, &endTime, &topic, &meetingType, &status, &createdAt,&reviewed);err!=nil {c.JSON(500,gin.H{"error":"Failed to fetch bookings"});return}
 
         role := "student"
         if tutorID == userID {
@@ -137,9 +138,12 @@ func GetMyBookings(c *gin.Context) {
             "meeting_type": meetingType,
             "status":       status,
             "created_at":   createdAt,
+            "reviewed_by_me": reviewed,
         })
     }
 
+    if err:=rows.Err();err!=nil {c.JSON(500,gin.H{"error":"Failed to fetch bookings"});return}
+    if bookings==nil {bookings=[]gin.H{}}
     c.JSON(http.StatusOK, bookings)
 }
 
@@ -197,11 +201,13 @@ func CancelBooking(c *gin.Context) {
         return
     }
 
-    _, err = db.Exec("UPDATE bookings SET status = 'cancelled' WHERE id = $1", bookingID)
+    result, err := db.Exec("UPDATE bookings SET status = 'cancelled' WHERE id = $1 AND status IN ('pending','confirmed') AND session_date + start_time > NOW() + INTERVAL '2 hours'", bookingID)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cancel booking"})
         return
     }
+    changed,_:=result.RowsAffected()
+    if changed==0 {c.JSON(http.StatusConflict,gin.H{"error":"Booking cannot be cancelled now"});return}
 
     // Get tutor and student details
     var tutorName, tutorEmail, tutorDiscord, studentName, studentEmail, studentDiscord string
@@ -249,11 +255,13 @@ func UpdateBookingStatus(c *gin.Context) {
         return
     }
     
-    _, err = db.Exec("UPDATE bookings SET status = $1 WHERE id = $2", input.Status, bookingID)
+    result, err := db.Exec("UPDATE bookings SET status = $1 WHERE id = $2 AND (status='pending' OR (status='confirmed' AND $1='cancelled' AND session_date + start_time > NOW() + INTERVAL '2 hours'))", input.Status, bookingID)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update status"})
         return
     }
+    changed,_:=result.RowsAffected()
+    if changed==0 {c.JSON(http.StatusConflict,gin.H{"error":"Booking status can no longer be changed"});return}
     
     // Get tutor and student details
     var tutorName, tutorEmail, tutorDiscord, studentName, studentEmail, studentDiscord string

@@ -56,6 +56,11 @@ body { margin:0; font-family:'DM Sans',Inter,system-ui,sans-serif; color:var(--i
 .project-card,.booking-list-card,.reflection-list-card { border:1px solid var(--line); border-radius:15px; padding:19px; background:#fbfcff; line-height:1.65; }
 .project-card h3 { font-size:17px; }
 .project-card p { color:#566880; }
+.booking-review-form { display:grid; gap:12px; margin-top:16px; padding:16px; border:1px solid var(--line); border-radius:13px; background:var(--surface); }
+.booking-review-form label { display:grid; gap:6px; font-weight:700; font-size:13px; }
+.booking-review-form select,.booking-review-form textarea { width:100%; box-sizing:border-box; min-height:44px; padding:10px 12px; border:1px solid #bdcde1; border-radius:9px; background:var(--paper); color:var(--ink); }
+.booking-review-form textarea { min-height:92px; resize:vertical; }
+.booking-review-form button { justify-self:start; }
 .projects-page { max-width:1100px; }
 .project-form { gap:9px; }
 .project-form input,.project-form select,.project-form textarea,.field-row input,.field-row select,.booking-field,.booking-grid input,.booking-grid select,.reflection-filters input { min-height:44px; border:1px solid #cbd8e9; border-radius:10px; }

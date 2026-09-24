@@ -114,7 +114,7 @@ CREATE INDEX idx_availability_user ON availability(user_id);
 CREATE INDEX idx_bookings_tutor ON bookings(tutor_id);
 CREATE INDEX idx_bookings_student ON bookings(student_id);
 CREATE INDEX idx_bookings_date ON bookings(session_date);
-CREATE INDEX idx_reviews_reviewee ON reviews(reviewee_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_reviewee ON reviews(reviewee_id);
 CREATE INDEX idx_timetable_user ON timetable(user_id);
 CREATE INDEX idx_activity_logs_timetable ON activity_logs(timetable_id);
 CREATE INDEX idx_activity_logs_user ON activity_logs(user_id);
