@@ -27,6 +27,13 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - run: go mod tidy
+      - uses: actions/upload-artifact@v4
+        with:
+          name: module-checksums
+          path: |
+            go.mod
+            go.sum
       - run: go test ./...
       - run: go build ./...
       - run: node --test static/js/read-api.test.cjs

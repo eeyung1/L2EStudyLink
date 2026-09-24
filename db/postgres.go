@@ -9,7 +9,8 @@ import (
     "os"
     "time"
 
-    _ "github.com/lib/pq"
+    "github.com/jackc/pgx/v5"
+    "github.com/jackc/pgx/v5/stdlib"
 )
 
 var DB *sql.DB
@@ -26,11 +27,15 @@ func InitDB() error {
         dbURL = "host=localhost port=5432 user=studylink dbname=l2e_studylink sslmode=disable password=studylink123"
     }
     
-    var err error
-    DB, err = sql.Open("postgres", dbURL)
+    // The production connection passes through a transaction pooler. Avoid
+    // server-side prepared statements and the extended protocol's unnamed
+    // statement state, which the pooler does not preserve across requests.
+    config, err := pgx.ParseConfig(dbURL)
     if err != nil {
-        return fmt.Errorf("failed to open database: %w", err)
+        return fmt.Errorf("failed to parse database URL: %w", err)
     }
+    config.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+    DB = stdlib.OpenDB(*config)
 
     // Bound concurrent connections while retaining a small warm pool for
     // independent timetable and reflection reads.

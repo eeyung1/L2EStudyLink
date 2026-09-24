@@ -71,6 +71,7 @@ func TestProjectCollaborationFlow(t *testing.T) {
     router := gin.New()
     router.Use(func(c *gin.Context) { var uid int64; fmt.Sscan(c.GetHeader("X-Test-User"),&uid); c.Set("user_id",uid); c.Set("db",db); c.Next() })
     router.POST("/projects",CreateProject)
+    router.POST("/signup",Signup)
     router.GET("/projects",ListProjects)
     router.POST("/projects/:id/requests",CreateProjectRequest)
     router.PUT("/project-requests/:id/status",RespondProjectRequest)
@@ -89,6 +90,8 @@ func TestProjectCollaborationFlow(t *testing.T) {
     }
     code, project := call(owner,"POST","/projects",`{"title":"Peer planner","description":"A planner built with fellow students","roles_needed":"Go developer","time_commitment":"3 hours weekly"}`)
     if code != 201 { t.Fatalf("create project: %d %v",code,project) }
+    code, duplicateAccount := call(owner,"POST","/signup",`{"name":"Duplicate","email":"project-test-0@example.com","password":"password123"}`)
+    if code != 409 { t.Fatalf("duplicate signup: %d %v",code,duplicateAccount) }
     projectsResponse:=httptest.NewRecorder()
     projectsRequest:=httptest.NewRequest("GET","/projects",nil)
     projectsRequest.Header.Set("X-Test-User",fmt.Sprint(applicant))
