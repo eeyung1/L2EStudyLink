@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/login.css">
+    <link rel="stylesheet" href="/static/css/auth-polish.css">
 </head>
 <body>
     <div class="login-shell">
@@ -32,12 +33,12 @@
                 <circle cx="180" cy="560" r="4"></circle>
                 <circle cx="340" cy="600" r="4"></circle>
             </svg>
-            <div class="hero-content">
+            <div class="hero-content"><span class="hero-eyebrow">PEER LEARNING, REIMAGINED</span>
                 <a class="hero-wordmark" href="/" aria-label="L2EStudyLink home">L2EStudyLink</a>
-                <p class="hero-tagline">Where students connect and learn together</p>
+                <p class="hero-tagline">Where curious people find their people, share what they know, and grow together.</p>
             </div>
         </aside>
-        <main class="login-panel">
+        <main class="login-panel"><a href="/page/login" class="mobile-auth-brand">L2E<span>Study</span>Link</a>
             <div class="login-card">
                 <div class="login-icon-badge" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-2a8 8 0 0 1 16 0v2"></path></svg></div>
                 <h1 class="login-title">Create account</h1>
@@ -69,25 +70,25 @@
     <script>
         document.getElementById('signupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('error');
             const successDiv = document.getElementById('success');
-            
+
             errorDiv.classList.add('hidden');
             successDiv.classList.add('hidden');
-            
+
             try {
                 const response = await fetch('/api/v1/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     successDiv.textContent = 'Account created! Redirecting to login...';
                     successDiv.classList.remove('hidden');
@@ -103,7 +104,7 @@
                 errorDiv.classList.remove('hidden');
             }
         });
-    
+
     </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
     <title>Admin Dashboard - L2EStudyLink</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,8 +14,11 @@
         }
     })();
 </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/dark-mode.css">
     <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/ui-polish.css">
     <script src="/static/js/mobile-nav.js" defer></script>
 </head>
 <body class="bg-gray-100">
@@ -28,7 +32,8 @@
                 </button>
             </div>
 
-            <nav class="sidebar-nav" id="mobile-navigation">
+            <nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation">
+                <span class="nav-kicker" aria-hidden="true">WORKSPACE</span>
                 <a href="/dashboard" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
                     Dashboard
@@ -43,11 +48,12 @@
                 </a>
                 <a href="/skills" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></svg> Skills</a>
                 <a href="/availability" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Availability</a>
+                <span class="nav-kicker nav-kicker-second" aria-hidden="true">EXPLORE &amp; PLAN</span>
                 <a href="/projects" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
                     Projects
                 </a>
-                <a href="/masterclass" class="sidebar-link">✦ <span>Masterclass</span></a>
+                <a href="/masterclass" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 2 2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg>Masterclass</a>
                 <a href="/timetable" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
                     Timetable
@@ -56,7 +62,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg>
                     Reflections
                 </a>
-                <a href="/admin" class="sidebar-link active">
+                <a href="/admin" class="sidebar-link active" aria-current="page">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3Z"></path></svg>
                     Admin
                 </a>
@@ -71,7 +77,9 @@
             </div>
         </aside>
 
-        <main class="main-content">
+        <main class="main-content workspace-page">
+<header class="workspace-header"><div><p class="workspace-eyebrow">COMMUNITY OVERVIEW</p><h1 class="workspace-title">Admin dashboard</h1><p class="workspace-subtitle">A clear view of people, sessions, and activity across the platform.</p></div></header>
+
     <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Stats Cards -->
         <div class="grid md:grid-cols-3 gap-6 mb-8">
@@ -125,12 +133,12 @@
         if (!token) {
             window.location.href = '/page/login';
         }
-        
+
         async function logout() {
             localStorage.removeItem('token');
             window.location.href = '/page/login';
         }
-        
+
         async function loadStats() {
             const res = await fetch('/api/v1/admin/stats', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -140,19 +148,19 @@
             document.getElementById('totalBookings').innerText = stats.total_bookings;
             document.getElementById('totalSkills').innerText = stats.total_skills;
         }
-        
+
         async function loadUsers() {
             const res = await fetch('/api/v1/admin/users', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const users = await res.json();
-            
+
             let html = '';
             for (const u of users) {
-                const statusBadge = u.is_suspended ? 
-                    '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Suspended</span>' : 
+                const statusBadge = u.is_suspended ?
+                    '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Suspended</span>' :
                     '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Active</span>';
-                
+
                 html += `
                     <tr class="border-b">
                         <td class="p-2">${u.id}</td>
@@ -171,16 +179,16 @@
             }
             document.getElementById('usersTable').innerHTML = html;
         }
-        
+
         async function loadBookings() {
             const res = await fetch('/api/v1/admin/bookings', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const bookings = await res.json();
-            
+
             let html = '';
             for (const b of bookings) {
-                const statusColor = b.status === 'confirmed' ? 'text-green-600' : 
+                const statusColor = b.status === 'confirmed' ? 'text-green-600' :
                                    (b.status === 'pending' ? 'text-yellow-600' : 'text-red-600');
                 html += `
                     <tr class="border-b">
@@ -195,7 +203,7 @@
             }
             document.getElementById('bookingsTable').innerHTML = html;
         }
-        
+
         async function toggleSuspend(userId) {
             const res = await fetch(`/api/v1/admin/users/${userId}/suspend`, {
                 method: 'PUT',
@@ -207,10 +215,10 @@
                 alert('Failed to toggle suspension');
             }
         }
-        
+
         async function deleteUser(userId) {
             if (!confirm('Are you sure? This will delete all their data.')) return;
-            
+
             const res = await fetch(`/api/v1/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -222,11 +230,11 @@
                 alert('Failed to delete user');
             }
         }
-        
+
         loadStats();
         loadUsers();
         loadBookings();
-    
+
         function toggleDark() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('darkMode', isDark);

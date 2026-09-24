@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
     <title>My Timetable - L2EStudyLink</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,8 +14,11 @@
         }
     })();
 </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/dark-mode.css">
     <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/ui-polish.css">
     <script src="/static/js/mobile-nav.js" defer></script>
 </head>
 <body class="bg-gray-100">
@@ -28,7 +32,8 @@
                 </button>
             </div>
 
-            <nav class="sidebar-nav" id="mobile-navigation">
+            <nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation">
+                <span class="nav-kicker" aria-hidden="true">WORKSPACE</span>
                 <a href="/dashboard" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
                     Dashboard
@@ -43,12 +48,13 @@
                 </a>
                 <a href="/skills" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></svg> Skills</a>
                 <a href="/availability" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Availability</a>
+                <span class="nav-kicker nav-kicker-second" aria-hidden="true">EXPLORE &amp; PLAN</span>
                 <a href="/projects" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
                     Projects
                 </a>
-                <a href="/masterclass" class="sidebar-link">✦ <span>Masterclass</span></a>
-                <a href="/timetable" class="sidebar-link active">
+                <a href="/masterclass" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 2 2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg>Masterclass</a>
+                <a href="/timetable" class="sidebar-link active" aria-current="page">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
                     Timetable
                 </a>
@@ -73,13 +79,15 @@
             </div>
         </aside>
 
-        <main class="main-content">
+        <main class="main-content workspace-page">
+<header class="workspace-header"><div><p class="workspace-eyebrow">MAKE SPACE TO GROW</p><h1 class="workspace-title">My weekly timetable</h1><p class="workspace-subtitle">Shape a week that makes room for focused work, learning, and reflection.</p></div></header>
+
     <div class="max-w-7xl mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-2xl font-bold mb-4">My Weekly Timetable</h2>
-            <p class="text-gray-600 mb-4">Plan your week, then add reflections after each time block.</p>
-            
-            <button onclick="showAddBlock()" class="bg-green-600 text-white px-4 py-2 rounded mb-6">+ Add Time Block</button>
+
+
+
+            <button onclick="showAddBlock()" class="workspace-primary mb-6">+ Add time block</button>
             <nav class="timetable-day-nav" aria-label="Jump to a day">
                 <a href="#day-0">Mon</a><a href="#day-1">Tue</a><a href="#day-2">Wed</a><a href="#day-3">Thu</a>
                 <a href="#day-4">Fri</a><a href="#day-5">Sat</a><a href="#day-6">Sun</a>
@@ -147,12 +155,12 @@
         let currentBlockDate = null;
         let existingReflections = {};
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        
+
         window.logout = function() {
             localStorage.removeItem('token');
             window.location.href = '/page/login';
         };
-        
+
         async function loadTimetable() {
             try {
                 let reflectionsWarning = '';
@@ -176,7 +184,7 @@
                 for (const b of blocks) {
                     if (grouped[b.day_of_week]) grouped[b.day_of_week].push(b);
                 }
-                
+
                 const today = new Date();
                 const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                 const todayDay = (today.getDay() + 6) % 7;
@@ -184,26 +192,26 @@
                     if (index === todayDay) link.setAttribute('aria-current', 'date');
                     else link.removeAttribute('aria-current');
                 });
-                
+
                 let html = '';
                 for (let i = 0; i < 7; i++) {
                     html += `<section id="day-${i}" class="timetable-day-card border rounded-lg p-4 mb-4">`;
                     html += `<h3 class="text-xl font-bold mb-2">${days[i]}${i === todayDay ? ' · Today' : ''}</h3>`;
-                    
+
                     if (!grouped[i] || grouped[i].length === 0) {
                         html += `<p class="text-gray-400 italic">No activities planned</p>`;
                     } else {
                         for (const block of grouped[i]) {
                             const reflectionKey = `${block.id}|${todayStr}`;
                             const hasReflection = existingReflections[reflectionKey];
-                            
+
                             let reflectionButton = '';
                             if (!hasReflection) {
                                 reflectionButton = `<button onclick="openReflection(${block.id}, '${escapeHtml(block.activity)}', '${todayStr}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Add Reflection</button>`;
                             } else {
                                 reflectionButton = `<span class="text-green-600 text-sm">✅ Reflection added</span>`;
                             }
-                            
+
                             html += `
                                 <div class="bg-gray-50 p-3 rounded mb-2">
                                     <p><span class="font-bold">${block.start_time} - ${block.end_time}</span></p>
@@ -228,7 +236,7 @@
                     '<button type="button" onclick="loadTimetable()" class="underline">Try again</button></div>';
             }
         }
-        
+
         let selectedDays = new Set();
 
         document.getElementById('dayPicker').addEventListener('click', function(e) {
@@ -254,18 +262,18 @@
             selectedDays.clear();
             document.querySelectorAll('#dayPicker .day-chip').forEach(c => c.classList.remove('selected'));
         };
-        
+
         window.closeAddModal = function() {
             document.getElementById('addModal').classList.add('hidden');
             document.getElementById('addModal').classList.remove('flex');
         };
-        
+
         window.saveTimeBlock = async function() {
             const start = document.getElementById('blockStart').value;
             const end = document.getElementById('blockEnd').value;
             const activity = document.getElementById('blockActivity').value;
             const goal = document.getElementById('blockGoal').value;
-            
+
             if (selectedDays.size === 0) { alert('Select at least one day'); return; }
             if (!activity) { alert('Enter activity'); return; }
             if (start >= end) { alert('End time must be after start'); return; }
@@ -303,17 +311,17 @@
                 alert(`Added to ${successCount} day(s). Failed for: ${failedDays.join(', ')}`);
             }
         };
-        
+
         window.deleteBlock = async function(id) {
             if (!confirm('Delete this block?')) return;
-            const res = await fetch(`/api/v1/timetable/${id}`, { 
-                method: 'DELETE', 
-                headers: { 'Authorization': 'Bearer ' + token } 
+            const res = await fetch(`/api/v1/timetable/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
             });
             if (res.ok) loadTimetable();
             else alert('Failed to delete');
         };
-        
+
         window.openReflection = function(blockId, activity, date) {
             currentBlockId = blockId;
             currentBlockDate = date;
@@ -325,40 +333,40 @@
             document.getElementById('reflectionModal').classList.remove('hidden');
             document.getElementById('reflectionModal').classList.add('flex');
         };
-        
+
         window.closeReflectionModal = function() {
             document.getElementById('reflectionModal').classList.add('hidden');
             document.getElementById('reflectionModal').classList.remove('flex');
         };
-        
+
         window.saveReflection = async function() {
             const summary = document.getElementById('reflectionSummary').value;
             const challenges = document.getElementById('reflectionChallenges').value;
             const learnings = document.getElementById('reflectionLearnings').value;
             if (!summary) { alert('Please add a summary'); return; }
-            
+
             const res = await fetch('/api/v1/reflections', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify({ 
-                    timetable_id: currentBlockId, 
-                    log_date: currentBlockDate, 
-                    summary, 
-                    challenges, 
-                    learnings 
+                body: JSON.stringify({
+                    timetable_id: currentBlockId,
+                    log_date: currentBlockDate,
+                    summary,
+                    challenges,
+                    learnings
                 })
             });
-            
-            if (res.ok) { 
-                closeReflectionModal(); 
-                loadTimetable(); 
-                alert('Reflection saved!'); 
+
+            if (res.ok) {
+                closeReflectionModal();
+                loadTimetable();
+                alert('Reflection saved!');
             } else {
                 const data = await res.json();
                 alert('Failed: ' + (data.error || 'Unknown error'));
             }
         };
-        
+
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
@@ -368,9 +376,9 @@
                 return m;
             });
         }
-        
+
         loadTimetable();
-    
+
         function toggleDark() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('darkMode', isDark);

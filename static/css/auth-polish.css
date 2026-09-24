@@ -1,0 +1,24 @@
+/* Common entry experience for login, signup and password recovery. */
+body { font-family:'Inter',system-ui,sans-serif; background:#f4f7fc; }
+.login-hero { background:radial-gradient(circle at 85% 14%,#254b82,transparent 37%),linear-gradient(145deg,#0d1c32,#172d4d 70%,#224674); }
+.login-hero::after { content:'';position:absolute;width:490px;height:490px;top:-210px;right:-220px;border:1px solid rgba(151,195,255,.2);border-radius:50%;box-shadow:0 0 0 65px rgba(151,195,255,.045),0 0 0 130px rgba(151,195,255,.035); }
+.hero-network { opacity:.6; }
+.hero-content { max-width:410px; }
+.hero-eyebrow { display:block;color:#f3bb62;font-size:11px;font-weight:700;letter-spacing:.19em;margin-bottom:20px; }
+.hero-wordmark { font-size:clamp(35px,3.8vw,52px);letter-spacing:-.04em;line-height:1.07;margin-bottom:19px; }
+.hero-tagline { max-width:330px;font-size:17px;line-height:1.65;color:#d2ddec; }
+.login-panel { background:radial-gradient(circle at 90% 8%,#e2edff,transparent 32%),#f4f7fc; }
+.login-card { border:1px solid #dce5f1;box-shadow:0 24px 75px rgba(19,40,76,.09);padding:clamp(30px,4vw,50px);max-width:440px;border-radius:20px; }
+.login-icon-badge { background:#e8f0ff;border-radius:17px;margin-bottom:25px; }
+.login-title { font-size:clamp(26px,2.6vw,34px);letter-spacing:-.025em; }
+.login-subtitle { line-height:1.55;margin-bottom:29px; }
+.field-label { font-weight:700; }
+.input-group input { min-height:48px;border-color:#cbd8e9; }
+.btn-primary { min-height:49px;font-weight:700;box-shadow:0 8px 18px rgba(37,99,235,.15); }
+.btn-primary:hover { background:#174aaa; }
+.mobile-auth-brand { display:none;font-family:Fraunces,Georgia,serif;font-size:23px;font-weight:600;color:#172d4d;text-decoration:none;letter-spacing:-.04em; }
+.mobile-auth-brand span { color:#2563eb; }
+:where(a,button,input):focus-visible { outline:3px solid #3c7ae8;outline-offset:3px; }
+@media(max-width:860px){.login-panel{flex-direction:column;gap:25px;justify-content:center;align-items:center}.mobile-auth-brand{display:block}.login-card{width:min(100%,440px)}}
+@media(max-width:480px){.login-panel{padding:24px 14px}.login-card{padding:28px 22px}.hero-wordmark{font-size:32px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
