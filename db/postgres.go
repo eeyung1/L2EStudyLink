@@ -54,6 +54,11 @@ func InitDB() error {
         return fmt.Errorf("failed to ping database: %w", err)
     }
 
+    // Existing accounts remain unsubscribed until they choose updates.
+    if _, err = DB.Exec(`ALTER TABLE users ADD COLUMN IF NOT EXISTS marketing_opt_in_at TIMESTAMPTZ`); err != nil {
+        return fmt.Errorf("failed to add product email preference: %w", err)
+    }
+
     // Existing production databases may predate this table. Ensure the
     // recovery feature has its storage before the server accepts requests.
     ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)

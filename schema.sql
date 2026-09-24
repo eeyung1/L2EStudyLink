@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     no_show_count INT DEFAULT 0,
     is_suspended BOOLEAN DEFAULT FALSE,
     is_admin BOOLEAN DEFAULT FALSE,
+    marketing_opt_in_at TIMESTAMPTZ,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

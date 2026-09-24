@@ -16,6 +16,9 @@ body { font-family:'Inter',system-ui,sans-serif; background:#f4f7fc; }
 .input-group input { min-height:48px;border-color:#cbd8e9; }
 .btn-primary { min-height:49px;font-weight:700;box-shadow:0 8px 18px rgba(37,99,235,.15); }
 .btn-primary:hover { background:#174aaa; }
+.product-email-choice { display:flex; align-items:flex-start; gap:.7rem; padding:.9rem 1rem; border:1px solid #cbd5e1; border-radius:12px; background:#f8fafc; color:#334155; font-size:.94rem; line-height:1.45; cursor:pointer; }
+.product-email-choice input { width:20px; height:20px; min-width:20px; margin:1px 0 0; accent-color:#205bd8; cursor:pointer; }
+.product-email-choice:focus-within { outline:2px solid #205bd8; outline-offset:2px; }
 .mobile-auth-brand { display:none;font-family:Fraunces,Georgia,serif;font-size:23px;font-weight:600;color:#172d4d;text-decoration:none;letter-spacing:-.04em; }
 .mobile-auth-brand span { color:#2563eb; }
 :where(a,button,input):focus-visible { outline:3px solid #3c7ae8;outline-offset:3px; }

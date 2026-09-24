@@ -42,6 +42,23 @@ func TestProjectCollaborationFlow(t *testing.T) {
         if err != nil { t.Fatal(err) }
     }
     defer db.Exec(`DELETE FROM users WHERE id IN ($1,$2,$3)`,owner,applicant,invited)
+    t.Run("product email consent limits export",func(t *testing.T){
+        if _,err:=db.Exec(`UPDATE users SET marketing_opt_in_at=NOW() WHERE id IN ($1,$2)`,owner,applicant);err!=nil {t.Fatal(err)}
+        if _,err:=db.Exec(`UPDATE users SET is_suspended=TRUE WHERE id=$1`,applicant);err!=nil {t.Fatal(err)}
+        defer db.Exec(`UPDATE users SET marketing_opt_in_at=NULL,is_suspended=FALSE WHERE id IN ($1,$2,$3)`,owner,applicant,invited)
+        r:=gin.New()
+        r.Use(func(c *gin.Context){c.Set("db",db);c.Set("user_id",owner);c.Next()})
+        r.GET("/audience",ProductEmailAudience)
+        r.GET("/audience.csv",ExportProductEmailAudience)
+        r.PUT("/preference",SetProductEmails)
+        request:=func(method,path,body string)*httptest.ResponseRecorder{
+            w:=httptest.NewRecorder();req:=httptest.NewRequest(method,path,strings.NewReader(body));req.Header.Set("Content-Type","application/json");r.ServeHTTP(w,req);return w
+        }
+        if w:=request("GET","/audience","");w.Code!=200||!strings.Contains(w.Body.String(),`"eligible":1`) {t.Fatalf("audience: %d %s",w.Code,w.Body.String())}
+        if w:=request("GET","/audience.csv","");w.Code!=200||w.Body.String()!="EMAIL\nproject-test-0@example.com\n" {t.Fatalf("export: %d %q",w.Code,w.Body.String())}
+        if w:=request("PUT","/preference",`{"enabled":false}`);w.Code!=200 {t.Fatalf("disable: %d %s",w.Code,w.Body.String())}
+        if w:=request("GET","/audience","");w.Code!=200||!strings.Contains(w.Body.String(),`"eligible":0`) {t.Fatalf("disabled audience: %d %s",w.Code,w.Body.String())}
+    })
     t.Run("availability sequence follows existing IDs",func(t *testing.T){
         var highest int64
         if err:=db.QueryRow(`SELECT COALESCE(MAX(id),0)+1000 FROM availability`).Scan(&highest);err!=nil {t.Fatal(err)}

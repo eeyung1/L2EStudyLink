@@ -104,6 +104,7 @@
         </div>
 
         <!-- Users Table -->
+        <section class="card" aria-labelledby="updatesHeading" style="margin-bottom:1.5rem"><h2 id="updatesHeading">Product email audience</h2><p>Only active fellows who chose product emails are included. Import this list into a Brevo email campaign; Brevo handles unsubscribe links.</p><p id="productAudience" role="status" aria-live="polite">Loading eligible count…</p><a id="downloadAudience" class="workspace-primary" href="/api/v1/admin/product-email-audience.csv" download hidden>Download consented emails (CSV)</a></section>
         <div class="bg-white rounded-lg shadow p-6 mb-8">
             <h2 class="text-2xl font-bold mb-4">Users</h2>
             <p class="admin-table-hint text-sm text-gray-600">Swipe sideways to see all user details and actions.</p>
@@ -185,6 +186,17 @@
             document.getElementById('usersTable').innerHTML = html;
         }
 
+        async function loadProductAudience() {
+            const count=document.getElementById('productAudience');
+            try {
+                const res=await fetch('/api/v1/admin/product-email-audience',{headers:{Authorization:`Bearer ${token}`}});
+                if(!res.ok)throw Error('Could not load audience');
+                const data=await res.json();
+                count.textContent=`${data.eligible} active fellow${data.eligible===1?'':'s'} opted in to product emails.`;
+                document.getElementById('downloadAudience').hidden=data.eligible===0;
+            } catch(error) {count.textContent=error.message;}
+        }
+
         async function loadBookings() {
             const res = await fetch('/api/v1/admin/bookings', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -237,6 +249,7 @@
         }
 
         loadStats();
+        loadProductAudience();
         loadUsers();
         loadBookings();
 
