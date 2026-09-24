@@ -99,26 +99,8 @@
                                     <option value="5">Saturday</option>
                                     <option value="6">Sunday</option>
                                 </select>
-                                <label class="sr-only" for="availStartHour">Start time</label><select id="availStartHour">
-                                    <option value="00">12:00 AM</option><option value="01">01:00 AM</option><option value="02">02:00 AM</option>
-                                    <option value="03">03:00 AM</option><option value="04">04:00 AM</option><option value="05">05:00 AM</option>
-                                    <option value="06">06:00 AM</option><option value="07">07:00 AM</option><option value="08">08:00 AM</option>
-                                    <option value="09" selected>09:00 AM</option><option value="10">10:00 AM</option><option value="11">11:00 AM</option>
-                                    <option value="12">12:00 PM</option><option value="13">01:00 PM</option><option value="14">02:00 PM</option>
-                                    <option value="15">03:00 PM</option><option value="16">04:00 PM</option><option value="17">05:00 PM</option>
-                                    <option value="18">06:00 PM</option><option value="19">07:00 PM</option><option value="20">08:00 PM</option>
-                                    <option value="21">09:00 PM</option><option value="22">10:00 PM</option><option value="23">11:00 PM</option>
-                                </select>
-                                <label class="sr-only" for="availEndHour">End time</label><select id="availEndHour">
-                                    <option value="01">01:00 AM</option><option value="02">02:00 AM</option><option value="03">03:00 AM</option>
-                                    <option value="04">04:00 AM</option><option value="05">05:00 AM</option><option value="06">06:00 AM</option>
-                                    <option value="07">07:00 AM</option><option value="08">08:00 AM</option><option value="09">09:00 AM</option>
-                                    <option value="10">10:00 AM</option><option value="11">11:00 AM</option><option value="12">12:00 PM</option>
-                                    <option value="13">01:00 PM</option><option value="14">02:00 PM</option><option value="15">03:00 PM</option>
-                                    <option value="16">04:00 PM</option><option value="17" selected>05:00 PM</option><option value="18">06:00 PM</option>
-                                    <option value="19">07:00 PM</option><option value="20">08:00 PM</option><option value="21">09:00 PM</option>
-                                    <option value="22">10:00 PM</option><option value="23">11:00 PM</option><option value="00">12:00 AM</option>
-                                </select>
+                                <label for="availStartTime">From <input id="availStartTime" type="time" step="60" value="09:00" required aria-label="Start time, hours and minutes"></label>
+                                <label for="availEndTime">Until <input id="availEndTime" type="time" step="60" value="17:00" required aria-label="End time, hours and minutes"></label>
                                 <button type="submit">Add slot</button>
                             </form>
                         </div>

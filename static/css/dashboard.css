@@ -417,12 +417,14 @@
     gap: 10px;
 }
 
-.avail-form-grid select {
+.avail-form-grid select, .avail-form-grid input[type="time"] {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     padding: 9px 10px;
     font-size: 13px;
 }
+.avail-form-grid label:not(.sr-only) { display: grid; gap: 5px; color: #475569; font-size: 13px; font-weight: 700; }
+.avail-form-grid input[type="time"] { width: 100%; min-height: 42px; background: #fff; color: #0f172a; }
 
 .avail-form-grid button {
     background: #2563eb;
@@ -641,9 +643,10 @@ html.dark .profile-row { border-color: #374151; }
 html.dark .profile-row-value { color: #d1d5db; }
 html.dark .avail-slot, html.dark .avail-form { background: #111827; color: #d1d5db; }
 html.dark .field-row input, html.dark .field-row select,
-html.dark .avail-form-grid select, html.dark .btn-outline {
+html.dark .avail-form-grid select, html.dark .avail-form-grid input[type="time"], html.dark .btn-outline {
     background: #111827; color: #f3f4f6; border-color: #374151;
 }
+html.dark .avail-form-grid label:not(.sr-only) { color: #cbd5e1; }
 
 /* Project collaboration */
 .projects-page { max-width: 860px; }

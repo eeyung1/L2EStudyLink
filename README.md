@@ -33,6 +33,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - Password codes and booking emails use Brevo. Existing PostgreSQL databases create the password-reset table and index on startup. The project owner confirmed the live reset flow works after merging PR #11; this is user verification, not an automated end-to-end test.
 - JWT secret is loaded from an environment variable and validated at startup (fails fast if missing or left as the old placeholder).
 - Login limits each normalized email to five failed attempts within 15 minutes; further attempts return HTTP 429 until cooldown. Failure counters are keyed by a digest and stored in PostgreSQL so they survive restarts. A successful login clears that email's failures.
+- A valid password can recover an account during a cooldown; invalid passwords still receive HTTP 429. Successful signup clears guesses recorded against that email before it existed, so a new fellow can sign in immediately. Signup stores normalized lowercase email addresses.
 
 ### Profile
 - View own profile (`GET /api/v1/me`) — includes skills list, bio, Discord username, rating, review/session counts.
@@ -41,6 +42,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 
 ### Availability
 - Get/set weekly availability slots (`GET`/`PUT /api/v1/availability`), keyed by day-of-week + time range.
+- Availability accepts start/end times to the minute (for example 09:15–10:45). The browser offers hour and minute controls; the API validates the range and saves the whole schedule in a transaction so an invalid edit preserves existing hours.
 
 ### Search
 - Search tutors by skill (`GET /api/v1/search`).

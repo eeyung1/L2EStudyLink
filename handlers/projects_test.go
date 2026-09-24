@@ -54,6 +54,16 @@ func TestProjectCollaborationFlow(t *testing.T) {
         if err:=json.Unmarshal(response.Body.Bytes(),&slots);err!=nil {t.Fatal(err)}
         if len(slots)!=1||slots[0].DayOfWeek!=0||slots[0].StartTime!="09:00"||slots[0].EndTime!="11:00" {t.Fatalf("unexpected availability: %+v",slots)}
     })
+    t.Run("availability saves minutes atomically",func(t *testing.T){
+        r:=gin.New();r.Use(func(c *gin.Context){c.Set("db",db);c.Set("user_id",owner);c.Next()});r.PUT("/availability",SetAvailability);r.GET("/availability",GetAvailability)
+        put:=func(body string) int {w:=httptest.NewRecorder();req:=httptest.NewRequest("PUT","/availability",strings.NewReader(body));req.Header.Set("Content-Type","application/json");r.ServeHTTP(w,req);return w.Code}
+        if code:=put(`[{"day_of_week":2,"start_time":"09:15","end_time":"10:45"}]`);code!=200 {t.Fatalf("minute slot: %d",code)}
+        if code:=put(`[{"day_of_week":2,"start_time":"10:45","end_time":"09:15"}]`);code!=400 {t.Fatalf("invalid slot: %d",code)}
+        w:=httptest.NewRecorder();r.ServeHTTP(w,httptest.NewRequest("GET","/availability",nil))
+        var slots []AvailabilitySlot;if err:=json.Unmarshal(w.Body.Bytes(),&slots);err!=nil {t.Fatal(err)}
+        if len(slots)!=1||slots[0].StartTime!="09:15"||slots[0].EndTime!="10:45" {t.Fatalf("saved minute slot lost: %+v",slots)}
+        db.Exec(`DELETE FROM availability WHERE user_id=$1`,owner)
+    })
     t.Run("skill edit belongs to owner", func(t *testing.T) {
         if _,err:=db.Exec(`INSERT INTO skills(user_id,skill_name,proficiency) VALUES($1,'Go','beginner')`,owner);err!=nil {t.Fatal(err)}
         r:=gin.New()
@@ -138,4 +148,5 @@ func TestProjectCollaborationFlow(t *testing.T) {
     if err := db.QueryRow(`SELECT count(*) FROM project_members WHERE user_id=$1`,invited).Scan(&count);err!=nil || count!=1 { t.Fatalf("invited membership: %v, %d",err,count) }
     t.Run("booking outcomes and reviews",func(t *testing.T){testBookingOutcomeAndReview(t,projectdb.DB,owner,applicant,invited)})
     t.Run("login throttling",func(t *testing.T){testLoginThrottle(t,projectdb.DB,owner)})
+    t.Run("new signup clears prior guesses",func(t *testing.T){testSignupClearsPreRegistrationAttempts(t,projectdb.DB)})
 }

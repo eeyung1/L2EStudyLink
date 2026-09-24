@@ -36,11 +36,14 @@ func Signup(c *gin.Context) {
     }
 
     db := c.MustGet("db").(*sql.DB)
-    
+    email := strings.ToLower(strings.TrimSpace(input.Email))
+    tx, err := db.BeginTx(c.Request.Context(), nil)
+    if err != nil { c.JSON(http.StatusInternalServerError,gin.H{"error":"Failed to create account. Please try again."}); return }
+    defer tx.Rollback()
     var userID int64
-    err = db.QueryRow(
+    err = tx.QueryRowContext(c.Request.Context(),
         "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id",
-        input.Name, input.Email, string(hashedPassword),
+        input.Name, email, string(hashedPassword),
     ).Scan(&userID)
 
     if err != nil {
@@ -53,6 +56,11 @@ func Signup(c *gin.Context) {
         return
     }
 
+    // Failed guesses against an address before registration must not lock its new owner out.
+    mac := hmac.New(sha256.New, config.JWTSecret())
+    mac.Write([]byte(email))
+    if _,err=tx.ExecContext(c.Request.Context(),`DELETE FROM login_attempts WHERE subject_key=$1`,hex.EncodeToString(mac.Sum(nil)));err!=nil {c.JSON(500,gin.H{"error":"Failed to create account. Please try again."});return}
+    if err=tx.Commit();err!=nil {c.JSON(500,gin.H{"error":"Failed to create account. Please try again."});return}
     c.JSON(http.StatusCreated, gin.H{
         "message": "User created successfully",
         "user_id": userID,
@@ -78,7 +86,6 @@ func Login(c *gin.Context) {
     var locked bool
     err := db.QueryRowContext(c.Request.Context(),`SELECT COALESCE(locked_until > NOW(),FALSE) FROM login_attempts WHERE subject_key=$1`,key).Scan(&locked)
     if err!=nil && !errors.Is(err,sql.ErrNoRows) {c.JSON(500,gin.H{"error":"Something went wrong. Please try again."});return}
-    if locked {c.Header("Retry-After","900");c.JSON(http.StatusTooManyRequests,gin.H{"error":"Too many attempts. Try again in 15 minutes."});return}
     var user struct {
         ID           int64
         Name         string
@@ -91,6 +98,7 @@ func Login(c *gin.Context) {
     ).Scan(&user.ID, &user.Name, &user.PasswordHash)
 
     if err == sql.ErrNoRows {
+        if locked {c.Header("Retry-After","900");c.JSON(http.StatusTooManyRequests,gin.H{"error":"Too many attempts. Try again in 15 minutes."});return}
         if err:=recordFailedLogin(c,db,key);err!=nil {c.JSON(500,gin.H{"error":"Something went wrong. Please try again."});return}
         c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
         return
@@ -101,6 +109,7 @@ func Login(c *gin.Context) {
     }
 
     if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
+        if locked {c.Header("Retry-After","900");c.JSON(http.StatusTooManyRequests,gin.H{"error":"Too many attempts. Try again in 15 minutes."});return}
         if err:=recordFailedLogin(c,db,key);err!=nil {c.JSON(500,gin.H{"error":"Something went wrong. Please try again."});return}
         c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
         return
