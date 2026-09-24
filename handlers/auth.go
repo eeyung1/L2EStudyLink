@@ -22,6 +22,7 @@ func Signup(c *gin.Context) {
         Name     string `json:"name" binding:"required"`
         Email    string `json:"email" binding:"required,email"`
         Password string `json:"password" binding:"required,min=6"`
+        ProductEmails bool `json:"product_emails"`
     }
 
     if err := c.ShouldBindJSON(&input); err != nil {
@@ -42,8 +43,8 @@ func Signup(c *gin.Context) {
     defer tx.Rollback()
     var userID int64
     err = tx.QueryRowContext(c.Request.Context(),
-        "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id",
-        input.Name, email, string(hashedPassword),
+        "INSERT INTO users (name, email, password_hash, marketing_opt_in_at) VALUES ($1, $2, $3, CASE WHEN $4 THEN NOW() ELSE NULL END) RETURNING id",
+        input.Name, email, string(hashedPassword), input.ProductEmails,
     ).Scan(&userID)
 
     if err != nil {

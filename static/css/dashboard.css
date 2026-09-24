@@ -641,6 +641,10 @@ html.dark .card h3, html.dark .page-title, html.dark .stat-value, html.dark .pro
 html.dark .page-sub, html.dark .stat-label { color: #9ca3af; }
 html.dark .profile-row { border-color: #374151; }
 html.dark .profile-row-value { color: #d1d5db; }
+.product-email-choice { display:flex; align-items:flex-start; gap:.7rem; padding:.9rem 1rem; margin:1rem 0 .4rem; border:1px solid #cbd5e1; border-radius:12px; background:#f8fafc; color:#334155; line-height:1.45; cursor:pointer; }
+.product-email-choice input { width:20px; height:20px; min-width:20px; margin:1px 0 0; accent-color:#205bd8; cursor:pointer; }
+.product-email-choice:focus-within { outline:2px solid #205bd8; outline-offset:2px; }
+html.dark .product-email-choice { background:#1f2937; border-color:#475569; color:#e2e8f0; }
 html.dark .avail-slot, html.dark .avail-form { background: #111827; color: #d1d5db; }
 html.dark .field-row input, html.dark .field-row select,
 html.dark .avail-form-grid select, html.dark .avail-form-grid input[type="time"], html.dark .btn-outline {

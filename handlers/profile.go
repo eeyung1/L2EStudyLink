@@ -22,14 +22,15 @@ func GetProfile(c *gin.Context) {
         TotalReviews    int
         TotalSessions   int
         IsAdmin         bool
+        ProductEmails bool
     }
 
     err := db.QueryRow(`
-        SELECT id, name, email, discord_username, bio, rating, total_reviews, total_sessions, is_admin
+        SELECT id, name, email, discord_username, bio, rating, total_reviews, total_sessions, is_admin, marketing_opt_in_at IS NOT NULL
         FROM users WHERE id = $1
     `, userID).Scan(
         &user.ID, &user.Name, &user.Email, &user.DiscordUsername,
-        &user.Bio, &user.Rating, &user.TotalReviews, &user.TotalSessions, &user.IsAdmin,
+        &user.Bio, &user.Rating, &user.TotalReviews, &user.TotalSessions, &user.IsAdmin, &user.ProductEmails,
     )
 
     if err != nil {
@@ -67,7 +68,20 @@ func GetProfile(c *gin.Context) {
         "total_sessions":   user.TotalSessions,
         "skills":           skills,
         "is_admin":         user.IsAdmin,
+        "product_emails":   user.ProductEmails,
     })
+}
+
+func SetProductEmails(c *gin.Context) {
+    var input struct { Enabled *bool `json:"enabled" binding:"required"` }
+    if err := c.ShouldBindJSON(&input); err != nil || input.Enabled == nil {
+        c.JSON(http.StatusBadRequest,gin.H{"error":"Choose whether to receive product updates"});return
+    }
+    db:=c.MustGet("db").(*sql.DB)
+    if _,err:=db.ExecContext(c.Request.Context(),`UPDATE users SET marketing_opt_in_at=CASE WHEN $1 THEN NOW() ELSE NULL END WHERE id=$2`,*input.Enabled,c.GetInt64("user_id"));err!=nil {
+        c.JSON(http.StatusInternalServerError,gin.H{"error":"Could not save email preference"});return
+    }
+    c.JSON(http.StatusOK,gin.H{"enabled":*input.Enabled})
 }
 
 func UpdateProfile(c *gin.Context) {

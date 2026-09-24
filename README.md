@@ -11,7 +11,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - **Frontend**: plain HTML, Tailwind CDN on signed-in pages, shared CSS for navigation and account pages, and vanilla JavaScript `fetch()` calls. No build step, no npm, no React/Vue. Dark mode uses a `localStorage` flag and manual style overrides.
 - **Hosting**: Render (`render.yaml`, `Procfile`, `start.sh`), also has a `Dockerfile`.
 - **Installable app**: web manifest and 192/512px icons enable installation from supported browsers. Dashboard shows an Install app control when the browser offers installation; iOS users can use Safari's Share → Add to Home Screen. The service worker caches only a public offline explanation and icons; account pages and API responses always use the network.
-- **Email**: Brevo transactional API (`email/brevo.go`). **Notifications**: Discord webhook (`notifications/discord.go`).
+- **Email**: Brevo transactional API (`email/brevo.go`) for account and booking messages. Opted-in product-update audiences can be exported by an admin for a separate Brevo marketing campaign. **Notifications**: Discord webhook (`notifications/discord.go`).
 
 ## Architecture
 
@@ -20,7 +20,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - `middleware/` — `AuthRequired` (JWT verification) and `AdminRequired` (checks the current database role and suspension status).
 - `config/` — `JWTSecret()`, read from the `JWT_SECRET` env var; the app refuses to start if it's unset or still the old placeholder value.
 - `templates/` — one `.html` file per page, with inline `<script>` blocks calling the JSON API. `static/js/read-api.js` handles retries for timetable and reflections GET requests; `static/js/mobile-nav.js` controls the signed-in mobile menu. Account pages share `static/css/login.css`.
-- `db/postgres.go` — connection setup and repeatable startup table creation for password recovery and project collaboration.
+- `db/postgres.go` — connection setup and repeatable startup table creation for password recovery and project collaboration, plus an existing-user product-email preference column.
 - `email/`, `notifications/` — Brevo email and Discord webhook integrations.
 - `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool; Postgres and SQLite dialects kept in sync. Existing PostgreSQL databases automatically create the missing `password_reset_tokens` table and index at startup. Other existing schema changes still need manual migration (see Known Issues).
 
@@ -39,6 +39,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - View own profile (`GET /api/v1/me`) — includes skills list, bio, Discord username, rating, review/session counts.
 - Update profile (`PUT /api/v1/profile`) — bio, Discord username.
 - Add/remove skills with proficiency level (`POST /api/v1/skills`, `DELETE /api/v1/skills/:skill`).
+- Choose optional product emails on signup or turn them on or off on the dashboard (`PUT /api/v1/me/product-emails`). Existing accounts start unsubscribed; an explicit choice is required.
 
 ### Availability
 - Get/set weekly availability slots (`GET`/`PUT /api/v1/availability`), keyed by day-of-week + time range.
@@ -70,10 +71,19 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - Delete a user (`DELETE /api/v1/admin/users/:id`).
 - Suspend/unsuspend a user (`PUT /api/v1/admin/users/:id/suspend`).
 - List all bookings across the platform (`GET /api/v1/admin/bookings`).
+- Count or export an audience of active users who opted into product emails (`GET /api/v1/admin/product-email-audience` and `.csv`). The CSV contains only deduplicated addresses, requires current admin access and is marked `no-store`.
 - The former hardcoded admin password reset route and handler have been removed. `GET /api/v1/admin/users` scans PostgreSQL boolean fields as booleans.
 
 ### Pages
 Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, projects, admin — HTML pages with vanilla JS, with a generic `/page/:name` route for simpler pages. Login, signup and recovery pages share the blue account layout. Six signed-in pages have a compact mobile header and menu, plus narrower card, form, modal and table layouts. The brand links to the dashboard on signed-in pages and login on account pages. The owner reports a hands-on mobile accessibility and UI/UX review with a good result; device-specific coverage and measured checks have not been provided.
+
+---
+
+## Product update email campaign
+
+**Status:** campaign copy and eligible-audience export prepared; no mass email has been sent. The original signup did not collect product-email consent, so existing registration addresses must not be enrolled automatically. Suspended accounts and users who switch the preference off are excluded. Opt-in is available on signup and the dashboard profile. Existing PostgreSQL databases gain `marketing_opt_in_at` automatically at startup; a null timestamp means unsubscribed.
+
+An admin can check the eligible count and download a CSV in Admin → **Product email audience**. For a one-time or scheduled send, import that CSV into a dedicated Brevo marketing list, use the short copy in [docs/product-update-email.md](docs/product-update-email.md), include Brevo's unsubscribe link, preview and schedule the campaign. Re-export immediately before sending, replacing the list and honoring Brevo's own unsubscribes. The existing transactional Brevo API is reserved for account and booking mail. Automatic recurring campaigns and recipient synchronization with Brevo are not implemented; a fresh export is required for each send.
 
 ---
 

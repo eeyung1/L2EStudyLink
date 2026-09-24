@@ -185,6 +185,9 @@
                     <div class="profile-row"><span class="profile-row-label">Email</span><span class="profile-row-value">${escapeHtml(currentUser.email)}</span></div>
                     <div class="profile-row"><span class="profile-row-label">Discord username</span><span class="profile-row-value">${escapeHtml(discordDisplay)}</span></div>
                     <div class="profile-row"><span class="profile-row-label">Bio</span><span class="profile-row-value">${escapeHtml(currentUser.bio || 'Tell fellows a little about yourself.')}</span></div>
+                    <div class="profile-row"><span class="profile-row-label">Product emails</span><span class="profile-row-value" id="productEmailStatus">${currentUser.product_emails ? 'Subscribed' : 'Off'}</span></div>
+                    <label class="product-email-choice"><input type="checkbox" id="productEmails" ${currentUser.product_emails ? 'checked' : ''}> Send me occasional L2EStudyLink updates and goal-setting tips</label>
+                    <p id="productEmailMessage" role="status" aria-live="polite"></p>
                     <button type="button" onclick="showEditProfile()" class="profile-edit-button">Edit profile <span aria-hidden="true">→</span></button>
                 </div>
                 <form id="profileEditor" class="profile-edit-form" hidden>
@@ -198,10 +201,26 @@
                 </form>
             `;
             document.getElementById('profileEditor').addEventListener('submit', saveProfile);
+            document.getElementById('productEmails').addEventListener('change',saveProductEmails);
             document.getElementById('cancelProfileEdit').addEventListener('click', cancelProfileEdit);
             document.getElementById('statSkills').textContent = currentUser.skills?.length || 0;
             try { const availability = await fetch('/api/v1/availability',{headers:{Authorization:`Bearer ${token}`}}); if (availability.ok) document.getElementById('statAvailability').textContent = (await availability.json()).length; } catch {}
             await loadDiscovery();
+        }
+
+        async function saveProductEmails(event) {
+            const input=event.target;
+            input.disabled=true;
+            const message=document.getElementById('productEmailMessage');
+            message.textContent='Saving your preference…';
+            try {
+                const res=await fetch('/api/v1/me/product-emails',{method:'PUT',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({enabled:input.checked})});
+                if (!res.ok) throw Error('Could not save your preference');
+                currentUser.product_emails=input.checked;
+                document.getElementById('productEmailStatus').textContent=input.checked?'Subscribed':'Off';
+                message.textContent=input.checked?'Updates enabled. You can turn them off here anytime.':'Updates turned off.';
+            } catch(error) {input.checked=!input.checked;message.textContent=error.message;}
+            finally {input.disabled=false;}
         }
 
         function showEditProfile() {

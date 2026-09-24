@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     no_show_count INTEGER DEFAULT 0,
     is_suspended INTEGER DEFAULT 0,
     is_admin INTEGER DEFAULT 0,
+    marketing_opt_in_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
