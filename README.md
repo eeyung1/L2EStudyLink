@@ -66,7 +66,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - The former hardcoded admin password reset route and handler have been removed. `GET /api/v1/admin/users` scans PostgreSQL boolean fields as booleans.
 
 ### Pages
-Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, projects, admin — HTML pages with vanilla JS, with a generic `/page/:name` route for simpler pages. Login, signup and recovery pages share the blue account layout. Six signed-in pages have a compact mobile header and menu, plus narrower card, form, modal and table layouts. The brand links to the dashboard on signed-in pages and login on account pages. These responsive changes were merged, but a device-level usability audit is still needed.
+Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, projects, admin — HTML pages with vanilla JS, with a generic `/page/:name` route for simpler pages. Login, signup and recovery pages share the blue account layout. Six signed-in pages have a compact mobile header and menu, plus narrower card, form, modal and table layouts. The brand links to the dashboard on signed-in pages and login on account pages. The owner reports a hands-on mobile accessibility and UI/UX review with a good result; device-specific coverage and measured checks have not been provided.
 
 ---
 
@@ -87,7 +87,7 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 ## Mobile UX — Delivery Plan
 
-**Status:** mobile UX implementation and the owner's live web review are complete (owner replied “NICE ONE” after PRs #13–#23). The code audit below covers the core phone journeys. Specific Android/iPhone browser, screen reader, 200% zoom, and measured task-completion checks have not been reported; keep them as follow-up quality checks.
+**Status:** mobile UX implementation and the owner's hands-on mobile accessibility and UI/UX review are complete; the owner reported a good result on 2026-09-24. The code audit below covers the core phone journeys. Specific Android/iPhone browser, screen reader, 200% zoom, and measured task-completion checks have not been reported; keep them as follow-up quality checks.
 
 ### Code audit and implemented changes (2026-09-23)
 
@@ -103,7 +103,7 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 | Timetable navigation | Seven day sections required excessive scrolling. Phone shortcuts jump to each day and highlight today. | PR #21 |
 | Reflection history | A long list had no way to find a date. A local date filter and Show all action were added. | PR #22 |
 
-**Verification completed:** JavaScript syntax and diff checks for affected changes, targeted checks for booking date/slot transitions and reflection filtering, the project owner's live phone review through PR #16, and the owner's final acceptance of the mobile UX pass after PR #23. No Go handlers were changed in this pass. Acceptance is based on the owner's confirmation; it does not establish that every device and accessibility scenario below was exercised.
+**Verification completed:** JavaScript syntax and diff checks for affected changes, targeted checks for booking date/slot transitions and reflection filtering, the project owner's live phone review through PR #16, the owner's final acceptance of the mobile UX pass after PR #23, and a subsequent owner-reported hands-on mobile accessibility and UI/UX review on 2026-09-24. No Go handlers were changed in that mobile pass. Acceptance is based on the owner's confirmation; it does not establish that every device and accessibility scenario below was exercised.
 
 **Follow-up device and accessibility checklist (not individually verified):** check 320px and common phone widths on Android and iPhone where available. Open/close Menu with touch and keyboard; search, change a tutor's booking date, select a meeting type, and submit a test booking; inspect booking actions; add a block and reflection; jump across timetable days; filter and clear reflection history; use login, signup and reset fields; scroll admin tables without moving the whole page. Confirm no horizontal page overflow, clipped modal buttons, keyboard-covered actions, or unreadable light/dark text. Do not submit admin deletion during this audit. Record any device-specific defect as a new focused task.
 
@@ -176,7 +176,7 @@ Ranked roughly by how much they'd block real usage:
 
 ## Suggested Next Steps (in priority order)
 
-1. The owner accepted the mobile UX pass after PR #23. If device-specific or accessibility checks above reveal a defect, fix it on a focused branch. Recheck reset with a fresh code when account behavior changes.
+1. The owner confirmed hands-on mobile accessibility and UI/UX review on 2026-09-24. If a device-specific defect appears later, fix it on a focused branch. Recheck reset with a fresh code when account behavior changes.
 2. Investigate any recurring timetable/reflections 500 using the server's query logs; add focused handler tests and run `go test ./...` in a Go-enabled environment.
 3. Build and test deterministic weekly metrics from the current user’s data; document the week/timezone and missing-reflection rules.
 4. Obtain the planner reference prompt, choose a provider and budget, then deliver the scoped weekly planner API and mobile page in reviewable steps above.
