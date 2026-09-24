@@ -2,10 +2,11 @@ package handlers
 
 import (
     "database/sql"
+    "errors"
     "net/http"
     "time"
 
-    "github.com/lib/pq"
+    "github.com/jackc/pgx/v5/pgconn"
     "github.com/gin-gonic/gin"
     "github.com/golang-jwt/jwt/v5"
     "golang.org/x/crypto/bcrypt"
@@ -39,7 +40,8 @@ func Signup(c *gin.Context) {
     ).Scan(&userID)
 
     if err != nil {
-        if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+        var pgErr *pgconn.PgError
+        if errors.As(err, &pgErr) && pgErr.Code == "23505" {
             c.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
             return
         }
