@@ -63,11 +63,11 @@ func CreateProject(c *gin.Context) {
     c.JSON(201,gin.H{"id":id})
 }
 func ListProjects(c *gin.Context) {
-    rows,err:=projectDB(c).QueryContext(c.Request.Context(),`SELECT p.id,p.owner_id,u.name,p.title,p.description,p.roles_needed,p.time_commitment,p.repo_url,p.status,p.created_at,(SELECT count(*) FROM project_members m WHERE m.project_id=p.id) FROM projects p JOIN users u ON u.id=p.owner_id WHERE p.status='open' OR p.owner_id=$1 OR EXISTS(SELECT 1 FROM project_members m WHERE m.project_id=p.id AND m.user_id=$1) ORDER BY p.created_at DESC LIMIT 100`,c.GetInt64("user_id"))
-    if err!=nil { c.JSON(500,gin.H{"error":"Could not load projects"}); return }; defer rows.Close()
+    rows,err:=projectDB(c).QueryContext(c.Request.Context(),`SELECT p.id,p.owner_id,u.name,p.title,p.description,p.roles_needed,p.time_commitment,COALESCE(p.repo_url,''),p.status,p.created_at,(SELECT count(*) FROM project_members m WHERE m.project_id=p.id) FROM projects p JOIN users u ON u.id=p.owner_id WHERE p.status='open' OR p.owner_id=$1 OR EXISTS(SELECT 1 FROM project_members m WHERE m.project_id=p.id AND m.user_id=$1) ORDER BY p.created_at DESC LIMIT 100`,c.GetInt64("user_id"))
+    if err!=nil { log.Printf("list projects query: %v",err); c.JSON(500,gin.H{"error":"Could not load projects"}); return }; defer rows.Close()
     items:=[]gin.H{}
-    for rows.Next(){var id,owner int64;var name,title,description,roles,commitment,repo,status string;var date interface{};var members int; if rows.Scan(&id,&owner,&name,&title,&description,&roles,&commitment,&repo,&status,&date,&members)!=nil {c.JSON(500,gin.H{"error":"Could not load projects"});return};items=append(items,gin.H{"id":id,"owner_id":owner,"owner_name":name,"title":title,"description":description,"roles_needed":roles,"time_commitment":commitment,"repo_url":repo,"status":status,"created_at":date,"member_count":members})}
-    if rows.Err()!=nil {c.JSON(500,gin.H{"error":"Could not load projects"});return};c.JSON(200,items)
+    for rows.Next(){var id,owner int64;var name,title,description,roles,commitment,repo,status string;var date interface{};var members int; if err:=rows.Scan(&id,&owner,&name,&title,&description,&roles,&commitment,&repo,&status,&date,&members);err!=nil {log.Printf("list projects scan: %v",err);c.JSON(500,gin.H{"error":"Could not load projects"});return};items=append(items,gin.H{"id":id,"owner_id":owner,"owner_name":name,"title":title,"description":description,"roles_needed":roles,"time_commitment":commitment,"repo_url":repo,"status":status,"created_at":date,"member_count":members})}
+    if err:=rows.Err();err!=nil {log.Printf("list projects rows: %v",err);c.JSON(500,gin.H{"error":"Could not load projects"});return};c.JSON(200,items)
 }
 func GetProject(c *gin.Context) {
     id,ok:=projectID(c);if !ok{return};db:=projectDB(c);var owner int64;var name,title,description,roles,commitment,repo,status string

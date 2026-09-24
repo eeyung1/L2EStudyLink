@@ -46,6 +46,12 @@ body { margin:0; font-family:'DM Sans',Inter,system-ui,sans-serif; color:var(--i
 .discovery-item h4 { color:#193253; font-size:16px; }
 .discovery-item p { color:#556680; font-size:13px; }
 .discovery-item a { text-decoration:none; }
+.discovery-error { grid-column:1/-1; display:flex; align-items:center; gap:17px; padding:18px 20px; border:1px solid #c9d9ee; border-radius:15px; background:#f5f9ff; }
+.discovery-error-icon { display:grid; place-items:center; flex:none; width:42px; height:42px; border-radius:12px; background:#e4eeff; color:#205bd8; font-size:24px; }
+.discovery-error strong { display:block; color:#193253; font-size:15px; }
+.discovery-error p { margin:4px 0 0; color:#556680; font-size:13px; }
+.discovery-retry { flex:none; margin-left:auto; padding:11px 16px; min-height:44px; border:0; border-radius:10px; background:#205bd8; color:#fff; font-weight:800; cursor:pointer; }
+.discovery-retry:hover { background:#174aaa; box-shadow:0 6px 16px rgba(32,91,216,.22); }
 .dashboard-next-grid a { background:#fbfcff; }
 .project-card,.booking-list-card,.reflection-list-card { border:1px solid var(--line); border-radius:15px; padding:19px; background:#fbfcff; line-height:1.65; }
 .project-card h3 { font-size:17px; }
@@ -96,6 +102,10 @@ html.dark .workspace-eyebrow { color:#9bc0ff; }
 html.dark .workspace-header-link { color:#d7e5ff; background:#274268; }
 html.dark .main-content .bg-white,html.dark .card,html.dark .stat-card { background:#1d2a3e !important; border-color:var(--line); }
 html.dark .discovery-item,html.dark .dashboard-next-grid a,html.dark .project-card,html.dark .booking-list-card,html.dark .reflection-list-card,html.dark .workspace-empty { color:#f3f6fc; background:#223149; border-color:var(--line); }
+html.dark .discovery-error { background:#223149; border-color:#435b7d; }
+html.dark .discovery-error-icon { background:#29456e; color:#d5e5ff; }
+html.dark .discovery-error strong { color:#f5f8ff; }
+html.dark .discovery-error p { color:#bdc9da; }
 html.dark .project-opt-in { background:#223149; border-color:var(--line); }
 html.dark .admin-users-table tbody tr:hover,html.dark .admin-bookings-table tbody tr:hover { background:#293d5a; }
 html.dark .admin-users-table td,html.dark .admin-bookings-table td { border-color:var(--line); }
@@ -104,6 +114,7 @@ html.dark .workspace-page .search-controls input { background:#24364c; color:#f7
 html.dark .settings-skill strong,html.dark .project-card h3 { color:#f2f6ff; }
 @media(max-width:860px){.sidebar { width:100%; padding:10px 16px; }.main-content { margin-left:0; padding:28px 20px 55px; }.sidebar.menu-open { padding:14px 16px 22px; }.nav-kicker { margin-top:16px; }}
 @media(max-width:600px){.main-content{padding:22px 14px 50px}.workspace-header{align-items:start;flex-direction:column;gap:13px;padding-bottom:20px;margin-bottom:18px}.workspace-header-link{width:100%;justify-content:center;box-sizing:border-box;min-height:44px}.main-content .bg-white,.card{padding:20px}.activation-banner{padding:25px 21px}.activation-actions a{flex:1;white-space:normal}.stats-grid{gap:10px}.stat-card{padding:15px}.stat-value{font-size:24px}.workspace-page .search-controls{grid-template-columns:1fr}.workspace-page .search-controls button{min-height:48px}.project-card{padding:15px}.main-content .max-w-4xl,.main-content .max-w-7xl{padding:0}.workspace-empty{padding:32px 15px}}
+@media(max-width:600px){.discovery-error{flex-wrap:wrap;padding:16px}.discovery-error>div{flex:1 1 calc(100% - 65px)}.discovery-retry{width:100%;margin:0}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.sidebar-link:hover,.discovery-item:hover,.dashboard-next-grid a:hover{transform:none}*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 @media(min-width:861px){.main-content{margin-left:260px}}
 html.dark .sidebar-nav { background:transparent !important;box-shadow:none !important; }
