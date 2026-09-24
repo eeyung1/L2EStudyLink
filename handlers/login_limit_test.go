@@ -6,6 +6,7 @@ import (
  "net/http/httptest"
  "strings"
  "testing"
+ "time"
 
  "github.com/gin-gonic/gin"
  "golang.org/x/crypto/bcrypt"
@@ -19,11 +20,26 @@ func testLoginThrottle(t *testing.T,db *sql.DB,user int64) {
  r:=gin.New();r.Use(func(c *gin.Context){c.Set("db",db);c.Next()});r.POST("/login",Login)
  call:=func(email,password string) int {t.Helper();w:=httptest.NewRecorder();body:=fmt.Sprintf(`{"email":%q,"password":%q}`,email,password);req:=httptest.NewRequest("POST","/login",strings.NewReader(body));req.Header.Set("Content-Type","application/json");r.ServeHTTP(w,req);return w.Code}
  for n:=0;n<5;n++ {if status:=call("project-test-0@example.com","wrong");status!=401 {t.Fatalf("failed login %d: %d",n,status)}}
- if status:=call("project-test-0@example.com","right-password");status!=429 {t.Fatalf("locked login: %d",status)}
+ if status:=call("project-test-0@example.com","wrong");status!=429 {t.Fatalf("locked incorrect login: %d",status)}
  if status:=call("someone-else@example.com","wrong");status!=401 {t.Fatalf("separate account: %d",status)}
  if _,err=db.Exec(`UPDATE login_attempts SET window_started_at=NOW()-INTERVAL '16 minutes',locked_until=NOW()-INTERVAL '1 minute' WHERE attempts=5`);err!=nil {t.Fatal(err)}
  if status:=call("project-test-0@example.com","right-password");status!=200 {t.Fatalf("login after cooldown: %d",status)}
  w:=httptest.NewRecorder();req:=httptest.NewRequest("POST","/login",strings.NewReader(`{"email":"project-test-0@example.com","password":"right-password"}`));req.Header.Set("Content-Type","application/json");r.ServeHTTP(w,req)
  if w.Code!=200||strings.Contains(w.Body.String(),`"token"`)||!strings.Contains(w.Header().Get("Set-Cookie"),"HttpOnly") {t.Fatalf("cookie-only login: %d %s %s",w.Code,w.Body.String(),w.Header().Get("Set-Cookie"))}
  var count int;if err=db.QueryRow(`SELECT count(*) FROM login_attempts WHERE attempts=5`).Scan(&count);err!=nil||count!=0 {t.Fatalf("failed attempts not cleared: %d %v",count,err)}
+ for n:=0;n<5;n++ {if status:=call("project-test-0@example.com","wrong");status!=401 {t.Fatalf("failed login before recovery %d: %d",n,status)}}
+ if status:=call("project-test-0@example.com","right-password");status!=200 {t.Fatalf("correct password should recover locked account: %d",status)}
+}
+
+func testSignupClearsPreRegistrationAttempts(t *testing.T, db *sql.DB) {
+ t.Setenv("JWT_SECRET","a-test-secret-not-used-in-production")
+ email:=fmt.Sprintf("signup-%d@example.com",time.Now().UnixNano())
+ defer db.Exec(`DELETE FROM users WHERE email=$1`,email)
+ r:=gin.New();r.Use(func(c *gin.Context){c.Set("db",db);c.Next()});r.POST("/login",Login);r.POST("/signup",Signup)
+ call:=func(path,body string) int {t.Helper();w:=httptest.NewRecorder();req:=httptest.NewRequest("POST",path,strings.NewReader(body));req.Header.Set("Content-Type","application/json");r.ServeHTTP(w,req);return w.Code}
+ credentials:=fmt.Sprintf(`{"email":%q,"password":"right-password"}`,email)
+ for n:=0;n<5;n++ {if code:=call("/login",credentials);code!=401 {t.Fatalf("pre-registration attempt %d: %d",n,code)}}
+ signup:=fmt.Sprintf(`{"name":"New Fellow","email":%q,"password":"right-password"}`,strings.ToUpper(email))
+ if code:=call("/signup",signup);code!=201 {t.Fatalf("new account: %d",code)}
+ if code:=call("/login",credentials);code!=200 {t.Fatalf("new fellow locked out: %d",code)}
 }

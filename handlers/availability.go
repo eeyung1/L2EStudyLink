@@ -4,6 +4,7 @@ import (
     "database/sql"
     "net/http"
     "log"
+    "time"
 
     "github.com/gin-gonic/gin"
 )
@@ -24,8 +25,17 @@ func SetAvailability(c *gin.Context) {
         return
     }
 
-    // Delete existing availability
-    _, err := db.Exec("DELETE FROM availability WHERE user_id = $1", userID)
+    for _, slot := range slots {
+        start, startErr := time.Parse("15:04",slot.StartTime)
+        end, endErr := time.Parse("15:04",slot.EndTime)
+        if slot.DayOfWeek < 0 || slot.DayOfWeek > 6 || startErr != nil || endErr != nil || !start.Before(end) || len(slot.StartTime)!=5 || len(slot.EndTime)!=5 {
+            c.JSON(http.StatusBadRequest,gin.H{"error":"Choose a valid day and start/end times to the minute; end must follow start"});return
+        }
+    }
+    tx, err := db.BeginTx(c.Request.Context(),nil)
+    if err != nil {c.JSON(500,gin.H{"error":"Failed to save availability"});return}
+    defer tx.Rollback()
+    _, err = tx.ExecContext(c.Request.Context(),"DELETE FROM availability WHERE user_id = $1", userID)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clear availability"})
         return
@@ -45,7 +55,7 @@ func SetAvailability(c *gin.Context) {
             endTime = endTime + ":00"
         }
         
-        _, err := db.Exec(`
+        _, err := tx.ExecContext(c.Request.Context(),`
             INSERT INTO availability (user_id, day_of_week, start_time, end_time) 
             VALUES ($1, $2, $3, $4)
         `, userID, slot.DayOfWeek, startTime, endTime)
@@ -56,6 +66,7 @@ func SetAvailability(c *gin.Context) {
         }
     }
 
+    if err:=tx.Commit();err!=nil {c.JSON(500,gin.H{"error":"Failed to save availability"});return}
     c.JSON(http.StatusOK, gin.H{"message": "Availability saved successfully", "slots": slots})
 }
 

@@ -63,10 +63,10 @@ if (document.getElementById('availabilitySection')) {
     async function loadAvailability() {
         const list = document.getElementById('availability');
         list.textContent = 'Loading your weekly hours…';
-        document.getElementById('availabilityForm').querySelectorAll('select, button').forEach(control => control.disabled = true);
+        document.getElementById('availabilityForm').querySelectorAll('select, input, button').forEach(control => control.disabled = true);
         try {
             slots = await readAvailability();
-            document.getElementById('availabilityForm').querySelectorAll('select, button').forEach(control => control.disabled = false);
+            document.getElementById('availabilityForm').querySelectorAll('select, input, button').forEach(control => control.disabled = false);
             const count = document.getElementById('weeklyCount');
             count.textContent = slots.length === 1 ? '1 weekly slot' : `${slots.length} weekly slots`;
             list.innerHTML = slots.length ? slots.map((slot,index)=>`<div class="avail-slot weekly-slot"><div class="weekly-day" aria-hidden="true">${days[slot.day_of_week].slice(0,3)}</div><div class="weekly-slot-text"><strong>${days[slot.day_of_week]}</strong><span>${escapeHtml(slot.start_time)} – ${escapeHtml(slot.end_time)}</span></div><button type="button" data-remove="${index}" class="settings-action settings-action-danger" aria-label="Remove ${days[slot.day_of_week]} ${escapeHtml(slot.start_time)} to ${escapeHtml(slot.end_time)}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m5 4v6m4-6v6"/></svg>Remove</button></div>`).join('') : '<div class="weekly-empty"><span aria-hidden="true">✦</span><strong>Your week is full of possibility</strong><p>Choose a day and time below to make your first session available.</p></div>';
@@ -84,7 +84,7 @@ if (document.getElementById('availabilitySection')) {
     });
     document.getElementById('availabilityForm').addEventListener('submit',async event=>{
         event.preventDefault(); const button=event.target.querySelector('button[type="submit"]');button.disabled=true;
-        const day=Number(document.getElementById('availDay').value), start=document.getElementById('availStartHour').value+':00', end=document.getElementById('availEndHour').value+':00';
+        const day=Number(document.getElementById('availDay').value), start=document.getElementById('availStartTime').value, end=document.getElementById('availEndTime').value;
         if(start>=end){notice('Choose an end time after the start time',true);button.disabled=false;return;}
         try {await api('/availability',{method:'PUT',body:JSON.stringify([...slots,{day_of_week:day,start_time:start,end_time:end}])});notice('Availability saved');await loadAvailability();}catch(error){notice(error.message,true);}finally{button.disabled=false;}
     });
