@@ -127,6 +127,7 @@
         </main>
     </div>
 
+    <script src="/static/js/read-api.js"></script>
     <script>
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/page/login';
@@ -149,7 +150,7 @@
             } catch(e) { document.getElementById('discoveryProjects').textContent=e.message; document.getElementById('discoveryPeople').textContent=e.message; }
         }
         let currentUser = {};
-        async function logout() { localStorage.removeItem('token'); location.href='/page/login'; }
+        async function logout() { await clearPlanningCache(token); localStorage.removeItem('token'); location.href='/page/login'; }
         function initials(name) {
             if (!name) return '?';
             return name.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('');
@@ -166,37 +167,76 @@
 
             const discordDisplay = currentUser.discord_username ? currentUser.discord_username : 'Not set';
             document.getElementById('profile').innerHTML = `
-                <div class="profile-avatar">${escapeHtml(initials(currentUser.name))}</div>
-                <p class="profile-name">${escapeHtml(currentUser.name)}</p>
-                <p class="profile-rating">★ ${currentUser.rating} · ${currentUser.total_reviews} reviews</p>
-                <div class="profile-row">
-                    <span class="profile-row-label">Email</span>
-                    <span class="profile-row-value">${escapeHtml(currentUser.email)}</span>
+                <div class="profile-card-heading"><div><p class="workspace-eyebrow">YOUR SPACE</p><h2>Profile</h2></div><span class="profile-heading-icon" aria-hidden="true">✦</span></div>
+                <div id="profileView">
+                    <div class="profile-identity"><div class="profile-avatar">${escapeHtml(initials(currentUser.name))}</div><div><p class="profile-name">${escapeHtml(currentUser.name)}</p><p class="profile-rating">★ ${currentUser.rating} · ${currentUser.total_reviews} reviews</p></div></div>
+                    <div class="profile-row"><span class="profile-row-label">Email</span><span class="profile-row-value">${escapeHtml(currentUser.email)}</span></div>
+                    <div class="profile-row"><span class="profile-row-label">Discord username</span><span class="profile-row-value">${escapeHtml(discordDisplay)}</span></div>
+                    <div class="profile-row"><span class="profile-row-label">Bio</span><span class="profile-row-value">${escapeHtml(currentUser.bio || 'Tell fellows a little about yourself.')}</span></div>
+                    <button type="button" onclick="showEditProfile()" class="profile-edit-button">Edit profile <span aria-hidden="true">→</span></button>
                 </div>
-                <div class="profile-row">
-                    <span class="profile-row-label">Discord ID</span>
-                    <span class="profile-row-value">${escapeHtml(discordDisplay)}</span>
-                </div>
-                <div class="profile-row">
-                    <span class="profile-row-label">Bio</span>
-                    <span class="profile-row-value">${escapeHtml(currentUser.bio || 'Not set')}</span>
-                </div>
-                <button onclick="showEditProfile()" class="btn-outline">Edit profile</button>
+                <form id="profileEditor" class="profile-edit-form" hidden>
+                    <p class="page-sub">Help fellows get to know you.</p>
+                    <label for="profileDiscord">Discord username <span class="profile-optional">Optional</span></label>
+                    <input id="profileDiscord" name="discord_username" autocomplete="off" maxlength="50" placeholder="Your Discord username">
+                    <label for="profileBio">Bio <span class="profile-optional">Optional</span></label>
+                    <textarea id="profileBio" name="bio" maxlength="500" rows="4" placeholder="What are you learning or happy to teach?"></textarea>
+                    <p id="profileMessage" role="status" aria-live="polite"></p>
+                    <div class="profile-edit-actions"><button type="button" id="cancelProfileEdit" class="profile-cancel-button">Cancel</button><button type="submit" id="saveProfileButton" class="profile-save-button">Save profile</button></div>
+                </form>
             `;
+            document.getElementById('profileEditor').addEventListener('submit', saveProfile);
+            document.getElementById('cancelProfileEdit').addEventListener('click', cancelProfileEdit);
             document.getElementById('statSkills').textContent = currentUser.skills?.length || 0;
             try { const availability = await fetch('/api/v1/availability',{headers:{Authorization:`Bearer ${token}`}}); if (availability.ok) document.getElementById('statAvailability').textContent = (await availability.json()).length; } catch {}
             await loadDiscovery();
         }
 
         function showEditProfile() {
-            const discord = prompt('Discord ID:', currentUser.discord_username || '');
-            const bio = prompt('Bio:', currentUser.bio || '');
-            if (discord !== null && bio !== null) {
-                fetch('/api/v1/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ discord_username: discord, bio: bio }) }).then(() => loadProfile());
+            document.getElementById('profileDiscord').value = currentUser.discord_username || '';
+            document.getElementById('profileBio').value = currentUser.bio || '';
+            document.getElementById('profileMessage').textContent = '';
+            document.getElementById('profileView').hidden = true;
+            document.getElementById('profileEditor').hidden = false;
+            document.getElementById('profileDiscord').focus();
+        }
+        function cancelProfileEdit() {
+            document.getElementById('profileEditor').hidden = true;
+            document.getElementById('profileView').hidden = false;
+        }
+        async function saveProfile(event) {
+            event.preventDefault();
+            const button = document.getElementById('saveProfileButton');
+            const message = document.getElementById('profileMessage');
+            const discord = document.getElementById('profileDiscord').value.trim();
+            const bio = document.getElementById('profileBio').value.trim();
+            button.disabled = true;
+            message.textContent = '';
+            button.textContent = 'Saving…';
+            try {
+                const res = await fetch('/api/v1/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({discord_username: discord, bio}) });
+                const data = await res.json();
+                if (!res.ok) throw Error(data.error || 'Could not save profile');
+                currentUser.discord_username = discord;
+                currentUser.bio = bio;
+                const view = document.getElementById('profileView');
+                view.querySelectorAll('.profile-row-value')[1].textContent = discord || 'Not set';
+                view.querySelectorAll('.profile-row-value')[2].textContent = bio || 'Tell fellows a little about yourself.';
+                cancelProfileEdit();
+            } catch(error) {
+                message.textContent = error.message + '. Please try again.';
+                button.disabled = false;
+                button.textContent = 'Save profile';
             }
         }
 
         loadProfile();
+        // Warm the two personal pages after the dashboard becomes interactive.
+        const warmPlanningPages = () => Promise.allSettled([
+            readAPI('/api/v1/timetable', token), readAPI('/api/v1/reflections', token)
+        ]);
+        if ('requestIdleCallback' in window) requestIdleCallback(warmPlanningPages, {timeout: 2000});
+        else setTimeout(warmPlanningPages, 800);
 
         function toggleDark() {
             const isDark = document.documentElement.classList.toggle('dark');

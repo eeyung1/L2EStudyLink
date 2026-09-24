@@ -114,6 +114,16 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 ---
 
+## Profile editor and personal page performance — Implemented
+
+The dashboard profile uses an inline, keyboard accessible form with Save and Cancel, validation feedback, and fields labelled **Discord username** and **Bio**. The existing `discord_username` API field and account data remain compatible.
+
+Timetable and Reflections use a short (20 second) browser session cache of successful authenticated GET responses, keyed to a one-way fingerprint of the current token. Simultaneous reads of the same resource share one request; timetable blocks and reflections are loaded concurrently. The dashboard warms both personal pages after it becomes interactive. Successful timetable and reflection changes invalidate their affected cache entries before reloading, and logging out from those planning pages or the dashboard clears both cached resources. These personal responses are never stored in a shared server cache; different sign-ins cannot reuse another account's cached data. Creating the same timetable block on multiple days submits those independent days concurrently, with the Save button disabled until they settle. The PostgreSQL pool has a bounded maximum of eight open and three idle connections. The cache improves repeat navigation and reduces duplicate reads, but its short lifetime means a change made in another browser can take up to 20 seconds to appear.
+
+`node --test static/js/read-api.test.cjs` verifies concurrent request sharing, account separation and invalidation, and is part of GitHub Actions alongside the Go tests.
+
+---
+
 ## Skills and availability refinement — Implemented
 
 Skills have clear Edit and Remove controls with accessible labels and a responsive action layout. The Availability page shows weekly slots in a day-by-day presentation with a slot count, clearer Remove actions and an encouraging empty state. Availability reads retry briefly if the server is temporarily unavailable and offer an in-page retry when they still fail; writes are never automatically retried. The availability API now checks row scan and iteration errors and returns time values consistently as `HH:MM`.

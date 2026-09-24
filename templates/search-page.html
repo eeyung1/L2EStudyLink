@@ -305,7 +305,7 @@
                 document.getElementById('modalTitle').textContent = tutor.name;
                 document.getElementById('modalContent').innerHTML = `
                     <p><strong>Email:</strong> ${escapeHtml(tutor.email)}</p>
-                    <p><strong>Discord:</strong> ${escapeHtml(tutor.discord_username) || 'Not set'}</p>
+                    <p><strong>Discord username:</strong> ${escapeHtml(tutor.discord_username) || 'Not set'}</p>
                     <p><strong>Bio:</strong> ${escapeHtml(tutor.bio) || 'No bio'}</p>
                 `;
 
