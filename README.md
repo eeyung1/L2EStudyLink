@@ -10,6 +10,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - **Database**: PostgreSQL in production, SQLite schema is maintained for local use (`schema.sql` / `schema.sqlite`); `db/postgres.go` uses pgx's `database/sql` adapter in simple protocol mode to work through the production connection pooler.
 - **Frontend**: plain HTML, Tailwind CDN on signed-in pages, shared CSS for navigation and account pages, and vanilla JavaScript `fetch()` calls. No build step, no npm, no React/Vue. Dark mode uses a `localStorage` flag and manual style overrides.
 - **Hosting**: Render (`render.yaml`, `Procfile`, `start.sh`), also has a `Dockerfile`.
+- **Installable app**: web manifest and 192/512px icons enable installation from supported browsers. Dashboard shows an Install app control when the browser offers installation; iOS users can use Safari's Share → Add to Home Screen. The service worker caches only a public offline explanation and icons; account pages and API responses always use the network.
 - **Email**: Brevo transactional API (`email/brevo.go`). **Notifications**: Discord webhook (`notifications/discord.go`).
 
 ## Architecture
@@ -49,7 +50,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 ### Bookings
 - Create a booking (`POST /api/v1/bookings`) — blocks self-booking and double-booking the same tutor slot; triggers a Discord notification (with @mentions if Discord usernames are set) and emails to both parties.
 - List my bookings, as either tutor or student (`GET /api/v1/bookings`).
-- Cancel a booking (`DELETE /api/v1/bookings/:id`) — enforces a 2-hour cancellation cutoff before the session; notifies both parties.
+- Cancel a pending or confirmed booking (`DELETE /api/v1/bookings/:id`) until its scheduled start; notifies both parties. Cancellation feedback appears inline on My Study Sessions.
 - Tutor confirms or cancels a booking (`PUT /api/v1/bookings/:id/status`) — only the tutor can change status; notifies both parties.
 - After a confirmed session ends, the tutor can record `completed` or `no_show` (`PUT /api/v1/bookings/:id/outcome`). A completed session updates both fellows' session counts; a reported no-show increments the student's no-show count. Outcomes are final and duplicate decisions are rejected.
 - The student can review a completed session once (`POST /api/v1/bookings/:id/reviews`, 1–5 stars and a 10–1000 character comment). The tutor's average rating and review count update in the same transaction. Review controls appear on My Study Sessions; the reviews table is created at startup on existing databases.

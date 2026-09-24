@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="manifest" href="/static/manifest.webmanifest">
+    <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <meta name="theme-color" content="#172537">
+    <script src="/static/js/pwa.js" defer></script>
     <meta charset="utf-8">
     <title>Dashboard - L2EStudyLink</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -255,5 +260,6 @@
             if (btn) btn.textContent = '☀️';
         }
     </script>
+<button type="button" id="installApp" hidden aria-label="Install L2EStudyLink" style="position:fixed;bottom:1.25rem;right:1.25rem;z-index:30;padding:.8rem 1.1rem;border:0;border-radius:14px;background:#245591;color:white;font-weight:700;box-shadow:0 8px 22px #0004;cursor:pointer">Install app ↓</button>
 </body>
 </html>

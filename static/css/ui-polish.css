@@ -186,3 +186,5 @@ html.dark .settings-page .avail-form { background:#1c2b40; border-color:var(--li
 html.dark .profile-heading-icon {background:#294b77;color:#d8e7ff;}
 html.dark .profile-edit-form label {color:#e5edf9;}
 html.dark .profile-cancel-button {background:#283d58;color:#eff5ff;border-color:#49627f;}
+
+.booking-notice{padding:1rem 1.25rem;border-radius:12px;margin:0 0 1rem;font-weight:600}.booking-notice-success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}.booking-notice-error{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}.booking-notice[hidden]{display:none}

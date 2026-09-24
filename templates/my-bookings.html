@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="manifest" href="/static/manifest.webmanifest">
+    <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <meta name="theme-color" content="#172537">
+    <script src="/static/js/pwa.js" defer></script>
     <meta charset="utf-8">
     <title>My Study Sessions - L2EStudyLink</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -86,6 +91,7 @@
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow p-6">
 
+            <div id="bookingNotice" role="status" aria-live="polite" hidden></div>
             <div id="bookingsList">Loading...</div>
         </div>
     </div>
@@ -158,6 +164,14 @@
             }
         }
 
+        function showBookingNotice(message, isError) {
+            const notice = document.getElementById('bookingNotice');
+            notice.textContent = message;
+            notice.className = 'booking-notice ' + (isError ? 'booking-notice-error' : 'booking-notice-success');
+            notice.hidden = false;
+            notice.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+        }
+
         async function cancelBooking(bookingId) {
             if (!confirm('Cancel this booking?')) return;
 
@@ -168,14 +182,14 @@
                 });
 
                 if (res.ok) {
-                    alert('Booking cancelled');
+                    showBookingNotice('Booking cancelled. Both participants will be notified.', false);
                     loadBookings();
                 } else {
                     const data = await res.json();
-                    alert('Failed: ' + (data.error || 'Unknown error'));
+                    showBookingNotice(data.error || 'Could not update booking', true);
                 }
             } catch(e) {
-                alert('Error: ' + e.message);
+                showBookingNotice('Could not reach the server. Try again.', true);
             }
         }
 
@@ -195,10 +209,10 @@
                     loadBookings();
                 } else {
                     const data = await res.json();
-                    alert('Failed: ' + (data.error || 'Unknown error'));
+                    showBookingNotice(data.error || 'Could not update booking', true);
                 }
             } catch(e) {
-                alert('Error: ' + e.message);
+                showBookingNotice('Could not reach the server. Try again.', true);
             }
         }
 
