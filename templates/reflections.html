@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
     <title>My Reflections - L2EStudyLink</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,8 +14,11 @@
         }
     })();
 </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/dark-mode.css">
     <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/ui-polish.css">
     <script src="/static/js/mobile-nav.js" defer></script>
 </head>
 <body class="bg-gray-100">
@@ -28,7 +32,8 @@
                 </button>
             </div>
 
-            <nav class="sidebar-nav" id="mobile-navigation">
+            <nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation">
+                <span class="nav-kicker" aria-hidden="true">WORKSPACE</span>
                 <a href="/dashboard" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
                     Dashboard
@@ -43,16 +48,17 @@
                 </a>
                 <a href="/skills" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></svg> Skills</a>
                 <a href="/availability" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Availability</a>
+                <span class="nav-kicker nav-kicker-second" aria-hidden="true">EXPLORE &amp; PLAN</span>
                 <a href="/projects" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
                     Projects
                 </a>
-                <a href="/masterclass" class="sidebar-link">✦ <span>Masterclass</span></a>
+                <a href="/masterclass" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 2 2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg>Masterclass</a>
                 <a href="/timetable" class="sidebar-link">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
                     Timetable
                 </a>
-                <a href="/reflections" class="sidebar-link active">
+                <a href="/reflections" class="sidebar-link active" aria-current="page">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg>
                     Reflections
                 </a>
@@ -73,10 +79,12 @@
             </div>
         </aside>
 
-        <main class="main-content">
+        <main class="main-content workspace-page">
+<header class="workspace-header"><div><p class="workspace-eyebrow">LOOK BACK. MOVE FORWARD.</p><h1 class="workspace-title">My reflections</h1><p class="workspace-subtitle">See what you learned, the challenges you met, and how far you have come.</p></div><a class="workspace-header-link" href="/timetable">View timetable <span aria-hidden="true">↗</span></a></header>
+
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-2xl font-bold mb-4">My Reflections</h2>
+
             <div id="reflectionFilters" class="reflection-filters hidden">
                 <label for="reflectionDateFilter">Show a date</label>
                 <input type="date" id="reflectionDateFilter" aria-controls="reflectionsList">
@@ -113,7 +121,7 @@
                 : allReflections;
             const container = document.getElementById('reflectionsList');
             if (!reflections.length) {
-                container.textContent = selectedDate ? 'No reflections for this date.' : 'No reflections yet.';
+                container.innerHTML = selectedDate ? '<div class="workspace-empty"><h3>Nothing for this date</h3><p>Try another day or show all reflections.</p></div>' : '<div class="workspace-empty"><h3>Begin your reflection habit</h3><p>Reflect on a timetable block to see your progress here.</p><a href="/timetable">Go to timetable →</a></div>';
                 return;
             }
             let html = '';
@@ -132,16 +140,16 @@
             }
             container.innerHTML = html;
         }
-        
+
         async function logout() {
             localStorage.removeItem('token');
             window.location.href = '/page/login';
         }
-        
+
         async function loadReflections() {
             try {
                 const reflections = await readAPI('/api/v1/reflections', token);
-                
+
                 if (!Array.isArray(reflections)) throw new Error('Invalid reflections response');
                 allReflections = reflections;
                 document.getElementById('reflectionFilters').classList.toggle('hidden', !reflections.length);
@@ -154,7 +162,7 @@
                     '<button type="button" onclick="loadReflections()" class="underline">Try again</button></div>';
             }
         }
-        
+
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
@@ -164,9 +172,9 @@
                 return m;
             });
         }
-        
+
         loadReflections();
-    
+
         function toggleDark() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('darkMode', isDark);

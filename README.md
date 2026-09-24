@@ -114,6 +114,14 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 ---
 
+## Interface refresh — Implemented
+
+All signed-in pages now share the same navigation grouping, page title hierarchy, controls, spacing, focus states, responsive layouts, and light/dark surfaces. Dashboard, discovery, sessions, skills, availability, projects, Masterclass, timetable, reflections, and admin each have a clear page introduction. The timetable, session list, and reflections show clearer next actions and empty states. Login, signup, forgot password, and reset password have a consistent responsive presentation. The update changes presentation and page navigation cues; existing API contracts and booking or project workflows are preserved.
+
+To review after deployment, check one auth page, the dashboard, each sidebar destination, and the booking form at desktop and phone widths. Confirm light/dark appearance, keyboard focus, long lists and tables, and that buttons still complete their original action.
+
+---
+
 ## Dashboard discovery, skills and Masterclass — Implemented
 
 The signed-in dashboard previews open projects and fellows who opted in to project invitations. Matches are ordered by overlap with the viewer's listed skills; when no skills match, other open projects and opted-in fellows remain discoverable. Project cards link to the Projects page. Fellow cards show skills and weekly availability; the full opted-in fellow list and availability are on `/projects#fellows`. Availability is visible in this collaboration list only after the fellow opts in. The existing study-partner search shows tutors' availability separately.
