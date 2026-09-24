@@ -4,6 +4,7 @@ import (
  "encoding/json"
     "database/sql"
     "errors"
+    "log"
     "net/http"
     "net/url"
     "strconv"
@@ -41,11 +42,11 @@ func SetCollaborationPreference(c *gin.Context) {
 }
 func ListCollaborators(c *gin.Context) {
     rows, err := projectDB(c).QueryContext(c.Request.Context(), `SELECT u.id,u.name,COALESCE(u.bio,''),COALESCE((SELECT string_agg(s.skill_name, ', ' ORDER BY s.skill_name) FROM skills s WHERE s.user_id=u.id),''),COALESCE((SELECT json_agg(json_build_object('day_of_week',a.day_of_week,'start_time',to_char(a.start_time,'HH24:MI'),'end_time',to_char(a.end_time,'HH24:MI')) ORDER BY a.day_of_week,a.start_time)::text FROM availability a WHERE a.user_id=u.id),'[]') FROM users u JOIN collaboration_preferences cp ON cp.user_id=u.id WHERE cp.open_to_invites=TRUE AND u.is_suspended=FALSE AND u.id<>$1 ORDER BY u.name LIMIT 100`, c.GetInt64("user_id"))
-    if err != nil { c.JSON(500, gin.H{"error":"Could not load collaborators"}); return }
+    if err != nil { log.Printf("list collaborators query: %v", err); c.JSON(500, gin.H{"error":"Could not load collaborators"}); return }
     defer rows.Close()
     result := []gin.H{}
-    for rows.Next() { var id int64; var name,bio,skills,availability string; if err:=rows.Scan(&id,&name,&bio,&skills,&availability); err!=nil { c.JSON(500,gin.H{"error":"Could not load collaborators"}); return }; result=append(result,gin.H{"id":id,"name":name,"bio":bio,"skills":skills,"availability":json.RawMessage(availability)}) }
-    if rows.Err()!=nil { c.JSON(500,gin.H{"error":"Could not load collaborators"}); return }
+    for rows.Next() { var id int64; var name,bio,skills,availability string; if err:=rows.Scan(&id,&name,&bio,&skills,&availability); err!=nil { log.Printf("list collaborators scan: %v",err); c.JSON(500,gin.H{"error":"Could not load collaborators"}); return }; result=append(result,gin.H{"id":id,"name":name,"bio":bio,"skills":skills,"availability":json.RawMessage(availability)}) }
+    if err:=rows.Err();err!=nil { log.Printf("list collaborators rows: %v",err); c.JSON(500,gin.H{"error":"Could not load collaborators"}); return }
     c.JSON(200,result)
 }
 
