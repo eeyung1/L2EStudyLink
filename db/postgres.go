@@ -32,6 +32,13 @@ func InitDB() error {
         return fmt.Errorf("failed to open database: %w", err)
     }
 
+    // Bound concurrent connections while retaining a small warm pool for
+    // independent timetable and reflection reads.
+    DB.SetMaxOpenConns(8)
+    DB.SetMaxIdleConns(3)
+    DB.SetConnMaxIdleTime(5 * time.Minute)
+    DB.SetConnMaxLifetime(30 * time.Minute)
+
     if err = DB.Ping(); err != nil {
         return fmt.Errorf("failed to ping database: %w", err)
     }

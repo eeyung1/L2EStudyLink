@@ -142,6 +142,7 @@
         }
 
         async function logout() {
+            await clearPlanningCache(token);
             localStorage.removeItem('token');
             window.location.href = '/page/login';
         }

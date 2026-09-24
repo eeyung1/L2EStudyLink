@@ -122,7 +122,7 @@
             <input type="text" id="blockActivity" placeholder="Activity" class="timetable-form-field w-full p-2 border rounded mb-3">
             <label for="blockGoal" class="block text-sm font-medium mb-1 text-gray-700">Goal (optional)</label>
             <textarea id="blockGoal" rows="2" placeholder="Goal (optional)" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
-            <button onclick="saveTimeBlock()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
+            <button id="saveBlockButton" onclick="saveTimeBlock()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
             <button onclick="closeAddModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
         </div>
     </div>
@@ -156,7 +156,8 @@
         let existingReflections = {};
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-        window.logout = function() {
+        window.logout = async function() {
+            await clearPlanningCache(token);
             localStorage.removeItem('token');
             window.location.href = '/page/login';
         };
@@ -164,20 +165,23 @@
         async function loadTimetable() {
             try {
                 let reflectionsWarning = '';
-                try {
-                    const reflections = await readAPI('/api/v1/reflections', token);
-                    existingReflections = {};
-                    for (const r of reflections) {
+                const [blocksResult, reflectionsResult] = await Promise.allSettled([
+                    readAPI('/api/v1/timetable', token),
+                    readAPI('/api/v1/reflections', token)
+                ]);
+                if (blocksResult.status === 'rejected') throw blocksResult.reason;
+                const blocks = blocksResult.value;
+                existingReflections = {};
+                if (reflectionsResult.status === 'fulfilled') {
+                    for (const r of reflectionsResult.value) {
                         existingReflections[`${r.timetable_id}|${r.log_date}`] = r;
                     }
-                } catch (e) {
-                    if (e.message === 'Session expired') return;
-                    console.error('Error loading reflections:', e);
+                } else {
+                    if (reflectionsResult.reason.message === 'Session expired') return;
+                    console.error('Error loading reflections:', reflectionsResult.reason);
                     reflectionsWarning = '<p class="text-amber-700 mb-4">Reflections could not be checked. ' +
                         '<button type="button" onclick="loadTimetable()" class="underline">Try again</button></p>';
                 }
-
-                const blocks = await readAPI('/api/v1/timetable', token);
 
                 const grouped = {};
                 for (let i = 0; i < 7; i++) grouped[i] = [];
@@ -278,30 +282,30 @@
             if (!activity) { alert('Enter activity'); return; }
             if (start >= end) { alert('End time must be after start'); return; }
 
+            const button = document.getElementById('saveBlockButton');
+            if (button.disabled) return;
+            button.disabled = true;
             const selectedDaysArr = [...selectedDays];
-            let successCount = 0;
-            const failedDays = [];
+            // Different days are independent; submit them concurrently.
+            const outcomes = await Promise.allSettled(selectedDaysArr.map(async day => {
+                const res = await fetch('/api/v1/timetable', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({
+                        day_of_week: day,
+                        start_time: start + ':00',
+                        end_time: end + ':00',
+                        activity,
+                        goal
+                    })
+                });
+                if (!res.ok) throw Error('Could not save ' + days[day]);
+            }));
+            button.disabled = false;
+            const successCount = outcomes.filter(outcome => outcome.status === 'fulfilled').length;
+            const failedDays = selectedDaysArr.filter((_, index) => outcomes[index].status === 'rejected').map(day => days[day]);
 
-            for (const day of selectedDaysArr) {
-                try {
-                    const res = await fetch('/api/v1/timetable', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                        body: JSON.stringify({
-                            day_of_week: day,
-                            start_time: start + ':00',
-                            end_time: end + ':00',
-                            activity,
-                            goal
-                        })
-                    });
-                    if (res.ok) successCount++;
-                    else failedDays.push(days[day]);
-                } catch (e) {
-                    failedDays.push(days[day]);
-                }
-            }
-
+            if (successCount) await invalidateReadCache(['/api/v1/timetable'], token);
             closeAddModal();
             loadTimetable();
 
@@ -318,7 +322,7 @@
                 method: 'DELETE',
                 headers: { 'Authorization': 'Bearer ' + token }
             });
-            if (res.ok) loadTimetable();
+            if (res.ok) { await invalidateReadCache(['/api/v1/timetable', '/api/v1/reflections'], token); loadTimetable(); }
             else alert('Failed to delete');
         };
 
@@ -358,6 +362,7 @@
             });
 
             if (res.ok) {
+                await invalidateReadCache(['/api/v1/reflections'], token);
                 closeReflectionModal();
                 loadTimetable();
                 alert('Reflection saved!');
