@@ -142,7 +142,7 @@ To review after deployment, check one auth page, the dashboard, each sidebar des
 
 The signed-in dashboard previews open projects and fellows who opted in to project invitations. Matches are ordered by overlap with the viewer's listed skills; when no skills match, other open projects and opted-in fellows remain discoverable. Project cards link to the Projects page. Fellow cards show skills and weekly availability; the full opted-in fellow list and availability are on `/projects#fellows`. Availability is visible in this collaboration list only after the fellow opts in. The existing study-partner search shows tutors' availability separately.
 
-The two dashboard recommendations load independently: if one endpoint fails, the other section remains visible and the failed section offers a styled retry control. PostgreSQL integration tests cover another fellow seeing an open project and an opted-in collaborator with their skills and hours. Project and collaborator listing failures write their database error to server logs while returning a generic API error to the browser. Production logs on 2026-09-24 identified prepared-statement protocol errors affecting both lists and personal planning pages; the database driver has been changed to use the simple query protocol. CI validates against PostgreSQL; live recovery must also be checked after deployment.
+The two dashboard recommendations load independently: if one endpoint fails, the other section remains visible and the failed section offers a styled retry control. PostgreSQL integration tests cover another fellow seeing an open project and an opted-in collaborator with their skills and hours. Project and collaborator listing failures write their database error to server logs while returning a generic API error to the browser. Production logs on 2026-09-24 identified prepared-statement protocol errors affecting both lists and personal planning pages; the database driver now uses the simple query protocol. After the owner opened the deployed pages, Render logged HTTP 200 for both lists, timetable and reflections, with no new database query errors or HTTP 500 in that observation window.
 
 A fellow can add, rename, change proficiency, and remove skills on the dedicated `/skills` page. Weekly tutoring hours are managed on `/availability`; both pages appear in the signed-in sidebar. `PUT /api/v1/skills/:skill` updates only their own existing skill; conflicts and invalid levels are rejected. The dashboard gives a concise preview of skills and availability and links to their settings pages.
 
@@ -168,16 +168,17 @@ Ranked roughly by how much they'd block real usage:
 
 > **Recently resolved:** `timetable`, `activity_logs`, and `users.is_admin` are now defined in both `schema.sql` and `schema.sqlite` (kept in sync, dialect-correct). Fresh databases created from either file fully support `/api/v1/timetable`, `/api/v1/reflections`, `GetProfile`, and `AdminUsers` — this also unblocks the AI Planner work above. ⚠️ **Existing databases are not changed by these files:** `CREATE TABLE IF NOT EXISTS` adds the new tables but won't add `is_admin` to an existing `users` table. Apply it manually — Postgres: `ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE;` plus the two tables from `schema.sql`; SQLite: `ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0;` plus the tables from `schema.sqlite`.
 
-1. **Production connection pooler compatibility: fix pending live verification.** Render application logs on 2026-09-24 showed PostgreSQL `08P01` result-format mismatches and `26000` missing unnamed prepared statements across Projects, Collaborators, Timetable, and Reflections. The shared driver now avoids the extended prepared-statement protocol. Check the signed-in pages after deployment to confirm the errors stop; the PostgreSQL CI service does not emulate the production pooler.
-2. **Reviews table exists in schema but has no handler or route.** `rating` and `total_reviews` are displayed, but users cannot submit a review.
-3. **JWT is stored in `localStorage`**, not an httpOnly cookie — vulnerable to token theft via XSS.
-4. **No rate limiting or lockout on `/api/v1/login`** — unlimited password guesses are possible.
-5. **No booking completion / no-show flow.** The schema supports `completed` and `no_show`, but no handler transitions bookings to those states.
+> **Resolved and checked live (2026-09-24):** Render logs showed PostgreSQL `08P01` result-format mismatches and `26000` missing unnamed prepared statements across Projects, Collaborators, Timetable, and Reflections. The shared driver now avoids that prepared-statement protocol. After the owner opened the deployed pages, each affected endpoint returned HTTP 200 and no new query errors or HTTP 500 appeared in the observed logs. This confirms those requests during the check; monitor later traffic for recurrence.
+
+1. **Reviews table exists in schema but has no handler or route.** `rating` and `total_reviews` are displayed, but users cannot submit a review.
+2. **JWT is stored in `localStorage`**, not an httpOnly cookie — vulnerable to token theft via XSS.
+3. **No rate limiting or lockout on `/api/v1/login`** — unlimited password guesses are possible.
+4. **No booking completion / no-show flow.** The schema supports `completed` and `no_show`, but no handler transitions bookings to those states.
 
 ## Suggested Next Steps (in priority order)
 
 1. The owner confirmed hands-on mobile accessibility and UI/UX review on 2026-09-24. If a device-specific defect appears later, fix it on a focused branch. Recheck reset with a fresh code when account behavior changes.
-2. Verify Projects, Collaborators, Timetable, and Reflections on the deployed site and inspect server logs for any remaining query errors after the driver change.
+2. Monitor Projects, Collaborators, Timetable, and Reflections for any recurrence of production query errors.
 3. Build and test deterministic weekly metrics from the current user’s data; document the week/timezone and missing-reflection rules.
 4. Obtain the planner reference prompt, choose a provider and budget, then deliver the scoped weekly planner API and mobile page in reviewable steps above.
 5. Add booking completion and reviews. Address JWT storage and login rate limiting before broad rollout.
