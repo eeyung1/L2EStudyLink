@@ -21,6 +21,9 @@ var projectSchema string
 //go:embed review_schema.sql
 var reviewSchema string
 
+//go:embed login_schema.sql
+var loginSchema string
+
 func InitDB() error {
     // Get database URL from environment (Render sets this)
     dbURL := os.Getenv("DATABASE_URL")
@@ -75,6 +78,9 @@ func InitDB() error {
     }
     if _, err = DB.ExecContext(ctx, reviewSchema); err != nil {
         return fmt.Errorf("failed to create reviews table: %w", err)
+    }
+    if _, err = DB.ExecContext(ctx, loginSchema); err != nil {
+        return fmt.Errorf("failed to create login attempts table: %w", err)
     }
 
     log.Println("Database connected successfully")

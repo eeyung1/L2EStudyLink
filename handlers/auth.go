@@ -1,9 +1,13 @@
 package handlers
 
 import (
+    "crypto/hmac"
+    "crypto/sha256"
     "database/sql"
+    "encoding/hex"
     "errors"
     "net/http"
+    "strings"
     "time"
 
     "github.com/jackc/pgx/v5/pgconn"
@@ -67,18 +71,27 @@ func Login(c *gin.Context) {
     }
 
     db := c.MustGet("db").(*sql.DB)
+    email := strings.ToLower(strings.TrimSpace(input.Email))
+    mac := hmac.New(sha256.New, config.JWTSecret())
+    mac.Write([]byte(email))
+    key := hex.EncodeToString(mac.Sum(nil))
+    var locked bool
+    err := db.QueryRowContext(c.Request.Context(),`SELECT COALESCE(locked_until > NOW(),FALSE) FROM login_attempts WHERE subject_key=$1`,key).Scan(&locked)
+    if err!=nil && !errors.Is(err,sql.ErrNoRows) {c.JSON(500,gin.H{"error":"Something went wrong. Please try again."});return}
+    if locked {c.Header("Retry-After","900");c.JSON(http.StatusTooManyRequests,gin.H{"error":"Too many attempts. Try again in 15 minutes."});return}
     var user struct {
         ID           int64
         Name         string
         PasswordHash string
     }
 
-    err := db.QueryRow(
-        "SELECT id, name, password_hash FROM users WHERE email = $1",
-        input.Email,
+    err = db.QueryRowContext(c.Request.Context(),
+        "SELECT id, name, password_hash FROM users WHERE LOWER(email) = $1",
+        email,
     ).Scan(&user.ID, &user.Name, &user.PasswordHash)
 
     if err == sql.ErrNoRows {
+        if err:=recordFailedLogin(c,db,key);err!=nil {c.JSON(500,gin.H{"error":"Something went wrong. Please try again."});return}
         c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
         return
     }
@@ -88,9 +101,12 @@ func Login(c *gin.Context) {
     }
 
     if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
+        if err:=recordFailedLogin(c,db,key);err!=nil {c.JSON(500,gin.H{"error":"Something went wrong. Please try again."});return}
         c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
         return
     }
+
+    if _,err=db.ExecContext(c.Request.Context(),`DELETE FROM login_attempts WHERE subject_key=$1`,key);err!=nil {c.JSON(500,gin.H{"error":"Something went wrong. Please try again."});return}
 
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
         "user_id": user.ID,
@@ -110,4 +126,13 @@ func Login(c *gin.Context) {
             "name": user.Name,
         },
     })
+}
+
+func recordFailedLogin(c *gin.Context, db *sql.DB, key string) error {
+    _,err:=db.ExecContext(c.Request.Context(),`INSERT INTO login_attempts(subject_key,attempts,window_started_at,locked_until) VALUES($1,1,NOW(),NULL)
+        ON CONFLICT(subject_key) DO UPDATE SET
+        attempts=CASE WHEN login_attempts.window_started_at < NOW()-INTERVAL '15 minutes' THEN 1 ELSE login_attempts.attempts+1 END,
+        window_started_at=CASE WHEN login_attempts.window_started_at < NOW()-INTERVAL '15 minutes' THEN NOW() ELSE login_attempts.window_started_at END,
+        locked_until=CASE WHEN login_attempts.window_started_at < NOW()-INTERVAL '15 minutes' THEN NULL WHEN login_attempts.attempts+1>=5 THEN NOW()+INTERVAL '15 minutes' ELSE login_attempts.locked_until END`,key)
+    return err
 }
