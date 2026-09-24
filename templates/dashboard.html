@@ -149,11 +149,11 @@
                 const projects = projectResult.value;
                 const rankedProjects = projects.filter(p=>p.status==='open' && p.owner_id!==currentUser.id).sort((a,b)=>score(b.roles_needed+' '+b.description)-score(a.roles_needed+' '+a.description)).slice(0,3);
                 document.getElementById('discoveryProjects').innerHTML = rankedProjects.length ? rankedProjects.map(p=>`<article class="discovery-item"><h4>${escapeHtml(p.title)}</h4><p>${escapeHtml(p.roles_needed)} · ${escapeHtml(p.time_commitment)}</p><a href="/projects?project=${p.id}">View project →</a></article>`).join('') : '<p>No open projects yet. <a href="/projects">Post one on Projects</a>.</p>';
-            } else document.getElementById('discoveryProjects').innerHTML = '<p>Projects could not load. <button type="button" onclick="loadDiscovery()">Try again</button></p>';
+            } else document.getElementById('discoveryProjects').innerHTML = '<div class="discovery-error" role="status"><span class="discovery-error-icon" aria-hidden="true">↻</span><div><strong>Projects are unavailable right now</strong><p>Your fellows are still shown below. Please try loading projects again.</p></div><button class="discovery-retry" type="button" onclick="loadDiscovery()">↻ Retry projects</button></div>';
             if (peopleResult.status === 'fulfilled') {
                 const rankedPeople = peopleResult.value.sort((a,b)=>score(b.skills)-score(a.skills)).slice(0,3);
                 document.getElementById('discoveryPeople').innerHTML = rankedPeople.length ? rankedPeople.map(u=>`<article class="discovery-item"><h4>${escapeHtml(u.name)}</h4><p>Skills: ${escapeHtml(u.skills || 'Not listed')}</p><p>Available: ${escapeHtml(availabilityLabel(u.availability))}</p><a href="/projects#fellows">Explore fellows →</a></article>`).join('') : '<p>No fellows have opted in yet. <a href="/projects">Set your collaboration preference</a>.</p>';
-            } else document.getElementById('discoveryPeople').innerHTML = '<p>Fellows could not load. <button type="button" onclick="loadDiscovery()">Try again</button></p>';
+            } else document.getElementById('discoveryPeople').innerHTML = '<div class="discovery-error" role="status"><span class="discovery-error-icon" aria-hidden="true">↻</span><div><strong>Fellows are unavailable right now</strong><p>Projects are still shown above. Please try loading fellows again.</p></div><button class="discovery-retry" type="button" onclick="loadDiscovery()">↻ Retry fellows</button></div>';
         }
         let currentUser = {};
         async function logout() { await clearPlanningCache(token); localStorage.removeItem('token'); location.href='/page/login'; }

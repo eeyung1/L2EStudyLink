@@ -71,6 +71,7 @@ func TestProjectCollaborationFlow(t *testing.T) {
     router := gin.New()
     router.Use(func(c *gin.Context) { var uid int64; fmt.Sscan(c.GetHeader("X-Test-User"),&uid); c.Set("user_id",uid); c.Set("db",db); c.Next() })
     router.POST("/projects",CreateProject)
+    router.GET("/projects",ListProjects)
     router.POST("/projects/:id/requests",CreateProjectRequest)
     router.PUT("/project-requests/:id/status",RespondProjectRequest)
     router.PUT("/collaboration/preferences",SetCollaborationPreference)
@@ -88,6 +89,14 @@ func TestProjectCollaborationFlow(t *testing.T) {
     }
     code, project := call(owner,"POST","/projects",`{"title":"Peer planner","description":"A planner built with fellow students","roles_needed":"Go developer","time_commitment":"3 hours weekly"}`)
     if code != 201 { t.Fatalf("create project: %d %v",code,project) }
+    projectsResponse:=httptest.NewRecorder()
+    projectsRequest:=httptest.NewRequest("GET","/projects",nil)
+    projectsRequest.Header.Set("X-Test-User",fmt.Sprint(applicant))
+    router.ServeHTTP(projectsResponse,projectsRequest)
+    if projectsResponse.Code!=200 {t.Fatalf("list open projects: %d %s",projectsResponse.Code,projectsResponse.Body.String())}
+    var visibleProjects []struct { ID int64 `json:"id"`; Title string `json:"title"` }
+    if err:=json.Unmarshal(projectsResponse.Body.Bytes(),&visibleProjects);err!=nil {t.Fatal(err)}
+    if len(visibleProjects)!=1 || visibleProjects[0].ID!=int64(project["id"].(float64)) {t.Fatalf("open project not visible to another fellow: %+v",visibleProjects)}
     path := fmt.Sprintf("/projects/%.0f/requests",project["id"].(float64))
     code, _ = call(applicant,"POST",path,`{"kind":"application","note":"I can build the Go API"}`)
     if code != 201 { t.Fatalf("apply: %d",code) }
