@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <link rel="stylesheet" href="/static/css/ui-polish.css">
     <script src="/static/js/mobile-nav.js" defer></script>
+    <script src="/static/js/session.js"></script>
 </head>
 <body class="bg-gray-100">
     <div class="app-shell">
@@ -125,7 +126,7 @@
     </div>
 
     <script>
-        const token = localStorage.getItem('token');
+        const token = sessionToken();
         if (!token) {
             window.location.href = '/page/login';
         }
@@ -152,8 +153,7 @@
         });
 
         async function logout() {
-            localStorage.removeItem('token');
-            window.location.href = '/page/login';
+            await endSession(token);
         }
 
         function formatTimeForDisplay(timeStr) {

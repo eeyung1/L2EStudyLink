@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <link rel="stylesheet" href="/static/css/ui-polish.css">
     <script src="/static/js/mobile-nav.js" defer></script>
+    <script src="/static/js/session.js"></script>
 </head>
 <body class="bg-gray-100">
     <div class="app-shell">
@@ -96,7 +97,7 @@
         </main>
     </div>
     <script>
-    const token=localStorage.getItem('token');if(!token)location.href='/page/login';
+    const token=sessionToken();if(!token)location.href='/page/login';
     const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const localToday=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
@@ -137,7 +138,7 @@
         location.href='/my-bookings';
       }catch(error){document.getElementById('bookingMessage').textContent=error.message;button.disabled=false;}
     });
-    async function logout(){localStorage.removeItem('token');location.href='/page/login';}
+    async function logout(){await endSession(token);}
     function toggleDark(){const dark=document.documentElement.classList.toggle('dark');localStorage.setItem('darkMode',dark);document.getElementById('darkToggle').textContent=dark?'☀️':'🌙';}
     if(localStorage.getItem('darkMode')==='true')document.getElementById('darkToggle').textContent='☀️';
     </script>

@@ -29,6 +29,6 @@ jobs:
           cache: true
       - run: go test ./...
       - run: go build ./...
-      - run: node --test static/js/read-api.test.cjs
+      - run: node --test static/js/*.test.cjs
       - name: Check SQLite schema
         run: python3 -c "import sqlite3; sqlite3.connect(':memory:').executescript(open('schema.sqlite').read())"

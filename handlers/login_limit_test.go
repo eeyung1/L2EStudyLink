@@ -23,5 +23,7 @@ func testLoginThrottle(t *testing.T,db *sql.DB,user int64) {
  if status:=call("someone-else@example.com","wrong");status!=401 {t.Fatalf("separate account: %d",status)}
  if _,err=db.Exec(`UPDATE login_attempts SET window_started_at=NOW()-INTERVAL '16 minutes',locked_until=NOW()-INTERVAL '1 minute' WHERE attempts=5`);err!=nil {t.Fatal(err)}
  if status:=call("project-test-0@example.com","right-password");status!=200 {t.Fatalf("login after cooldown: %d",status)}
+ w:=httptest.NewRecorder();req:=httptest.NewRequest("POST","/login",strings.NewReader(`{"email":"project-test-0@example.com","password":"right-password"}`));req.Header.Set("Content-Type","application/json");r.ServeHTTP(w,req)
+ if w.Code!=200||strings.Contains(w.Body.String(),`"token"`)||!strings.Contains(w.Header().Get("Set-Cookie"),"HttpOnly") {t.Fatalf("cookie-only login: %d %s %s",w.Code,w.Body.String(),w.Header().Get("Set-Cookie"))}
  var count int;if err=db.QueryRow(`SELECT count(*) FROM login_attempts WHERE attempts=5`).Scan(&count);err!=nil||count!=0 {t.Fatalf("failed attempts not cleared: %d %v",count,err)}
 }

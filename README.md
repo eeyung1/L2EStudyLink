@@ -6,7 +6,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 
 - **Language**: Go, using the **Gin** web framework (`github.com/gin-gonic/gin`)
 - **Pattern**: hybrid app — server-rendered HTML pages via `router.LoadHTMLGlob("templates/*.html")` for the UI shell, plus a JSON REST API under `/api/v1/*` that page-level JavaScript calls via `fetch()`. Pages are "dumb" wrappers; real logic lives behind the API.
-- **Auth**: JWT (`github.com/golang-jwt/jwt/v5`), issued on login, sent as `Authorization: Bearer <token>`, verified by `middleware.AuthRequired`. Token is stored in the browser via `localStorage`.
+- **Auth**: JWT (`github.com/golang-jwt/jwt/v5`) issued on login and password reset in a 24-hour Secure, HttpOnly, SameSite=Strict cookie, verified by `middleware.AuthRequired`. Cookie-authenticated writes require a same-origin `Origin` header. Older Bearer tokens remain accepted until their existing 24-hour expiry; signed-in pages migrate them to cookies and clear browser token storage.
 - **Database**: PostgreSQL in production, SQLite schema is maintained for local use (`schema.sql` / `schema.sqlite`); `db/postgres.go` uses pgx's `database/sql` adapter in simple protocol mode to work through the production connection pooler.
 - **Frontend**: plain HTML, Tailwind CDN on signed-in pages, shared CSS for navigation and account pages, and vanilla JavaScript `fetch()` calls. No build step, no npm, no React/Vue. Dark mode uses a `localStorage` flag and manual style overrides.
 - **Hosting**: Render (`render.yaml`, `Procfile`, `start.sh`), also has a `Dockerfile`.
@@ -27,7 +27,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 
 ### Auth
 - Signup (`POST /api/v1/signup`) — bcrypt-hashed passwords, unique email enforced.
-- Login (`POST /api/v1/login`) — issues a 24-hour JWT.
+- Login (`POST /api/v1/login`) — issues a 24-hour JWT in an HttpOnly cookie; the JSON response does not expose it to page JavaScript. `POST /api/v1/logout` clears the cookie and browser cache scope. Legacy Bearer sessions move via `POST /api/v1/session/migrate` on their next page visit.
 - Self-service password reset (`POST /api/v1/forgot-password`, `POST /api/v1/reset-password`) — six-digit email code, 10-minute expiry, five attempts, one-minute resend cooldown and single-use reset. The code is stored as a keyed digest; the request endpoint gives the same response for known and unknown accounts. Successful reset signs the user in and opens their dashboard.
 - Password codes and booking emails use Brevo. Existing PostgreSQL databases create the password-reset table and index on startup. The project owner confirmed the live reset flow works after merging PR #11; this is user verification, not an automated end-to-end test.
 - JWT secret is loaded from an environment variable and validated at startup (fails fast if missing or left as the old placeholder).
@@ -121,7 +121,7 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 The dashboard profile uses an inline, keyboard accessible form with Save and Cancel, validation feedback, and fields labelled **Discord username** and **Bio**. The existing `discord_username` API field and account data remain compatible.
 
-Timetable and Reflections use a short (20 second) browser session cache of successful authenticated GET responses, keyed to a one-way fingerprint of the current token. Simultaneous reads of the same resource share one request; timetable blocks and reflections are loaded concurrently. The dashboard warms both personal pages after it becomes interactive. Successful timetable and reflection changes invalidate their affected cache entries before reloading, and logging out from those planning pages or the dashboard clears both cached resources. These personal responses are never stored in a shared server cache; different sign-ins cannot reuse another account's cached data. Creating the same timetable block on multiple days submits those independent days concurrently, with the Save button disabled until they settle. The PostgreSQL pool has a bounded maximum of eight open and three idle connections. The cache improves repeat navigation and reduces duplicate reads, but its short lifetime means a change made in another browser can take up to 20 seconds to appear.
+Timetable and Reflections use a short (20 second) browser session cache of successful authenticated GET responses, keyed to a one-way fingerprint of the current non-secret session scope (or a legacy token during migration). Simultaneous reads of the same resource share one request; timetable blocks and reflections are loaded concurrently. The dashboard warms both personal pages after it becomes interactive. Successful timetable and reflection changes invalidate their affected cache entries before reloading, and logging out from those planning pages or the dashboard clears both cached resources. These personal responses are never stored in a shared server cache; different sign-ins cannot reuse another account's cached data. Creating the same timetable block on multiple days submits those independent days concurrently, with the Save button disabled until they settle. The PostgreSQL pool has a bounded maximum of eight open and three idle connections. The cache improves repeat navigation and reduces duplicate reads, but its short lifetime means a change made in another browser can take up to 20 seconds to appear.
 
 `node --test static/js/read-api.test.cjs` verifies concurrent request sharing, account separation and invalidation, and is part of GitHub Actions alongside the Go tests.
 
@@ -173,8 +173,7 @@ Ranked roughly by how much they'd block real usage:
 
 > **Resolved and checked live (2026-09-24):** Render logs showed PostgreSQL `08P01` result-format mismatches and `26000` missing unnamed prepared statements across Projects, Collaborators, Timetable, and Reflections. The shared driver now avoids that prepared-statement protocol. After the owner opened the deployed pages, each affected endpoint returned HTTP 200 and no new query errors or HTTP 500 appeared in the observed logs. This confirms those requests during the check; monitor later traffic for recurrence.
 
-1. **JWT is stored in `localStorage`**, not an httpOnly cookie — vulnerable to token theft via XSS.
-2. **Account-specific login throttle is in place; broader IP-based abuse controls are still possible.** Shared or rotating identities can still generate aggregate load.
+1. **Account-specific login throttle is in place; broader IP-based abuse controls are still possible.** Shared or rotating identities can still generate aggregate load.
 
 ## Suggested Next Steps (in priority order)
 
@@ -182,7 +181,7 @@ Ranked roughly by how much they'd block real usage:
 2. Monitor Projects, Collaborators, Timetable, and Reflections for any recurrence of production query errors.
 3. Build and test deterministic weekly metrics from the current user’s data; document the week/timezone and missing-reflection rules.
 4. Obtain the planner reference prompt, choose a provider and budget, then deliver the scoped weekly planner API and mobile page in reviewable steps above.
-5. Address JWT storage before broad rollout; consider network-level rate limits for aggregate abuse.
+5. Confirm cookie sign-in, password reset, logout, and legacy-session migration in the deployed browser; consider network-level rate limits for aggregate abuse.
 
 ## Running Locally
 

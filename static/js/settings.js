@@ -1,4 +1,4 @@
-const token = localStorage.getItem('token');
+const token = sessionToken();
 if (!token) location.href = '/page/login';
 const headers = {Authorization: 'Bearer ' + token};
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -14,7 +14,7 @@ function notice(message, error = false) {
     box.textContent = message;
     box.className = error ? 'settings-notice error' : 'settings-notice';
 }
-async function logout() { localStorage.removeItem('token'); location.href = '/page/login'; }
+async function logout() { await endSession(token); }
 function toggleDark() {
     const dark = document.documentElement.classList.toggle('dark');
     localStorage.setItem('darkMode', dark);
