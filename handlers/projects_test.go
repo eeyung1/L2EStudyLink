@@ -69,7 +69,7 @@ func TestProjectCollaborationFlow(t *testing.T) {
 
 
     router := gin.New()
-    router.Use(func(c *gin.Context) { var uid int64; fmt.Sscan(c.GetHeader("X-Test-User"),&uid); c.Set("user_id",uid); c.Set("db",db); c.Next() })
+    router.Use(func(c *gin.Context) { var uid int64; fmt.Sscan(c.GetHeader("X-Test-User"),&uid); c.Set("user_id",uid); c.Set("db",projectdb.DB); c.Next() })
     router.POST("/projects",CreateProject)
     router.POST("/signup",Signup)
     router.GET("/projects",ListProjects)
