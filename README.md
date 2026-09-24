@@ -114,6 +114,12 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 ---
 
+## Skills and availability refinement — Implemented
+
+Skills have clear Edit and Remove controls with accessible labels and a responsive action layout. The Availability page shows weekly slots in a day-by-day presentation with a slot count, clearer Remove actions and an encouraging empty state. Availability reads retry briefly if the server is temporarily unavailable and offer an in-page retry when they still fail; writes are never automatically retried. The availability API now checks row scan and iteration errors and returns time values consistently as `HH:MM`.
+
+---
+
 ## Interface refresh — Implemented
 
 All signed-in pages now share the same navigation grouping, page title hierarchy, controls, spacing, focus states, responsive layouts, and light/dark surfaces. Dashboard, discovery, sessions, skills, availability, projects, Masterclass, timetable, reflections, and admin each have a clear page introduction. The timetable, session list, and reflections show clearer next actions and empty states. Login, signup, forgot password, and reset password have a consistent responsive presentation. The update changes presentation and page navigation cues; existing API contracts and booking or project workflows are preserved.
