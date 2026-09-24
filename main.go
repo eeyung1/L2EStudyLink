@@ -31,6 +31,7 @@ func main() {
 
     // Static assets (CSS, JS, images)
     router.Static("/static", "./static")
+    router.StaticFile("/sw.js", "./static/sw.js")
 
     // Static HTML pages
     router.LoadHTMLGlob("templates/*.html")

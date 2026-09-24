@@ -171,7 +171,7 @@ func CancelBooking(c *gin.Context) {
         return
     }
 
-    // Parse date (handle both YYYY-MM-DD and timestamp formats)
+    // Keep the stored local session date and time for notifications.
     dateStr := sessionDate
     if len(dateStr) > 10 {
         dateStr = dateStr[:10]
@@ -190,24 +190,13 @@ func CancelBooking(c *gin.Context) {
         }
     }
     
-    sessionDateTime, err := time.Parse("2006-01-02 15:04", dateStr+" "+timeStr)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format: " + err.Error()})
-        return
-    }
-
-    if time.Until(sessionDateTime) < 2*time.Hour {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Must cancel at least 2 hours before session"})
-        return
-    }
-
-    result, err := db.Exec("UPDATE bookings SET status = 'cancelled' WHERE id = $1 AND status IN ('pending','confirmed') AND session_date + start_time > NOW() + INTERVAL '2 hours'", bookingID)
+    result, err := db.Exec("UPDATE bookings SET status = 'cancelled' WHERE id = $1 AND status IN ('pending','confirmed') AND session_date + start_time > LOCALTIMESTAMP", bookingID)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cancel booking"})
         return
     }
     changed,_:=result.RowsAffected()
-    if changed==0 {c.JSON(http.StatusConflict,gin.H{"error":"Booking cannot be cancelled now"});return}
+    if changed==0 {c.JSON(http.StatusConflict,gin.H{"error":"Only upcoming pending or confirmed sessions can be cancelled"});return}
 
     // Get tutor and student details
     var tutorName, tutorEmail, tutorDiscord, studentName, studentEmail, studentDiscord string
@@ -255,7 +244,7 @@ func UpdateBookingStatus(c *gin.Context) {
         return
     }
     
-    result, err := db.Exec("UPDATE bookings SET status = $1 WHERE id = $2 AND (status='pending' OR (status='confirmed' AND $1='cancelled' AND session_date + start_time > NOW() + INTERVAL '2 hours'))", input.Status, bookingID)
+    result, err := db.Exec("UPDATE bookings SET status = $1 WHERE id = $2 AND status IN ('pending','confirmed') AND session_date + start_time > LOCALTIMESTAMP AND (($1='confirmed' AND status='pending') OR $1='cancelled')", input.Status, bookingID)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update status"})
         return
