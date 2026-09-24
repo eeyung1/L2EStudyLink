@@ -43,6 +43,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 ### Availability
 - Get/set weekly availability slots (`GET`/`PUT /api/v1/availability`), keyed by day-of-week + time range.
 - Availability accepts start/end times to the minute (for example 09:15–10:45). The browser offers hour and minute controls; the API validates the range and saves the whole schedule in a transaction so an invalid edit preserves existing hours.
+- On startup the app synchronizes the availability row ID sequence with existing rows under a database lock. This repairs databases whose sequence lagged behind imported rows and caused `availability_pkey` errors; database details remain in server logs instead of being shown in the page.
 
 ### Search
 - Search tutors by skill (`GET /api/v1/search`).
