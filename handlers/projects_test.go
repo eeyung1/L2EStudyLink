@@ -74,6 +74,7 @@ func TestProjectCollaborationFlow(t *testing.T) {
     router.POST("/projects/:id/requests",CreateProjectRequest)
     router.PUT("/project-requests/:id/status",RespondProjectRequest)
     router.PUT("/collaboration/preferences",SetCollaborationPreference)
+    router.GET("/collaborators",ListCollaborators)
     router.GET("/projects/:id",GetProject)
     call := func(user int64, method,path,body string) (int,map[string]interface{}) {
         t.Helper()
@@ -106,6 +107,16 @@ func TestProjectCollaborationFlow(t *testing.T) {
     if code != 403 { t.Fatalf("invite without opt-in: %d",code) }
     code, _ = call(invited,"PUT","/collaboration/preferences",`{"open_to_invites":true}`)
     if code != 200 { t.Fatalf("opt in: %d",code) }
+    if _,err:=db.Exec(`INSERT INTO skills(user_id,skill_name,proficiency) VALUES($1,'Design','advanced')`,invited);err!=nil {t.Fatal(err)}
+    if _,err:=db.Exec(`INSERT INTO availability(user_id,day_of_week,start_time,end_time) VALUES($1,1,'10:00','12:00')`,invited);err!=nil {t.Fatal(err)}
+    fellowsResponse:=httptest.NewRecorder()
+    fellowsRequest:=httptest.NewRequest("GET","/collaborators",nil)
+    fellowsRequest.Header.Set("X-Test-User",fmt.Sprint(owner))
+    router.ServeHTTP(fellowsResponse,fellowsRequest)
+    if fellowsResponse.Code!=200 {t.Fatalf("list opted-in fellows: %d %s",fellowsResponse.Code,fellowsResponse.Body.String())}
+    var fellows []struct { ID int64 `json:"id"`; Skills string `json:"skills"`; Availability []struct { Day int `json:"day_of_week"`; Start string `json:"start_time"` } `json:"availability"` }
+    if err:=json.Unmarshal(fellowsResponse.Body.Bytes(),&fellows);err!=nil {t.Fatal(err)}
+    if len(fellows)!=1 || fellows[0].ID!=invited || fellows[0].Skills!="Design" || len(fellows[0].Availability)!=1 || fellows[0].Availability[0].Start!="10:00" {t.Fatalf("unexpected opted-in fellows: %+v",fellows)}
     code, _ = call(owner,"POST",path,invite)
     if code != 201 { t.Fatalf("invite after opt-in: %d",code) }
     if err := db.QueryRow(`SELECT id FROM project_requests WHERE user_id=$1`,invited).Scan(&requestID);err!=nil{t.Fatal(err)}

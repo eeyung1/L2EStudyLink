@@ -136,18 +136,24 @@
         const daysShort = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
         function availabilityLabel(slots) { return slots?.length ? slots.map(a => `${daysShort[a.day_of_week]} ${a.start_time}–${a.end_time}`).join(' · ') : 'Schedule not set'; }
         async function loadDiscovery() {
-            try {
-                const headers = {'Authorization': `Bearer ${token}`};
-                const responses = await Promise.all(['/api/v1/projects','/api/v1/collaborators'].map(url => fetch(url,{headers})));
-                if (responses.some(r => !r.ok)) throw Error('Could not load recommendations');
-                const [projects,people] = await Promise.all(responses.map(r=>r.json()));
-                const skills = (currentUser.skills || []).map(s=>s.name.toLowerCase());
-                const score = text => skills.reduce((n,skill)=>n+(skill && text.toLowerCase().includes(skill) ? 1 : 0),0);
+            const headers = {'Authorization': `Bearer ${token}`};
+            const skills = (currentUser.skills || []).map(s=>s.name.toLowerCase());
+            const score = text => skills.reduce((n,skill)=>n+(skill && String(text || '').toLowerCase().includes(skill) ? 1 : 0),0);
+            const load = async (url) => {
+                const response = await fetch(url,{headers});
+                if (!response.ok) throw Error(`Request failed (${response.status})`);
+                return response.json();
+            };
+            const [projectResult, peopleResult] = await Promise.allSettled([load('/api/v1/projects'),load('/api/v1/collaborators')]);
+            if (projectResult.status === 'fulfilled') {
+                const projects = projectResult.value;
                 const rankedProjects = projects.filter(p=>p.status==='open' && p.owner_id!==currentUser.id).sort((a,b)=>score(b.roles_needed+' '+b.description)-score(a.roles_needed+' '+a.description)).slice(0,3);
-                const rankedPeople = people.sort((a,b)=>score(b.skills)-score(a.skills)).slice(0,3);
                 document.getElementById('discoveryProjects').innerHTML = rankedProjects.length ? rankedProjects.map(p=>`<article class="discovery-item"><h4>${escapeHtml(p.title)}</h4><p>${escapeHtml(p.roles_needed)} · ${escapeHtml(p.time_commitment)}</p><a href="/projects?project=${p.id}">View project →</a></article>`).join('') : '<p>No open projects yet. <a href="/projects">Post one on Projects</a>.</p>';
+            } else document.getElementById('discoveryProjects').innerHTML = '<p>Projects could not load. <button type="button" onclick="loadDiscovery()">Try again</button></p>';
+            if (peopleResult.status === 'fulfilled') {
+                const rankedPeople = peopleResult.value.sort((a,b)=>score(b.skills)-score(a.skills)).slice(0,3);
                 document.getElementById('discoveryPeople').innerHTML = rankedPeople.length ? rankedPeople.map(u=>`<article class="discovery-item"><h4>${escapeHtml(u.name)}</h4><p>Skills: ${escapeHtml(u.skills || 'Not listed')}</p><p>Available: ${escapeHtml(availabilityLabel(u.availability))}</p><a href="/projects#fellows">Explore fellows →</a></article>`).join('') : '<p>No fellows have opted in yet. <a href="/projects">Set your collaboration preference</a>.</p>';
-            } catch(e) { document.getElementById('discoveryProjects').textContent=e.message; document.getElementById('discoveryPeople').textContent=e.message; }
+            } else document.getElementById('discoveryPeople').innerHTML = '<p>Fellows could not load. <button type="button" onclick="loadDiscovery()">Try again</button></p>';
         }
         let currentUser = {};
         async function logout() { await clearPlanningCache(token); localStorage.removeItem('token'); location.href='/page/login'; }
