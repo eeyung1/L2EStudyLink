@@ -137,4 +137,5 @@ func TestProjectCollaborationFlow(t *testing.T) {
     var count int
     if err := db.QueryRow(`SELECT count(*) FROM project_members WHERE user_id=$1`,invited).Scan(&count);err!=nil || count!=1 { t.Fatalf("invited membership: %v, %d",err,count) }
     t.Run("booking outcomes and reviews",func(t *testing.T){testBookingOutcomeAndReview(t,projectdb.DB,owner,applicant,invited)})
+    t.Run("login throttling",func(t *testing.T){testLoginThrottle(t,projectdb.DB,owner)})
 }

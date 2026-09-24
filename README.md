@@ -31,6 +31,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - Self-service password reset (`POST /api/v1/forgot-password`, `POST /api/v1/reset-password`) — six-digit email code, 10-minute expiry, five attempts, one-minute resend cooldown and single-use reset. The code is stored as a keyed digest; the request endpoint gives the same response for known and unknown accounts. Successful reset signs the user in and opens their dashboard.
 - Password codes and booking emails use Brevo. Existing PostgreSQL databases create the password-reset table and index on startup. The project owner confirmed the live reset flow works after merging PR #11; this is user verification, not an automated end-to-end test.
 - JWT secret is loaded from an environment variable and validated at startup (fails fast if missing or left as the old placeholder).
+- Login limits each normalized email to five failed attempts within 15 minutes; further attempts return HTTP 429 until cooldown. Failure counters are keyed by a digest and stored in PostgreSQL so they survive restarts. A successful login clears that email's failures.
 
 ### Profile
 - View own profile (`GET /api/v1/me`) — includes skills list, bio, Discord username, rating, review/session counts.
@@ -173,7 +174,7 @@ Ranked roughly by how much they'd block real usage:
 > **Resolved and checked live (2026-09-24):** Render logs showed PostgreSQL `08P01` result-format mismatches and `26000` missing unnamed prepared statements across Projects, Collaborators, Timetable, and Reflections. The shared driver now avoids that prepared-statement protocol. After the owner opened the deployed pages, each affected endpoint returned HTTP 200 and no new query errors or HTTP 500 appeared in the observed logs. This confirms those requests during the check; monitor later traffic for recurrence.
 
 1. **JWT is stored in `localStorage`**, not an httpOnly cookie — vulnerable to token theft via XSS.
-2. **No rate limiting or lockout on `/api/v1/login`** — unlimited password guesses are possible.
+2. **Account-specific login throttle is in place; broader IP-based abuse controls are still possible.** Shared or rotating identities can still generate aggregate load.
 
 ## Suggested Next Steps (in priority order)
 
@@ -181,7 +182,7 @@ Ranked roughly by how much they'd block real usage:
 2. Monitor Projects, Collaborators, Timetable, and Reflections for any recurrence of production query errors.
 3. Build and test deterministic weekly metrics from the current user’s data; document the week/timezone and missing-reflection rules.
 4. Obtain the planner reference prompt, choose a provider and budget, then deliver the scoped weekly planner API and mobile page in reviewable steps above.
-5. Address JWT storage and login rate limiting before broad rollout.
+5. Address JWT storage before broad rollout; consider network-level rate limits for aggregate abuse.
 
 ## Running Locally
 
