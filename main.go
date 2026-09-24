@@ -117,6 +117,8 @@ func main() {
             protected.GET("/bookings", handlers.GetMyBookings)
             protected.DELETE("/bookings/:id", handlers.CancelBooking)
             protected.PUT("/bookings/:id/status", handlers.UpdateBookingStatus)
+            protected.PUT("/bookings/:id/outcome", handlers.CompleteBooking)
+            protected.POST("/bookings/:id/reviews", handlers.CreateReview)
             admin := protected.Group("/admin")
             admin.Use(middleware.AdminRequired)
             admin.GET("/stats", handlers.AdminStats)

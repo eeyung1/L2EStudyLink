@@ -18,6 +18,9 @@ var DB *sql.DB
 //go:embed project_schema.sql
 var projectSchema string
 
+//go:embed review_schema.sql
+var reviewSchema string
+
 func InitDB() error {
     // Get database URL from environment (Render sets this)
     dbURL := os.Getenv("DATABASE_URL")
@@ -69,6 +72,9 @@ func InitDB() error {
     }
     if _, err = DB.ExecContext(ctx, projectSchema); err != nil {
         return fmt.Errorf("failed to create project collaboration tables: %w", err)
+    }
+    if _, err = DB.ExecContext(ctx, reviewSchema); err != nil {
+        return fmt.Errorf("failed to create reviews table: %w", err)
     }
 
     log.Println("Database connected successfully")

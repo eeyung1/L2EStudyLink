@@ -50,6 +50,8 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 - List my bookings, as either tutor or student (`GET /api/v1/bookings`).
 - Cancel a booking (`DELETE /api/v1/bookings/:id`) — enforces a 2-hour cancellation cutoff before the session; notifies both parties.
 - Tutor confirms or cancels a booking (`PUT /api/v1/bookings/:id/status`) — only the tutor can change status; notifies both parties.
+- After a confirmed session ends, the tutor can record `completed` or `no_show` (`PUT /api/v1/bookings/:id/outcome`). A completed session updates both fellows' session counts; a reported no-show increments the student's no-show count. Outcomes are final and duplicate decisions are rejected.
+- The student can review a completed session once (`POST /api/v1/bookings/:id/reviews`, 1–5 stars and a 10–1000 character comment). The tutor's average rating and review count update in the same transaction. Review controls appear on My Study Sessions; the reviews table is created at startup on existing databases.
 
 ### Timetable & Reflections
 - Personal weekly timetable: add/list/delete time blocks (`GET`/`POST /api/v1/timetable`, `DELETE /api/v1/timetable/:id`). The read handler returns `HH:MM` times and an empty JSON array when there are no blocks.
@@ -72,18 +74,18 @@ Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable,
 
 ## AI Planner — Delivery Plan
 
-**Status:** planned; no planner routes, AI client, planner storage, or planner page exist yet. The reference `L2E_PLANNER_PROMPT_v2.md` is mentioned in earlier project notes but is not in this repository. Obtain and review it before implementing its detailed feedback format. The first release can use the existing timetable and reflections without waiting for automated scheduling.
+**Status:** planned; no planner routes, AI client, planner storage, or planner page exist yet. `L2E_PLANNER_PROMPT_v3.md` is the current reference prompt in this repository. It describes one person's history and must be adapted into a reusable, user-scoped planner before integration. The first release can use the existing timetable and reflections without waiting for automated scheduling.
 
 **First useful release:** an authenticated user chooses a past week and taps **Analyze my week**. The page shows a factual activity summary and concise coaching based only on that user's timetable and reflections, with a link to prior analyses. It distinguishes scheduled time, reflected activity, and missing reflections; a reflection's existence alone does not prove the full block was completed.
 
 1. **Define the output and metrics before calling a model.** Specify one user-owned week, timezone, empty-week behavior, and a versioned JSON response: scheduled blocks/minutes, reflected blocks, coverage percentage, factual highlights, suggested priorities, and one follow-up question. Compute counts and scheduled minutes in Go; do not infer actual hours worked or adherence from free-text reflections. Add tests for week boundaries, missing logs, and another user's data.
-2. **Prepare per-user context.** Read only the authenticated user's timetable, reflections, and selected prior summaries. Bound the date range and text size; treat reflection text as untrusted input and never allow it to override system instructions. Write a generic coaching prompt after obtaining the reference document. Keep the model responsible for qualitative feedback, not arithmetic.
+2. **Prepare per-user context.** Read only the authenticated user's timetable, reflections, and selected prior summaries. Bound the date range and text size; treat reflection text as untrusted input and never allow it to override system instructions. Adapt the v3 reference into a generic coaching prompt without distributing its author's personal history to other fellows. Keep the model responsible for qualitative feedback, not arithmetic.
 3. **Choose a provider and build a narrow client.** Keep the server-side key in an environment variable and never expose it to page JavaScript. Configure timeouts, output size, retries for transient failures, schema validation, and a useful failure response. Do not make an AI key mandatory for existing app startup while the planner is optional. Test with a fake HTTP provider before using a real key.
 4. **Persist and expose analyses.** Add a versioned PostgreSQL migration for planner analyses, plus the matching SQLite schema. Store user ID, week, deterministic metrics, validated model response, prompt/model version, and timestamps. Add `POST /api/v1/planner/analyze` and `GET /api/v1/planner/history`, scoped to the logged-in user; prevent duplicate submissions for the same week and set a per-user usage limit.
 5. **Build the phone-first planner page.** Render numbers and feedback from validated JSON as text, never model HTML. Show loading, empty, error, retry, and history states. Ensure keyboard access, readable charts/tables on narrow screens, and a clear distinction between observed activity and AI suggestions.
 6. **Pilot before expanding.** Compare generated summaries against sample weeks, check privacy boundaries and costs, and collect feedback from a small group. Only then consider recurring flags, daily views, scheduled reports, or an interactive follow-up conversation.
 
-**Decision for the first release:** on-demand weekly analyses using each user's own schedule. Define the user's timezone and whether they want a weekly goal before adding adherence or streak scores. Provider, budget, and the absent reference prompt still need product decisions; they do not block the deterministic metrics prototype.
+**Decision for the first release:** on-demand weekly analyses using each user's own schedule. Define the user's timezone and whether they want a weekly goal before adding adherence or streak scores. Provider and budget still need product decisions; they do not block the deterministic metrics prototype.
 
 ## Mobile UX — Delivery Plan
 
@@ -170,10 +172,8 @@ Ranked roughly by how much they'd block real usage:
 
 > **Resolved and checked live (2026-09-24):** Render logs showed PostgreSQL `08P01` result-format mismatches and `26000` missing unnamed prepared statements across Projects, Collaborators, Timetable, and Reflections. The shared driver now avoids that prepared-statement protocol. After the owner opened the deployed pages, each affected endpoint returned HTTP 200 and no new query errors or HTTP 500 appeared in the observed logs. This confirms those requests during the check; monitor later traffic for recurrence.
 
-1. **Reviews table exists in schema but has no handler or route.** `rating` and `total_reviews` are displayed, but users cannot submit a review.
-2. **JWT is stored in `localStorage`**, not an httpOnly cookie — vulnerable to token theft via XSS.
-3. **No rate limiting or lockout on `/api/v1/login`** — unlimited password guesses are possible.
-4. **No booking completion / no-show flow.** The schema supports `completed` and `no_show`, but no handler transitions bookings to those states.
+1. **JWT is stored in `localStorage`**, not an httpOnly cookie — vulnerable to token theft via XSS.
+2. **No rate limiting or lockout on `/api/v1/login`** — unlimited password guesses are possible.
 
 ## Suggested Next Steps (in priority order)
 
@@ -181,7 +181,7 @@ Ranked roughly by how much they'd block real usage:
 2. Monitor Projects, Collaborators, Timetable, and Reflections for any recurrence of production query errors.
 3. Build and test deterministic weekly metrics from the current user’s data; document the week/timezone and missing-reflection rules.
 4. Obtain the planner reference prompt, choose a provider and budget, then deliver the scoped weekly planner API and mobile page in reviewable steps above.
-5. Add booking completion and reviews. Address JWT storage and login rate limiting before broad rollout.
+5. Address JWT storage and login rate limiting before broad rollout.
 
 ## Running Locally
 
