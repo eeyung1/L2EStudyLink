@@ -119,8 +119,8 @@ func Login(c *gin.Context) {
         return
     }
 
+    if err:=SetSession(c,tokenString);err!=nil {c.JSON(500,gin.H{"error":"Failed to start session"});return}
     c.JSON(http.StatusOK, gin.H{
-        "token": tokenString,
         "user": gin.H{
             "id":   user.ID,
             "name": user.Name,

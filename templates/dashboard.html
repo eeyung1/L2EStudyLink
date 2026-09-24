@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="/static/css/ui-polish.css">
     <script src="/static/js/mobile-nav.js" defer></script>
     <style>body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; }</style>
+    <script src="/static/js/session.js"></script>
 </head>
 <body>
     <div class="app-shell">
@@ -129,7 +130,7 @@
 
     <script src="/static/js/read-api.js"></script>
     <script>
-        const token = localStorage.getItem('token');
+        const token = sessionToken();
         if (!token) window.location.href = '/page/login';
 
         function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -156,7 +157,7 @@
             } else document.getElementById('discoveryPeople').innerHTML = '<div class="discovery-error" role="status"><span class="discovery-error-icon" aria-hidden="true">↻</span><div><strong>Fellows are unavailable right now</strong><p>Projects are still shown above. Please try loading fellows again.</p></div><button class="discovery-retry" type="button" onclick="loadDiscovery()">↻ Retry fellows</button></div>';
         }
         let currentUser = {};
-        async function logout() { await clearPlanningCache(token); localStorage.removeItem('token'); location.href='/page/login'; }
+        async function logout() { await endSession(token); }
         function initials(name) {
             if (!name) return '?';
             return name.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('');

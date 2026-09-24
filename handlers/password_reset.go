@@ -216,5 +216,6 @@ func ResetPassword(c *gin.Context) {
         c.JSON(http.StatusOK, gin.H{"message": "Password updated. Please sign in."})
         return
     }
-    c.JSON(http.StatusOK, gin.H{"message": "Password updated", "token": signed, "user": gin.H{"id": userID, "name": name}})
+    if err:=SetSession(c,signed);err!=nil {c.JSON(http.StatusOK,gin.H{"message":"Password updated. Please sign in."});return}
+    c.JSON(http.StatusOK, gin.H{"message": "Password updated", "user": gin.H{"id": userID, "name": name}})
 }

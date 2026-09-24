@@ -96,6 +96,7 @@ func main() {
         api.POST("/login", handlers.Login)
         api.POST("/forgot-password", handlers.ForgotPassword)
         api.POST("/reset-password", handlers.ResetPassword)
+        api.POST("/logout", handlers.Logout)
         api.GET("/ping", func(c *gin.Context) {
             c.JSON(200, gin.H{"message": "pong"})
         })
@@ -107,6 +108,7 @@ func main() {
         protected.Use(middleware.AuthRequired)
         {
             protected.GET("/me", handlers.GetProfile)
+            protected.POST("/session/migrate", handlers.MigrateSession)
             protected.PUT("/profile", handlers.UpdateProfile)
             protected.POST("/skills", handlers.AddSkill)
             protected.DELETE("/skills/:skill", handlers.RemoveSkill)
