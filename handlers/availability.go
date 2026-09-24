@@ -3,7 +3,7 @@ package handlers
 import (
     "database/sql"
     "net/http"
-    "time"
+    "log"
 
     "github.com/gin-gonic/gin"
 )
@@ -63,34 +63,41 @@ func GetAvailability(c *gin.Context) {
     userID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
 
-    rows, err := db.Query(`
-        SELECT day_of_week, start_time, end_time 
-        FROM availability 
-        WHERE user_id = $1 
+    rows, err := db.QueryContext(c.Request.Context(), `
+        SELECT day_of_week, CAST(start_time AS TEXT), CAST(end_time AS TEXT)
+        FROM availability
+        WHERE user_id = $1
         ORDER BY day_of_week, start_time
     `, userID)
-    
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch availability"})
+        log.Printf("fetch availability for user %d: %v", userID, err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Availability is temporarily unavailable"})
         return
     }
     defer rows.Close()
 
-    var slots []AvailabilitySlot
+    slots := []AvailabilitySlot{}
     for rows.Next() {
         var slot AvailabilitySlot
-        var startTime, endTime time.Time
-        rows.Scan(&slot.DayOfWeek, &startTime, &endTime)
-        
-        // Format times as HH:MM
-        slot.StartTime = startTime.Format("15:04")
-        slot.EndTime = endTime.Format("15:04")
+        var startTime, endTime string
+        if err := rows.Scan(&slot.DayOfWeek, &startTime, &endTime); err != nil {
+            log.Printf("scan availability for user %d: %v", userID, err)
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read availability"})
+            return
+        }
+        if len(startTime) < 5 || len(endTime) < 5 {
+            log.Printf("invalid availability time for user %d", userID)
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read availability"})
+            return
+        }
+        slot.StartTime = startTime[:5]
+        slot.EndTime = endTime[:5]
         slots = append(slots, slot)
     }
-
-    if slots == nil {
-        slots = []AvailabilitySlot{}
+    if err := rows.Err(); err != nil {
+        log.Printf("iterate availability for user %d: %v", userID, err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read availability"})
+        return
     }
-
     c.JSON(http.StatusOK, slots)
 }

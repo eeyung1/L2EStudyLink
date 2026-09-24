@@ -112,3 +112,37 @@ html.dark .sidebar-nav a.sidebar-link.active { color:#c5dcff !important; }
 html.dark .sidebar-nav a.sidebar-link:hover { color:#fff !important; }
 html.dark .workspace-header-link:hover { background:#325482; }
 html.dark .main-content .bg-white .text-gray-500 { color:#b4c4dc !important; }
+/* Profile settings: calm, distinct controls with clear touch targets. */
+.settings-page .settings-skill { padding:17px 0; border-bottom:1px solid var(--line); }
+.settings-skill-info { display:flex; align-items:center; gap:13px; min-width:0; }
+.settings-skill-info strong { font-size:15px; overflow-wrap:anywhere; }
+.settings-skill-icon { width:38px; height:38px; border-radius:11px; flex:none; display:grid; place-items:center; color:#215ed1; background:#eaf1ff; font-size:17px; }
+.settings-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.settings-page .settings-action { appearance:none; display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:41px; padding:8px 13px; border:1px solid #bed1ef; border-radius:10px; background:#edf4ff; color:#1d4eab; text-decoration:none; width:auto; margin:0; font:700 13px 'DM Sans',sans-serif; cursor:pointer; white-space:nowrap; }
+.settings-page .settings-action:hover { background:#dceaff; border-color:#7fa9e8; }
+.settings-page .settings-action-danger { background:#fff8f7; color:#a23b42; border-color:#efccd0; }
+.settings-page .settings-action-danger:hover { background:#ffe9e8; border-color:#e9a4a9; }
+.settings-page .settings-action:disabled { opacity:.55; cursor:wait; }
+.weekly-heading { display:flex; align-items:center; justify-content:space-between; gap:15px; margin-bottom:20px; }
+.weekly-heading .workspace-eyebrow { margin-bottom:5px; }
+.weekly-heading h2 { margin:0 0 3px; }
+.weekly-count { flex:none; padding:10px 14px; border-radius:999px; background:#e8f1ff; color:#1e50ae; font-weight:800; font-size:12px; }
+.settings-page .weekly-slot { display:flex; align-items:center; gap:16px; border:1px solid var(--line); border-radius:13px; padding:12px 14px; margin-bottom:10px; background:#fbfdff; }
+.weekly-day { display:grid; place-items:center; flex:none; width:45px; height:45px; border-radius:11px; background:#eaf1ff; color:#2456ae; font-size:12px; font-weight:800; text-transform:uppercase; }
+.weekly-slot-text { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+.weekly-slot-text strong { font-size:14px; }
+.weekly-slot-text span { color:#61748d; font-size:13px; }
+.weekly-empty { text-align:center; background:#f6faff; border:1px dashed #b8cbea; border-radius:14px; padding:28px 15px; }
+.weekly-empty > span { font-size:26px; color:#ca8c32; display:block; margin-bottom:7px; }
+.weekly-empty strong { font:600 20px Fraunces,Georgia,serif; display:block; margin-bottom:5px; }
+.weekly-empty p { margin:0 0 12px; color:#64748b; }
+.settings-page .avail-form { border:1px solid var(--line); border-radius:14px; padding:22px; margin-top:25px; }
+.settings-page .avail-form h3 { margin:0 0 2px; }
+.settings-page .avail-form .page-sub { margin-bottom:15px; }
+html.dark .settings-skill-icon,html.dark .weekly-day,html.dark .weekly-count { background:#294b77; color:#d7e8ff; }
+html.dark .settings-page .settings-action { background:#28486e; color:#deebff; border-color:#456f9f; }
+html.dark .settings-page .settings-action-danger { background:#4a3038; color:#ffc7c9; border-color:#78505c; }
+html.dark .settings-page .weekly-slot,html.dark .weekly-empty { background:#233249; border-color:var(--line); color:#f1f5fc; }
+html.dark .weekly-slot-text span,html.dark .weekly-empty p { color:#c0ccdc; }
+html.dark .settings-page .avail-form { background:#1c2b40; border-color:var(--line); }
+@media(max-width:600px){.settings-page .settings-skill { align-items:flex-start; flex-direction:column; }.settings-actions { width:100%; }.settings-page .settings-actions .settings-action { flex:1; }.weekly-heading { align-items:flex-start; flex-direction:column; }.settings-page .weekly-slot { flex-wrap:wrap; }.settings-page .weekly-slot .settings-action { margin-left:auto; }.settings-page .avail-form { padding:16px; }}

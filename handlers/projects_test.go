@@ -41,6 +41,19 @@ func TestProjectCollaborationFlow(t *testing.T) {
         if err != nil { t.Fatal(err) }
     }
     defer db.Exec(`DELETE FROM users WHERE id IN ($1,$2,$3)`,owner,applicant,invited)
+    t.Run("availability reads stored hours", func(t *testing.T) {
+        if _,err:=db.Exec(`INSERT INTO availability(user_id,day_of_week,start_time,end_time) VALUES($1,0,'09:00','11:00')`,owner);err!=nil {t.Fatal(err)}
+        defer db.Exec(`DELETE FROM availability WHERE user_id=$1`,owner)
+        r:=gin.New()
+        r.Use(func(c *gin.Context){c.Set("db",db);c.Set("user_id",owner);c.Next()})
+        r.GET("/availability",GetAvailability)
+        response:=httptest.NewRecorder()
+        r.ServeHTTP(response,httptest.NewRequest("GET","/availability",nil))
+        if response.Code!=200 {t.Fatalf("availability response: %d %s",response.Code,response.Body.String())}
+        var slots []AvailabilitySlot
+        if err:=json.Unmarshal(response.Body.Bytes(),&slots);err!=nil {t.Fatal(err)}
+        if len(slots)!=1||slots[0].DayOfWeek!=0||slots[0].StartTime!="09:00"||slots[0].EndTime!="11:00" {t.Fatalf("unexpected availability: %+v",slots)}
+    })
     t.Run("skill edit belongs to owner", func(t *testing.T) {
         if _,err:=db.Exec(`INSERT INTO skills(user_id,skill_name,proficiency) VALUES($1,'Go','beginner')`,owner);err!=nil {t.Fatal(err)}
         r:=gin.New()
