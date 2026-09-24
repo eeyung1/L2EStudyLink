@@ -82,9 +82,28 @@ func InitDB() error {
     if _, err = DB.ExecContext(ctx, loginSchema); err != nil {
         return fmt.Errorf("failed to create login attempts table: %w", err)
     }
+    if err = RepairAvailabilitySequence(ctx); err != nil {
+        return fmt.Errorf("failed to repair availability IDs: %w", err)
+    }
 
     log.Println("Database connected successfully")
     return nil
+}
+
+// RepairAvailabilitySequence handles databases where imported availability rows
+// have IDs higher than the next value of the SERIAL sequence. The table lock
+// keeps concurrent application instances from inserting during this repair.
+func RepairAvailabilitySequence(ctx context.Context) error {
+    var exists bool
+    if err := DB.QueryRowContext(ctx, `SELECT to_regclass('availability') IS NOT NULL`).Scan(&exists); err != nil { return err }
+    if !exists { return nil }
+    tx, err := DB.BeginTx(ctx, nil)
+    if err != nil { return err }
+    defer tx.Rollback()
+    if _, err = tx.ExecContext(ctx, `LOCK TABLE availability IN SHARE ROW EXCLUSIVE MODE`); err != nil { return err }
+    _, err = tx.ExecContext(ctx, `SELECT setval(pg_get_serial_sequence('availability', 'id'), COALESCE(MAX(id), 0) + 1, false) FROM availability`)
+    if err != nil { return err }
+    return tx.Commit()
 }
 
 func CloseDB() {

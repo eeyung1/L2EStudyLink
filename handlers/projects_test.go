@@ -1,6 +1,7 @@
 package handlers
 
 import (
+    "context"
     "database/sql"
     "encoding/json"
     "fmt"
@@ -41,6 +42,18 @@ func TestProjectCollaborationFlow(t *testing.T) {
         if err != nil { t.Fatal(err) }
     }
     defer db.Exec(`DELETE FROM users WHERE id IN ($1,$2,$3)`,owner,applicant,invited)
+    t.Run("availability sequence follows existing IDs",func(t *testing.T){
+        var highest int64
+        if err:=db.QueryRow(`SELECT COALESCE(MAX(id),0)+1000 FROM availability`).Scan(&highest);err!=nil {t.Fatal(err)}
+        if _,err:=db.Exec(`INSERT INTO availability(id,user_id,day_of_week,start_time,end_time) VALUES($1,$2,1,'07:15','08:45')`,highest,owner);err!=nil {t.Fatal(err)}
+        defer db.Exec(`DELETE FROM availability WHERE id=$1`,highest)
+        if _,err:=db.Exec(`SELECT setval(pg_get_serial_sequence('availability','id'),1,false)`);err!=nil {t.Fatal(err)}
+        if err:=projectdb.RepairAvailabilitySequence(context.Background());err!=nil {t.Fatal(err)}
+        var created int64
+        if err:=db.QueryRow(`INSERT INTO availability(user_id,day_of_week,start_time,end_time) VALUES($1,2,'09:15','10:45') RETURNING id`,owner).Scan(&created);err!=nil {t.Fatalf("insert after sequence repair: %v",err)}
+        defer db.Exec(`DELETE FROM availability WHERE id=$1`,created)
+        if created<=highest {t.Fatalf("new ID %d did not follow existing %d",created,highest)}
+    })
     t.Run("availability reads stored hours", func(t *testing.T) {
         if _,err:=db.Exec(`INSERT INTO availability(user_id,day_of_week,start_time,end_time) VALUES($1,0,'09:00','11:00')`,owner);err!=nil {t.Fatal(err)}
         defer db.Exec(`DELETE FROM availability WHERE user_id=$1`,owner)

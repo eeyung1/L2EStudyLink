@@ -61,7 +61,8 @@ func SetAvailability(c *gin.Context) {
         `, userID, slot.DayOfWeek, startTime, endTime)
         
         if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save availability: " + err.Error()})
+            log.Printf("save availability for user %d: %v",userID,err)
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save your hours. Please try again."})
             return
         }
     }
