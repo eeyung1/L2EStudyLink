@@ -201,3 +201,20 @@ html.dark .reflection-feedback-success { background:#12372c; border-color:#27634
 html.dark .reflection-feedback-icon { background:#20543d; color:#bbf7d0; }
 html.dark .reflection-feedback-error { background:#4a2231; border-color:#a94d6b; color:#ffe4e6; }
 @media(max-width:560px) { .reflection-feedback-success { flex-wrap:wrap; } .reflection-feedback a { width:100%; margin-left:47px; } }
+
+.timetable-delete-dialog { width:min(440px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); overflow:auto; box-sizing:border-box; padding:26px; border:1px solid #e4cad0; border-radius:18px; background:#fff; color:#24344d; box-shadow:0 28px 80px rgba(16,24,40,.28); }
+.timetable-delete-dialog::backdrop { background:rgba(14,27,47,.72); }
+.timetable-delete-icon { display:grid; place-items:center; width:42px; height:42px; border-radius:12px; background:#fff1f2; color:#b42338; font-weight:900; font-size:23px; }
+.timetable-delete-dialog h2 { margin:17px 0 8px; color:#172944; font-family:Fraunces,Georgia,serif; font-size:25px; }
+.timetable-delete-dialog p { line-height:1.55; font-size:14px; }
+.timetable-delete-label { padding:11px 13px; border-radius:10px; background:#f3f7fd; color:#263b58; font-weight:800; }
+.timetable-delete-actions { display:flex; gap:10px; margin-top:21px; }
+.timetable-delete-actions button { min-height:46px; padding:10px 14px; border-radius:10px; font:700 13px 'DM Sans',sans-serif; cursor:pointer; }
+.timetable-delete-cancel { flex:1; border:1px solid #cbd5e1; background:#fff; color:#304460; }
+.timetable-delete-confirm { flex:1.6; border:1px solid #b42338; background:#b42338; color:#fff; }
+.timetable-delete-confirm:hover { background:#8e192e; }
+html.dark .timetable-delete-dialog { background:#1d2a3e; border-color:#654554; color:#e2e8f0; }
+html.dark .timetable-delete-dialog h2 { color:#f5f8ff; }
+html.dark .timetable-delete-label { background:#273952; color:#e2e8f0; }
+html.dark .timetable-delete-cancel { background:#273952; border-color:#52647d; color:#f5f8ff; }
+@media(max-width:480px) { .timetable-delete-dialog { padding:20px; } .timetable-delete-actions { flex-direction:column-reverse; } .timetable-delete-actions button { width:100%; } }
