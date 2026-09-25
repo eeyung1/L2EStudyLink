@@ -37,7 +37,7 @@ func main() {
     router.LoadHTMLGlob("templates/*.html")
     
     router.GET("/", func(c *gin.Context) {
-        c.Redirect(302, "/page/login")
+        c.HTML(200, "landing.html", nil)
     })
     
     router.GET("/skills", func(c *gin.Context) { c.HTML(200, "skills.html", nil) })
