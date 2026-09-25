@@ -94,6 +94,7 @@
 
 
             <button onclick="showAddBlock()" class="workspace-primary mb-6">+ Add time block</button>
+            <div id="timetableNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden></div>
             <div id="reflectionSavedNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden>
                 <span class="reflection-feedback-icon" aria-hidden="true">✓</span>
                 <span><strong>Reflection saved</strong><span>Your progress is recorded. You can view it on the Reflections page.</span></span>
@@ -133,10 +134,23 @@
             <input type="text" id="blockActivity" placeholder="Activity" class="timetable-form-field w-full p-2 border rounded mb-3">
             <label for="blockGoal" class="block text-sm font-medium mb-1 text-gray-700">Goal (optional)</label>
             <textarea id="blockGoal" rows="2" placeholder="Goal (optional)" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
-            <button id="saveBlockButton" onclick="saveTimeBlock()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
+            <div id="blockFormError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
+            <button id="saveBlockButton" onclick="saveTimeBlock()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save time block</button>
             <button onclick="closeAddModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
         </div>
     </div>
+
+    <dialog id="deleteBlockDialog" class="timetable-delete-dialog" aria-labelledby="deleteBlockTitle" aria-describedby="deleteBlockDescription">
+        <div class="timetable-delete-icon" aria-hidden="true">!</div>
+        <h2 id="deleteBlockTitle">Delete time block?</h2>
+        <p id="deleteBlockDescription">This will permanently delete the block and every reflection saved for it, including reflections from previous weeks. This cannot be undone.</p>
+        <p id="deleteBlockLabel" class="timetable-delete-label"></p>
+        <div id="deleteBlockError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
+        <div class="timetable-delete-actions">
+            <button type="button" id="cancelDeleteBlock" class="timetable-delete-cancel">Keep block</button>
+            <button type="button" id="confirmDeleteBlock" class="timetable-delete-confirm">Delete block and reflections</button>
+        </div>
+    </dialog>
 
     <div id="reflectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
@@ -228,12 +242,12 @@
 
                             html += `
                                 <div class="bg-gray-50 p-3 rounded mb-2">
-                                    <p><span class="font-bold">${block.start_time} - ${block.end_time}</span></p>
+                                    <p><span class="font-bold block-time">${block.start_time} - ${block.end_time}</span></p>
                                     <p><strong>Activity:</strong> ${escapeHtml(block.activity)}</p>
                                     ${block.goal ? `<p class="text-gray-600"><strong>Goal:</strong> ${escapeHtml(block.goal)}</p>` : ''}
                                     <div class="flex gap-2 mt-2">
                                         ${reflectionButton}
-                                        <button onclick="deleteBlock(${block.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Delete</button>
+                                        <button onclick="deleteBlock(${block.id}, this)" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Delete</button>
                                     </div>
                                 </div>
                             `;
@@ -269,6 +283,9 @@
         window.showAddBlock = function() {
             document.getElementById('addModal').classList.remove('hidden');
             document.getElementById('addModal').classList.add('flex');
+            const error = document.getElementById('blockFormError');
+            error.hidden = true;
+            error.textContent = '';
             document.getElementById('blockStart').value = '09:00';
             document.getElementById('blockEnd').value = '10:00';
             document.getElementById('blockActivity').value = '';
@@ -285,16 +302,33 @@
         window.saveTimeBlock = async function() {
             const start = document.getElementById('blockStart').value;
             const end = document.getElementById('blockEnd').value;
-            const activity = document.getElementById('blockActivity').value;
+            const activity = document.getElementById('blockActivity').value.trim();
             const goal = document.getElementById('blockGoal').value;
-
-            if (selectedDays.size === 0) { alert('Select at least one day'); return; }
-            if (!activity) { alert('Enter activity'); return; }
-            if (start >= end) { alert('End time must be after start'); return; }
+            const error = document.getElementById('blockFormError');
+            error.hidden = true;
+            if (selectedDays.size === 0) {
+                error.textContent = 'Choose at least one day for this block.';
+                error.hidden = false;
+                document.querySelector('#dayPicker .day-chip').focus();
+                return;
+            }
+            if (!activity) {
+                error.textContent = 'Add an activity for this block.';
+                error.hidden = false;
+                document.getElementById('blockActivity').focus();
+                return;
+            }
+            if (!start || !end || start >= end) {
+                error.textContent = 'Set an end time later than the start time.';
+                error.hidden = false;
+                document.getElementById('blockEnd').focus();
+                return;
+            }
 
             const button = document.getElementById('saveBlockButton');
             if (button.disabled) return;
             button.disabled = true;
+            button.textContent = 'Saving…';
             const selectedDaysArr = [...selectedDays];
             // Different days are independent; submit them concurrently.
             const outcomes = await Promise.allSettled(selectedDaysArr.map(async day => {
@@ -312,29 +346,86 @@
                 if (!res.ok) throw Error('Could not save ' + days[day]);
             }));
             button.disabled = false;
+            button.textContent = 'Save time block';
             const successCount = outcomes.filter(outcome => outcome.status === 'fulfilled').length;
             const failedDays = selectedDaysArr.filter((_, index) => outcomes[index].status === 'rejected').map(day => days[day]);
 
             if (successCount) await invalidateReadCache(['/api/v1/timetable'], token);
-            closeAddModal();
-            loadTimetable();
-
-            if (failedDays.length === 0) {
-                alert(successCount > 1 ? `Time block added to ${successCount} days!` : 'Time block added!');
-            } else {
-                alert(`Added to ${successCount} day(s). Failed for: ${failedDays.join(', ')}`);
+            if (successCount) await loadTimetable();
+            if (failedDays.length) {
+                selectedDaysArr.forEach((day, index) => {
+                    if (outcomes[index].status === 'fulfilled') {
+                        selectedDays.delete(day);
+                        document.querySelector(`#dayPicker .day-chip[data-day="${day}"]`).classList.remove('selected');
+                    }
+                });
+                error.textContent = successCount
+                    ? `Saved ${successCount} day(s). Could not save ${failedDays.join(', ')}. Try again for the remaining day(s).`
+                    : `Could not save ${failedDays.join(', ')}. Please try again.`;
+                error.hidden = false;
+                return;
             }
+            closeAddModal();
+            const notice = document.getElementById('timetableNotice');
+            notice.textContent = successCount > 1 ? `Time block added to ${successCount} days.` : 'Time block added.';
+            notice.hidden = false;
         };
 
-        window.deleteBlock = async function(id) {
-            if (!confirm('Delete this block and every reflection linked to it? This cannot be undone.')) return;
-            const res = await fetch(`/api/v1/timetable/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (res.ok) { await invalidateReadCache(['/api/v1/timetable', '/api/v1/reflections'], token); loadTimetable(); }
-            else alert('Failed to delete');
+        const deleteDialog = document.getElementById('deleteBlockDialog');
+        let pendingDeleteId = null;
+        let deleteTrigger = null;
+        deleteDialog.addEventListener('cancel', event => {
+            if (document.getElementById('confirmDeleteBlock').disabled) event.preventDefault();
+        });
+        document.getElementById('cancelDeleteBlock').addEventListener('click', () => deleteDialog.close());
+        deleteDialog.addEventListener('close', () => {
+            pendingDeleteId = null;
+            if (deleteTrigger?.isConnected) deleteTrigger.focus();
+            deleteTrigger = null;
+        });
+
+        window.deleteBlock = function(id, trigger) {
+            pendingDeleteId = id;
+            deleteTrigger = trigger;
+            const block = trigger.closest('.bg-gray-50');
+            const day = trigger.closest('.timetable-day-card').querySelector('h3').textContent.replace(' · Today', '');
+            document.getElementById('deleteBlockLabel').textContent = `${day}, ${block.querySelector('.block-time').textContent}`;
+            const error = document.getElementById('deleteBlockError');
+            error.hidden = true;
+            error.textContent = '';
+            deleteDialog.showModal();
+            document.getElementById('cancelDeleteBlock').focus();
         };
+
+        document.getElementById('confirmDeleteBlock').addEventListener('click', async () => {
+            if (pendingDeleteId === null) return;
+            const confirmButton = document.getElementById('confirmDeleteBlock');
+            const cancelButton = document.getElementById('cancelDeleteBlock');
+            confirmButton.disabled = true;
+            cancelButton.disabled = true;
+            confirmButton.textContent = 'Deleting…';
+            try {
+                const res = await fetch(`/api/v1/timetable/${pendingDeleteId}`, {
+                    method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Could not delete the block. Please try again.');
+                await invalidateReadCache(['/api/v1/timetable', '/api/v1/reflections'], token);
+                deleteDialog.close();
+                await loadTimetable();
+                const notice = document.getElementById('timetableNotice');
+                notice.textContent = 'Time block and its linked reflections deleted.';
+                notice.hidden = false;
+                document.querySelector('[onclick="showAddBlock()"]')?.focus();
+            } catch (failure) {
+                const error = document.getElementById('deleteBlockError');
+                error.textContent = failure.message;
+                error.hidden = false;
+            } finally {
+                confirmButton.disabled = false;
+                cancelButton.disabled = false;
+                confirmButton.textContent = 'Delete block and reflections';
+            }
+        });
 
         window.openReflection = function(blockId, activity, date) {
             currentBlockId = blockId;
