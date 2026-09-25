@@ -24,4 +24,10 @@ body { font-family:'Inter',system-ui,sans-serif; background:#f4f7fc; }
 :where(a,button,input):focus-visible { outline:3px solid #3c7ae8;outline-offset:3px; }
 @media(max-width:860px){.login-panel{flex-direction:column;gap:25px;justify-content:center;align-items:center}.mobile-auth-brand{display:block}.login-card{width:min(100%,440px)}}
 @media(max-width:480px){.login-panel{padding:24px 14px}.login-card{padding:28px 22px}.hero-wordmark{font-size:32px}}
+@media(max-width:860px){
+    .login-shell .login-panel { min-height:100svh; padding-block:40px; background:radial-gradient(circle at 83% 6%,#32629c 0,transparent 32%),linear-gradient(160deg,#111f36 0%,#172e4d 48%,#eaf0f8 48%,#f4f7fc 100%); }
+    .login-shell .mobile-auth-brand { color:#fff; align-self:center; text-shadow:0 2px 12px rgba(0,0,0,.16); }
+    .login-shell .mobile-auth-brand span { color:#a8caff; }
+    .login-shell .login-card { box-shadow:0 22px 55px rgba(15,35,67,.19); }
+}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
