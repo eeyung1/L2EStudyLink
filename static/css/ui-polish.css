@@ -188,3 +188,16 @@ html.dark .profile-edit-form label {color:#e5edf9;}
 html.dark .profile-cancel-button {background:#283d58;color:#eff5ff;border-color:#49627f;}
 
 .booking-notice{padding:1rem 1.25rem;border-radius:12px;margin:0 0 1rem;font-weight:600}.booking-notice-success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}.booking-notice-error{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}.booking-notice[hidden]{display:none}
+
+.reflection-feedback { display:flex; align-items:center; gap:13px; padding:14px 17px; margin:0 0 18px; border:1px solid #a7d7c2; border-radius:13px; background:#ecfdf5; color:#14532d; line-height:1.4; }
+.reflection-feedback[hidden] { display:none; }
+.reflection-feedback-icon { display:grid; place-items:center; flex:none; width:34px; height:34px; border-radius:50%; background:#d1fae5; color:#047857; font-size:19px; font-weight:800; }
+.reflection-feedback strong,.reflection-feedback span span { display:block; }
+.reflection-feedback strong { font-size:14px; }
+.reflection-feedback span span { margin-top:2px; font-size:13px; }
+.reflection-feedback a { margin-left:auto; color:inherit; font-size:13px; font-weight:800; white-space:nowrap; }
+.reflection-feedback-error { display:block; margin:0 0 12px; background:#fff1f2; border-color:#fecdd3; color:#9f1239; font-size:14px; }
+html.dark .reflection-feedback-success { background:#12372c; border-color:#27634c; color:#d1fae5; }
+html.dark .reflection-feedback-icon { background:#20543d; color:#bbf7d0; }
+html.dark .reflection-feedback-error { background:#4a2231; border-color:#a94d6b; color:#ffe4e6; }
+@media(max-width:560px) { .reflection-feedback-success { flex-wrap:wrap; } .reflection-feedback a { width:100%; margin-left:47px; } }

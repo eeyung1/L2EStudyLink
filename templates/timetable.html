@@ -94,6 +94,11 @@
 
 
             <button onclick="showAddBlock()" class="workspace-primary mb-6">+ Add time block</button>
+            <div id="reflectionSavedNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden>
+                <span class="reflection-feedback-icon" aria-hidden="true">✓</span>
+                <span><strong>Reflection saved</strong><span>Your progress is recorded. You can view it on the Reflections page.</span></span>
+                <a href="/reflections">View reflections <span aria-hidden="true">→</span></a>
+            </div>
             <nav class="timetable-day-nav" aria-label="Jump to a day">
                 <a href="#day-0">Mon</a><a href="#day-1">Tue</a><a href="#day-2">Wed</a><a href="#day-3">Thu</a>
                 <a href="#day-4">Fri</a><a href="#day-5">Sat</a><a href="#day-6">Sun</a>
@@ -143,7 +148,8 @@
             <textarea id="reflectionChallenges" rows="2" placeholder="Challenges faced?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
             <label for="reflectionLearnings" class="block text-sm font-medium mb-1 text-gray-700">What did you learn?</label>
             <textarea id="reflectionLearnings" rows="2" placeholder="What did you learn?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
-            <button onclick="saveReflection()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save</button>
+            <div id="reflectionFormError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
+            <button id="saveReflectionButton" onclick="saveReflection()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save reflection</button>
             <button onclick="closeReflectionModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
         </div>
     </div>
@@ -321,7 +327,7 @@
         };
 
         window.deleteBlock = async function(id) {
-            if (!confirm('Delete this block?')) return;
+            if (!confirm('Delete this block and every reflection linked to it? This cannot be undone.')) return;
             const res = await fetch(`/api/v1/timetable/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': 'Bearer ' + token }
@@ -333,8 +339,11 @@
         window.openReflection = function(blockId, activity, date) {
             currentBlockId = blockId;
             currentBlockDate = date;
-            document.getElementById('reflectionTitle').innerHTML = `Reflection: ${activity}`;
-            document.getElementById('reflectionDate').innerHTML = `For: ${date}`;
+            document.getElementById('reflectionTitle').textContent = `Reflection: ${activity}`;
+            document.getElementById('reflectionDate').textContent = `For: ${date}`;
+            const error = document.getElementById('reflectionFormError');
+            error.hidden = true;
+            error.textContent = '';
             document.getElementById('reflectionSummary').value = '';
             document.getElementById('reflectionChallenges').value = '';
             document.getElementById('reflectionLearnings').value = '';
@@ -348,31 +357,41 @@
         };
 
         window.saveReflection = async function() {
-            const summary = document.getElementById('reflectionSummary').value;
+            const summary = document.getElementById('reflectionSummary').value.trim();
             const challenges = document.getElementById('reflectionChallenges').value;
             const learnings = document.getElementById('reflectionLearnings').value;
-            if (!summary) { alert('Please add a summary'); return; }
-
-            const res = await fetch('/api/v1/reflections', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify({
-                    timetable_id: currentBlockId,
-                    log_date: currentBlockDate,
-                    summary,
-                    challenges,
-                    learnings
-                })
-            });
-
-            if (res.ok) {
+            const error = document.getElementById('reflectionFormError');
+            error.hidden = true;
+            if (!summary) {
+                error.textContent = 'Add what you did before saving your reflection.';
+                error.hidden = false;
+                document.getElementById('reflectionSummary').focus();
+                return;
+            }
+            const button = document.getElementById('saveReflectionButton');
+            if (button.disabled) return;
+            button.disabled = true;
+            button.textContent = 'Saving…';
+            try {
+                const res = await fetch('/api/v1/reflections', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ timetable_id: currentBlockId, log_date: currentBlockDate, summary, challenges, learnings })
+                });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || 'Could not save your reflection. Please try again.');
+                }
                 await invalidateReadCache(['/api/v1/reflections'], token);
                 closeReflectionModal();
-                loadTimetable();
-                alert('Reflection saved!');
-            } else {
-                const data = await res.json();
-                alert('Failed: ' + (data.error || 'Unknown error'));
+                document.getElementById('reflectionSavedNotice').hidden = false;
+                await loadTimetable();
+            } catch (failure) {
+                error.textContent = failure.message;
+                error.hidden = false;
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Save reflection';
             }
         };
 
