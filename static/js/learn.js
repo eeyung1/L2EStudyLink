@@ -16,8 +16,9 @@
   };
   if (list) {
     getJSON('/api/v1/articles').then(({articles}) => {
-      document.getElementById('articles-status').textContent = articles.length ? '' : 'New guides are on the way.';
-      for (const item of articles) {
+      const readingList=articles.length>1 ? articles.filter(item=>item.slug!=='start-an-agentic-workflow') : articles;
+      document.getElementById('articles-status').textContent = readingList.length ? '' : 'New guides are on the way.';
+      for (const item of readingList) {
         const card = document.createElement('a'); card.className = 'article-tile'; card.href = '/learn/' + encodeURIComponent(item.slug);
         addText(card,'span',item.category,'tile-category');
         addText(card,'h2',item.title);
