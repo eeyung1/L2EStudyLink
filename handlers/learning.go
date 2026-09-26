@@ -49,33 +49,40 @@ func ListLearningComments(c *gin.Context) {
     err:=db.QueryRowContext(c.Request.Context(),`SELECT id FROM learning_articles WHERE slug=$1`,c.Param("slug")).Scan(&articleID)
     if errors.Is(err,sql.ErrNoRows) {c.JSON(404,gin.H{"error":"Article not found"});return}
     if err!=nil {c.JSON(500,gin.H{"error":"Could not load comments"});return}
-    rows,err:=db.QueryContext(c.Request.Context(),`SELECT lc.id,u.name,lc.body,lc.created_at FROM learning_comments lc JOIN users u ON u.id=lc.user_id WHERE lc.article_id=$1 ORDER BY lc.created_at DESC,lc.id DESC LIMIT 100`,articleID)
+    rows,err:=db.QueryContext(c.Request.Context(),`SELECT lc.id,u.name,lc.body,lc.created_at,lc.parent_id FROM learning_comments lc JOIN users u ON u.id=lc.user_id WHERE lc.article_id=$1 ORDER BY lc.created_at DESC,lc.id DESC LIMIT 200`,articleID)
     if err!=nil {c.JSON(500,gin.H{"error":"Could not load comments"});return}
     defer rows.Close()
     comments:=make([]gin.H,0)
     for rows.Next() {
-        var id int64; var name,body string; var created time.Time
-        if err=rows.Scan(&id,&name,&body,&created);err!=nil {c.JSON(500,gin.H{"error":"Could not load comments"});return}
-        comments=append(comments,gin.H{"id":id,"name":name,"body":body,"created_at":created})
+        var id int64; var name,body string; var created time.Time; var parent sql.NullInt64
+        if err=rows.Scan(&id,&name,&body,&created,&parent);err!=nil {c.JSON(500,gin.H{"error":"Could not load comments"});return}
+        var parentID any
+        if parent.Valid {parentID=parent.Int64}
+        comments=append(comments,gin.H{"id":id,"name":name,"body":body,"created_at":created,"parent_id":parentID})
     }
     if rows.Err()!=nil {c.JSON(500,gin.H{"error":"Could not load comments"});return}
     c.JSON(200,gin.H{"comments":comments})
 }
 
 func AddLearningComment(c *gin.Context) {
-    var input struct { Body string `json:"body"` }
+    var input struct { Body string `json:"body"`; ParentID *int64 `json:"parent_id"` }
     if c.ShouldBindJSON(&input)!=nil {c.JSON(400,gin.H{"error":"Write a comment or question"});return}
     input.Body=strings.TrimSpace(input.Body)
     length:=utf8.RuneCountInString(input.Body)
     if length<3||length>1200 {c.JSON(400,gin.H{"error":"Use 3 to 1200 characters"});return}
+    if input.ParentID!=nil && *input.ParentID<1 {c.JSON(400,gin.H{"error":"Invalid reply target"});return}
     db:=c.MustGet("db").(*sql.DB)
     var id int64
-    err:=db.QueryRowContext(c.Request.Context(),`INSERT INTO learning_comments(article_id,user_id,body,minute_bucket) SELECT a.id,$2,$3,FLOOR(EXTRACT(EPOCH FROM NOW())/60)::bigint FROM learning_articles a JOIN users u ON u.id=$2 AND NOT COALESCE(u.is_suspended,FALSE) WHERE a.slug=$1 RETURNING id`,c.Param("slug"),c.GetInt64("user_id"),input.Body).Scan(&id)
-    if errors.Is(err,sql.ErrNoRows) {c.JSON(403,gin.H{"error":"Commenting is unavailable for this account or article"});return}
+    err:=db.QueryRowContext(c.Request.Context(),`INSERT INTO learning_comments(article_id,user_id,body,parent_id,minute_bucket)
+        SELECT a.id,$2,$3,$4,FLOOR(EXTRACT(EPOCH FROM NOW())/60)::bigint
+        FROM learning_articles a JOIN users u ON u.id=$2 AND NOT COALESCE(u.is_suspended,FALSE)
+        LEFT JOIN learning_comments p ON p.id=$4 AND p.article_id=a.id AND p.parent_id IS NULL
+        WHERE a.slug=$1 AND ($4::bigint IS NULL OR p.id IS NOT NULL) RETURNING id`,c.Param("slug"),c.GetInt64("user_id"),input.Body,input.ParentID).Scan(&id)
+    if errors.Is(err,sql.ErrNoRows) {c.JSON(404,gin.H{"error":"Article or comment not found, or commenting is unavailable"});return}
     var pgErr *pgconn.PgError
     if errors.As(err,&pgErr)&&pgErr.Code=="23505" {c.JSON(429,gin.H{"error":"Please wait a minute before posting again"});return}
     if err!=nil {c.JSON(500,gin.H{"error":"Could not post comment"});return}
-    c.JSON(201,gin.H{"id":id,"message":"Posted publicly"})
+    c.JSON(201,gin.H{"id":id,"parent_id":input.ParentID,"message":"Posted publicly"})
 }
 
 func PublishLearningArticle(c *gin.Context) {
