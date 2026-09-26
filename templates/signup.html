@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/login.css">
     <link rel="stylesheet" href="/static/css/auth-polish.css">
+    <script src="/static/js/learning-return.js"></script>
 </head>
 <body>
     <div class="login-shell">
@@ -67,13 +68,14 @@
                     <label class="product-email-choice"><input type="checkbox" id="productEmails"> Email me occasional product updates and goal-setting tips. Optional; I can turn this off later.</label>
                     <button type="submit" class="btn-primary">Sign up</button>
                 </form>
-                <p class="signup-note">Already have an account? <a href="/page/login">Log in</a></p>
+                <p class="signup-note">Already have an account? <a id="login-link" href="/page/login">Log in</a></p>
                 <div id="error" class="login-error hidden" role="alert"></div>
                 <div id="success" class="login-error hidden" role="status" aria-live="polite" style="color:#15803d;"></div>
             </div>
         </main>
     </div>
     <script>
+        preserveLearningReturn('#login-link', '/page/login');
         document.getElementById('signupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -100,7 +102,7 @@
                     successDiv.textContent = 'Account created! Redirecting to login...';
                     successDiv.classList.remove('hidden');
                     setTimeout(() => {
-                        window.location.href = '/page/login';
+                        window.location.href = '/page/login?next=' + encodeURIComponent(learningReturnPath());
                     }, 2000);
                 } else {
                     errorDiv.textContent = data.error || 'Signup failed';

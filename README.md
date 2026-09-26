@@ -32,6 +32,8 @@ The public landing page now links to **Learning Hub** (`/learn`). Visitors can r
 
 Any signed-in fellow can ask a question or comment on an article. Comments appear publicly with the account name, newest first. Posting is limited to one comment per account per minute, with a 3–1200 character limit; text is rendered as text, not HTML. An admin can publish further plain-text articles and remove comments in the Admin dashboard. Publishing is immediate, so admins should review article text before submitting. The public API is `GET /api/v1/articles`, `GET /api/v1/articles/:slug`, and `GET /api/v1/articles/:slug/comments`; authenticated posting is `POST /api/v1/articles/:slug/comments`; admin routes are `POST /api/v1/admin/articles` and `DELETE /api/v1/admin/articles/comments/:id`.
 
+After signing in, fellows arrive at `/learn`, with **Dashboard** at the top right. The dashboard opens the existing study workspace, and every signed-in sidebar has a **Learning Hub** link back to `/learn`. Public home, hub, and article pages show Dashboard in place of guest account links when a valid session exists. If someone signs in or signs up from an article, the safe `next=/learn/...` route takes them back to that article after login so they can comment. Other `next` values are ignored.
+
 PostgreSQL creates the two new tables and seeds the first guide on startup through `db/learning_schema.sql`; fresh PostgreSQL and SQLite schemas include equivalent tables. The first guide is seeded only if its slug is absent. This initial release has simple rate limiting and admin removal; further moderation tools, abuse monitoring, search, and notifications can follow once real discussion volume warrants them.
 
 ### Auth

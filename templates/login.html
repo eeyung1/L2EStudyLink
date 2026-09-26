@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/login.css">
     <link rel="stylesheet" href="/static/css/auth-polish.css">
+    <script src="/static/js/learning-return.js"></script>
 </head>
 <body>
     <div class="login-shell">
@@ -90,7 +91,7 @@
                     <button type="submit" class="btn-primary">Sign in</button>
                 </form>
 
-                <p class="signup-note">Don't have an account? <a href="/page/signup">Sign up</a></p>
+                <p class="signup-note">Don't have an account? <a id="signup-link" href="/page/signup">Sign up</a></p>
 
                 <div id="error" class="login-error hidden"></div>
             </div>
@@ -98,6 +99,7 @@
     </div>
 
     <script>
+        preserveLearningReturn('#signup-link', '/page/signup');
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -118,7 +120,7 @@
 
                 if (response.ok) {
                     localStorage.removeItem('token');
-                    window.location.href = '/dashboard';
+                    window.location.href = learningReturnPath();
                 } else {
                     errorDiv.textContent = data.error || 'Login failed';
                     errorDiv.classList.remove('hidden');
