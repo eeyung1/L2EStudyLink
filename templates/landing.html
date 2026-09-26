@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/landing.css">
     <script src="/static/js/pwa.js" defer></script>
+    <script src="/static/js/public-nav.js" defer></script>
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -22,8 +23,9 @@
             <a class="brand" href="/" aria-label="L2EStudyLink home">L2E<span>Study</span>Link<span class="brand-mark" aria-hidden="true">✦</span></a>
             <nav class="header-actions" aria-label="Account">
                 <a class="header-login" href="/learn">Learning Hub</a>
-                <a class="header-login" href="/page/login">Log in</a>
-                <a class="button button-light header-signup" href="/page/signup">Get started <span aria-hidden="true">↗</span></a>
+                <a class="header-login guest-only" href="/page/login">Log in</a>
+                <a class="button button-light header-signup guest-only" href="/page/signup">Get started <span aria-hidden="true">↗</span></a>
+                <a class="button button-light member-only" href="/dashboard">Dashboard <span aria-hidden="true">↗</span></a>
             </nav>
         </header>
 
@@ -86,6 +88,6 @@
         </div>
     </section>
 
-    <footer class="site-footer shell"><a class="brand footer-brand" href="/">L2E<span>Study</span>Link</a><p>Learn together. Grow with intention.</p><a href="/learn">Learning Hub</a><a href="/page/login">Log in</a></footer>
+    <footer class="site-footer shell"><a class="brand footer-brand" href="/">L2E<span>Study</span>Link</a><p>Learn together. Grow with intention.</p><a href="/learn">Learning Hub</a><a class="guest-only" href="/page/login">Log in</a><a class="member-only" href="/dashboard">Dashboard</a></footer>
 </body>
 </html>

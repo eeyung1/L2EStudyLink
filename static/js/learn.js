@@ -29,6 +29,10 @@
   }
   if (!article) return;
   const slug = decodeURIComponent(location.pathname.split('/').pop());
+  const articleReturn = encodeURIComponent(location.pathname);
+  for (const link of document.querySelectorAll('.article-signup, #join-prompt a[href="/page/signup"]')) link.href='/page/signup?next='+articleReturn;
+  const signInLink = document.querySelector('#join-prompt a[href="/page/login"]');
+  if (signInLink) signInLink.href='/page/login?next='+articleReturn;
   const comments = document.getElementById('comments');
   const status = document.getElementById('comments-status');
   const renderComments = async () => {
