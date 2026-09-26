@@ -186,9 +186,11 @@ CREATE TABLE IF NOT EXISTS learning_comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     article_id INTEGER NOT NULL REFERENCES learning_articles(id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    parent_id INTEGER REFERENCES learning_comments(id) ON DELETE CASCADE,
     body TEXT NOT NULL,
     minute_bucket INTEGER NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, minute_bucket)
 );
 CREATE INDEX IF NOT EXISTS idx_learning_comments_article ON learning_comments(article_id, created_at, id);
+CREATE INDEX IF NOT EXISTS idx_learning_comments_parent ON learning_comments(parent_id);
