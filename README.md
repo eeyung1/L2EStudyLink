@@ -26,6 +26,14 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 
 ## Features Implemented So Far
 
+### Learning Hub — public guides and discussion
+
+The public landing page now links to **Learning Hub** (`/learn`). Visitors can read the article list and individual guides (`/learn/:slug`) without an account. The initial published guide covers a practical agentic coding workflow: choose a small outcome, supply context, define checks, review the changes, and verify the user flow. This editorial content is separate from private timetable reflections; no personal reflection is published automatically.
+
+Any signed-in fellow can ask a question or comment on an article. Comments appear publicly with the account name, newest first. Posting is limited to one comment per account per minute, with a 3–1200 character limit; text is rendered as text, not HTML. An admin can publish further plain-text articles and remove comments in the Admin dashboard. Publishing is immediate, so admins should review article text before submitting. The public API is `GET /api/v1/articles`, `GET /api/v1/articles/:slug`, and `GET /api/v1/articles/:slug/comments`; authenticated posting is `POST /api/v1/articles/:slug/comments`; admin routes are `POST /api/v1/admin/articles` and `DELETE /api/v1/admin/articles/comments/:id`.
+
+PostgreSQL creates the two new tables and seeds the first guide on startup through `db/learning_schema.sql`; fresh PostgreSQL and SQLite schemas include equivalent tables. The first guide is seeded only if its slug is absent. This initial release has simple rate limiting and admin removal; further moderation tools, abuse monitoring, search, and notifications can follow once real discussion volume warrants them.
+
 ### Auth
 - Signup (`POST /api/v1/signup`) — bcrypt-hashed passwords, unique email enforced.
 - Login (`POST /api/v1/login`) — issues a 24-hour JWT in an HttpOnly cookie; the JSON response does not expose it to page JavaScript. `POST /api/v1/logout` clears the cookie and browser cache scope. Legacy Bearer sessions move via `POST /api/v1/session/migrate` on their next page visit.

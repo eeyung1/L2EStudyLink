@@ -39,6 +39,8 @@ func main() {
     router.GET("/", func(c *gin.Context) {
         c.HTML(200, "landing.html", nil)
     })
+    router.GET("/learn", func(c *gin.Context) { c.HTML(200, "learn.html", nil) })
+    router.GET("/learn/:slug", func(c *gin.Context) { c.HTML(200, "article.html", nil) })
     
     router.GET("/skills", func(c *gin.Context) { c.HTML(200, "skills.html", nil) })
     router.GET("/availability", func(c *gin.Context) { c.HTML(200, "availability.html", nil) })
@@ -104,11 +106,15 @@ func main() {
         api.GET("/search", handlers.SearchTutors)
         api.GET("/search-with-availability", handlers.SearchTutorsWithAvailability)
         api.GET("/tutors/:id", handlers.GetTutorProfile)
+        api.GET("/articles", handlers.ListLearningArticles)
+        api.GET("/articles/:slug", handlers.GetLearningArticle)
+        api.GET("/articles/:slug/comments", handlers.ListLearningComments)
 
         protected := api.Group("/")
         protected.Use(middleware.AuthRequired)
         {
             protected.GET("/me", handlers.GetProfile)
+            protected.POST("/articles/:slug/comments", handlers.AddLearningComment)
             protected.POST("/session/migrate", handlers.MigrateSession)
             protected.PUT("/profile", handlers.UpdateProfile)
             protected.PUT("/me/product-emails", handlers.SetProductEmails)
@@ -132,6 +138,8 @@ func main() {
             admin.DELETE("/users/:id", handlers.AdminDeleteUser)
             admin.PUT("/users/:id/suspend", handlers.AdminToggleSuspend)
             admin.GET("/bookings", handlers.AdminBookings)
+            admin.POST("/articles", handlers.PublishLearningArticle)
+            admin.DELETE("/articles/comments/:id", handlers.RemoveLearningComment)
             
             // Timetable routes
             protected.GET("/timetable", handlers.GetTimetable)

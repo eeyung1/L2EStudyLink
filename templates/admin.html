@@ -104,6 +104,22 @@
         </div>
 
         <!-- Users Table -->
+        <section class="card" aria-labelledby="learningHeading" style="margin-bottom:1.5rem">
+            <h2 id="learningHeading">Learning Hub</h2>
+            <p>Publish a plain-text guide for everyone to read. Comments and questions are public; remove inappropriate posts using the comment ID.</p>
+            <form id="publishArticle" class="grid gap-3" style="margin-top:1rem">
+                <label>Title <input required name="title" maxlength="180" minlength="5" class="w-full p-3 rounded border" placeholder="A useful guide for fellows"></label>
+                <label>URL slug <input required name="slug" maxlength="120" pattern="[a-z0-9]+(-[a-z0-9]+)*" class="w-full p-3 rounded border" placeholder="a-useful-guide"></label>
+                <label>Category <input required name="category" maxlength="40" class="w-full p-3 rounded border" value="Practical guide"></label>
+                <label>Short summary <textarea required name="summary" minlength="10" maxlength="300" class="w-full p-3 rounded border" rows="2"></textarea></label>
+                <label>Article text <textarea required name="body" minlength="80" maxlength="20000" class="w-full p-3 rounded border" rows="9" placeholder="Separate paragraphs with a blank line"></textarea></label>
+                <button class="workspace-primary" type="submit">Publish guide</button>
+            </form>
+            <p id="publishStatus" role="status" aria-live="polite"></p>
+            <form id="removeArticleComment" class="flex flex-wrap gap-3 items-end" style="margin-top:1.5rem"><label>Comment ID <input required name="id" type="number" min="1" class="p-3 rounded border" placeholder="e.g. 12"></label><button class="workspace-primary" type="submit">Remove comment</button></form>
+            <p id="removeCommentStatus" role="status" aria-live="polite"></p>
+            <a href="/learn" target="_blank" rel="noopener">View public Learning Hub ↗</a>
+        </section>
         <section class="card" aria-labelledby="updatesHeading" style="margin-bottom:1.5rem"><h2 id="updatesHeading">Product email audience</h2><p>Only active fellows who chose product emails are included. Import this list into a Brevo email campaign; Brevo handles unsubscribe links.</p><p id="productAudience" role="status" aria-live="polite">Loading eligible count…</p><a id="downloadAudience" class="workspace-primary" href="/api/v1/admin/product-email-audience.csv" download hidden>Download consented emails (CSV)</a></section>
         <div class="bg-white rounded-lg shadow p-6 mb-8">
             <h2 class="text-2xl font-bold mb-4">Users</h2>
@@ -136,6 +152,29 @@
     </div>
 
     <script>
+        document.getElementById('publishArticle').addEventListener('submit',async event => {
+            event.preventDefault();
+            const form=event.currentTarget, status=document.getElementById('publishStatus'), button=form.querySelector('button');
+            button.disabled=true;status.textContent='Publishing…';
+            try {
+                const data=Object.fromEntries(new FormData(form));
+                const response=await fetch('/api/v1/admin/articles',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+                const result=await response.json();
+                if(!response.ok) throw new Error(result.error || 'Could not publish');
+                status.replaceChildren(document.createTextNode('Published: '));
+                const link=document.createElement('a');link.href='/learn/'+encodeURIComponent(result.slug);link.textContent='View guide';status.append(link);
+                form.reset();
+            } catch(error) {status.textContent=error.message;} finally {button.disabled=false;}
+        });
+        document.getElementById('removeArticleComment').addEventListener('submit',async event => {
+            event.preventDefault();
+            const form=event.currentTarget,status=document.getElementById('removeCommentStatus');
+            const id=new FormData(form).get('id');
+            if(!confirm('Remove public comment #'+id+'?')) return;
+            const response=await fetch('/api/v1/admin/articles/comments/'+encodeURIComponent(id),{method:'DELETE',credentials:'same-origin'});
+            const result=await response.json();status.textContent=response.ok?'Comment removed.':result.error||'Could not remove comment';
+            if(response.ok) form.reset();
+        });
         const token = sessionToken();
         if (!token) {
             window.location.href = '/page/login';
