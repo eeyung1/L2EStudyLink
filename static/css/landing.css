@@ -62,6 +62,14 @@ a { color:inherit; }
 .feature-card:nth-child(3) .feature-icon { background:#dff5e9; color:#167153; }
 .feature-card h3 { margin:0 0 8px; font:600 21px 'Fraunces',Georgia,serif; }
 .feature-card p { margin:0; color:var(--muted); font-size:14px; line-height:1.65; }
+.learn-teaser { padding-block:10px 95px; display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:50px; }
+.learn-teaser .section-kicker { color:#ad7832; }
+.learn-teaser h2 { font:600 clamp(32px,4vw,51px)/1.14 'Fraunces',Georgia,serif;letter-spacing:-.035em;margin:0; }
+.learn-teaser p:not(.section-kicker) { color:var(--muted);font-size:16px;line-height:1.75;margin:20px 0 26px; }
+.teaser-card { display:flex;flex-direction:column;gap:18px;padding:36px;border-radius:22px;background:#162b47;color:#f8fafc;text-decoration:none;box-shadow:0 20px 45px #14284627; }
+.teaser-card span { color:#e9bc74;font-size:11px;font-weight:800;letter-spacing:.14em; }
+.teaser-card strong { font:600 clamp(26px,3vw,38px)/1.2 'Fraunces',Georgia,serif; }
+.teaser-card small { color:#c8d7e8;font-size:14px;line-height:1.6; }.teaser-card b { color:#f1cb8c;font-size:14px; }
 .future-section { padding-block:75px; background:#e9eff6; }
 .future-inner { display:grid; grid-template-columns:1fr .8fr; align-items:center; gap:60px; }
 .future-inner p:not(.section-kicker) { color:#465b73; font-size:16px; line-height:1.75; margin:0 0 20px; }
@@ -72,12 +80,15 @@ a { color:inherit; }
 .footer-brand span { color:#2c61be; }
 .site-footer p,.site-footer > a:last-child { color:#536b80; font-size:13px; }
 @media(max-width:900px) {
+    .learn-teaser { gap:26px; }
     .hero { grid-template-columns:1fr; gap:60px; padding-block:69px 80px; }
     .hero h1 { max-width:750px; }
     .hero-visual { max-width:610px; width:100%; margin-inline:auto; }
     .future-inner { gap:28px; }
 }
 @media(max-width:640px) {
+    .learn-teaser { grid-template-columns:1fr;gap:30px;padding-bottom:70px; }.teaser-card{padding:25px;}
+    .header-actions .header-login:first-child { display:none; }
     .shell { width:min(100% - 36px,520px); }
     .site-header { min-height:74px; gap:8px; }
     .brand { font-size:21px; }

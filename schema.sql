@@ -162,3 +162,24 @@ CREATE TABLE IF NOT EXISTS project_members (
     joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(project_id, user_id)
 );
+
+-- Public Learning Hub. Existing Postgres databases create these on startup.
+CREATE TABLE IF NOT EXISTS learning_articles (
+    id SERIAL PRIMARY KEY,
+    slug VARCHAR(120) NOT NULL UNIQUE,
+    title VARCHAR(180) NOT NULL,
+    summary VARCHAR(300) NOT NULL,
+    category VARCHAR(40) NOT NULL DEFAULT 'Guide',
+    body TEXT NOT NULL,
+    published_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS learning_comments (
+    id SERIAL PRIMARY KEY,
+    article_id INT NOT NULL REFERENCES learning_articles(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    body VARCHAR(1200) NOT NULL,
+    minute_bucket BIGINT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(user_id, minute_bucket)
+);
+CREATE INDEX IF NOT EXISTS idx_learning_comments_article ON learning_comments(article_id, created_at, id);

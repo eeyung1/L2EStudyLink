@@ -24,6 +24,9 @@ var reviewSchema string
 //go:embed login_schema.sql
 var loginSchema string
 
+//go:embed learning_schema.sql
+var learningSchema string
+
 func InitDB() error {
     // Get database URL from environment (Render sets this)
     dbURL := os.Getenv("DATABASE_URL")
@@ -86,6 +89,9 @@ func InitDB() error {
     }
     if _, err = DB.ExecContext(ctx, loginSchema); err != nil {
         return fmt.Errorf("failed to create login attempts table: %w", err)
+    }
+    if _, err = DB.ExecContext(ctx, learningSchema); err != nil {
+        return fmt.Errorf("failed to create learning hub tables: %w", err)
     }
     if err = RepairAvailabilitySequence(ctx); err != nil {
         return fmt.Errorf("failed to repair availability IDs: %w", err)
