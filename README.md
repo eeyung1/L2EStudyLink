@@ -74,6 +74,7 @@ PostgreSQL creates the two new tables and seeds the first guide on startup throu
 - The student can review a completed session once (`POST /api/v1/bookings/:id/reviews`, 1–5 stars and a 10–1000 character comment). The tutor's average rating and review count update in the same transaction. Review controls appear on My Study Sessions; the reviews table is created at startup on existing databases.
 
 ### Timetable & Reflections
+- The timetable opens on today’s blocks using the user’s device date. Day buttons show only the selected day; **All** shows the full week. The selection stays active after adding/deleting blocks or saving a reflection, with accessible controls on desktop and phones.
 - Personal weekly timetable: add/list/delete time blocks (`GET`/`POST /api/v1/timetable`, `DELETE /api/v1/timetable/:id`). The read handler returns `HH:MM` times and an empty JSON array when there are no blocks.
 - Reflections tied to a timetable block and date, upsert-style (creating a reflection for an existing block+date updates it) (`POST`/`GET /api/v1/reflections`). The read handler returns `YYYY-MM-DD` dates, `HH:MM` times, and an empty JSON array when there are no reflections.
 - Saving a reflection from the timetable shows a styled, accessible confirmation with a link to the Reflections page; validation and save errors appear within the form instead of browser alert dialogs.
