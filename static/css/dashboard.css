@@ -447,7 +447,11 @@
     flex-wrap: wrap;
 }
 
-.timetable-day-nav { display: none; }
+.timetable-day-nav { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; margin: 0 0 16px; }
+.timetable-day-nav button { min-height: 44px; border: 0; border-radius: 11px; background: #eff6ff; color: #1d4ed8; font-weight: 800; cursor: pointer; }
+.timetable-day-nav button[aria-pressed="true"] { background: #1d4ed8; color: #fff; }
+.timetable-day-nav button:focus-visible { outline: 3px solid #60a5fa; outline-offset: 2px; }
+.timetable-day-card[hidden] { display: none !important; }
 .timetable-day-card { scroll-margin-top: 80px; }
 
 .day-chip {
@@ -596,7 +600,7 @@ html.dark .day-chip.selected {
         gap: 8px;
         margin: 0 0 16px;
     }
-    .timetable-day-nav a {
+    .timetable-day-nav button {
         min-height: 44px;
         display: flex;
         align-items: center;
@@ -606,7 +610,7 @@ html.dark .day-chip.selected {
         color: #1d4ed8;
         font-weight: 600;
     }
-    .timetable-day-nav a[aria-current="date"] { background: #1d4ed8; color: #fff; }
+    .timetable-day-nav button[aria-pressed="true"] { background: #1d4ed8; color: #fff; }
 }
 
 @media (min-width: 481px) {
@@ -614,8 +618,8 @@ html.dark .day-chip.selected {
 }
 
 .admin-table-scroll:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-html.dark .timetable-day-nav a { background: #1e3a5f; color: #bfdbfe !important; }
-html.dark .timetable-day-nav a[aria-current="date"] { background: #2563eb; color: #fff !important; }
+html.dark .timetable-day-nav button { background: #1e3a5f; color: #bfdbfe !important; }
+html.dark .timetable-day-nav button[aria-pressed="true"] { background: #2563eb; color: #fff !important; }
 
 .reflection-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
 .reflection-filters.hidden { display: none; }

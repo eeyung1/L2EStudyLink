@@ -101,9 +101,15 @@
                 <span><strong>Reflection saved</strong><span>Your progress is recorded. You can view it on the Reflections page.</span></span>
                 <a href="/reflections">View reflections <span aria-hidden="true">→</span></a>
             </div>
-            <nav class="timetable-day-nav" aria-label="Jump to a day">
-                <a href="#day-0">Mon</a><a href="#day-1">Tue</a><a href="#day-2">Wed</a><a href="#day-3">Thu</a>
-                <a href="#day-4">Fri</a><a href="#day-5">Sat</a><a href="#day-6">Sun</a>
+            <nav class="timetable-day-nav" aria-label="Filter timetable by day">
+                <button type="button" data-day="0" onclick="selectTimetableDay(0)">Mon</button>
+                <button type="button" data-day="1" onclick="selectTimetableDay(1)">Tue</button>
+                <button type="button" data-day="2" onclick="selectTimetableDay(2)">Wed</button>
+                <button type="button" data-day="3" onclick="selectTimetableDay(3)">Thu</button>
+                <button type="button" data-day="4" onclick="selectTimetableDay(4)">Fri</button>
+                <button type="button" data-day="5" onclick="selectTimetableDay(5)">Sat</button>
+                <button type="button" data-day="6" onclick="selectTimetableDay(6)">Sun</button>
+                <button type="button" data-day="all" onclick="selectTimetableDay('all')">All</button>
             </nav>
             <div id="timetable">Loading...</div>
         </div>
@@ -183,6 +189,19 @@
         let existingReflections = {};
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+        let timetableDay = (new Date().getDay() + 6) % 7;
+
+        function selectTimetableDay(day) {
+            timetableDay = day;
+            document.querySelectorAll('.timetable-day-card').forEach(section => {
+                section.hidden = day !== 'all' && section.id !== `day-${day}`;
+            });
+            document.querySelectorAll('.timetable-day-nav button').forEach(button => {
+                button.setAttribute('aria-pressed', String(button.dataset.day === String(day)));
+            });
+        }
+        selectTimetableDay(timetableDay);
+
         window.logout = async function() {
             await endSession(token);
         };
@@ -217,14 +236,9 @@
                 const today = new Date();
                 const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                 const todayDay = (today.getDay() + 6) % 7;
-                document.querySelectorAll('.timetable-day-nav a').forEach((link, index) => {
-                    if (index === todayDay) link.setAttribute('aria-current', 'date');
-                    else link.removeAttribute('aria-current');
-                });
-
                 let html = '';
                 for (let i = 0; i < 7; i++) {
-                    html += `<section id="day-${i}" class="timetable-day-card border rounded-lg p-4 mb-4">`;
+                    html += `<section id="day-${i}" class="timetable-day-card border rounded-lg p-4 mb-4"${timetableDay !== 'all' && timetableDay !== i ? ' hidden' : ''}>`;
                     html += `<h3 class="text-xl font-bold mb-2">${days[i]}${i === todayDay ? ' · Today' : ''}</h3>`;
 
                     if (!grouped[i] || grouped[i].length === 0) {
@@ -257,6 +271,7 @@
                     html += `</section>`;
                 }
                 document.getElementById('timetable').innerHTML = reflectionsWarning + html;
+                selectTimetableDay(timetableDay);
             } catch(e) {
                 console.error('Error:', e);
                 if (e.message === 'Session expired') return;
