@@ -11,8 +11,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
 <script>
-    // Dark mode: apply before paint to avoid flash
-    // Defaults to dark unless the user has explicitly chosen light mode
     (function() {
         if (localStorage.getItem('darkMode') !== 'false') {
             document.documentElement.classList.add('dark');
@@ -37,7 +35,6 @@
                     <span class="menu-label">Menu</span>
                 </button>
             </div>
-
             <nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation">
                 <span class="nav-kicker" aria-hidden="true">WORKSPACE</span>
                 <a href="/dashboard" class="sidebar-link">
@@ -76,7 +73,6 @@
                     </a>
                 </div>
             </nav>
-
             <div class="sidebar-foot">
                 <button class="logout-link" onclick="logout()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
@@ -85,42 +81,37 @@
                 <button id="darkToggle" class="icon-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
             </div>
         </aside>
-
         <main class="main-content workspace-page">
-<header class="workspace-header"><div><p class="workspace-eyebrow">MAKE SPACE TO GROW</p><h1 class="workspace-title">My weekly timetable</h1><p class="workspace-subtitle">Shape a week that makes room for focused work, learning, and reflection.</p></div></header>
-
-    <div class="max-w-7xl mx-auto px-4 py-8">
-        <div class="bg-white rounded-lg shadow p-6">
-
-
-
-            <button onclick="showAddBlock()" class="workspace-primary mb-6">+ Add time block</button>
-            <div id="timetableNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden></div>
-            <div id="reflectionSavedNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden>
-                <span class="reflection-feedback-icon" aria-hidden="true">✓</span>
-                <span><strong>Reflection saved</strong><span>Your progress is recorded. You can view it on the Reflections page.</span></span>
-                <a href="/reflections">View reflections <span aria-hidden="true">→</span></a>
+            <header class="workspace-header"><div><p class="workspace-eyebrow">MAKE SPACE TO GROW</p><h1 class="workspace-title">My weekly timetable</h1><p class="workspace-subtitle">Shape a week that makes room for focused work, learning, and reflection.</p></div></header>
+            <div class="max-w-7xl mx-auto px-4 py-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <button onclick="showAddBlock()" class="workspace-primary mb-6">+ Add time block</button>
+                    <div id="timetableNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden></div>
+                    <div id="reflectionSavedNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden>
+                        <span class="reflection-feedback-icon" aria-hidden="true">✓</span>
+                        <span><strong>Reflection saved</strong><span>Your progress is recorded. You can view it on the Reflections page.</span></span>
+                        <a href="/reflections">View reflections <span aria-hidden="true">→</span></a>
+                    </div>
+                    <nav class="timetable-day-nav" aria-label="Filter timetable by day">
+                        <button type="button" data-day="0" onclick="selectTimetableDay(0)">Mon</button>
+                        <button type="button" data-day="1" onclick="selectTimetableDay(1)">Tue</button>
+                        <button type="button" data-day="2" onclick="selectTimetableDay(2)">Wed</button>
+                        <button type="button" data-day="3" onclick="selectTimetableDay(3)">Thu</button>
+                        <button type="button" data-day="4" onclick="selectTimetableDay(4)">Fri</button>
+                        <button type="button" data-day="5" onclick="selectTimetableDay(5)">Sat</button>
+                        <button type="button" data-day="6" onclick="selectTimetableDay(6)">Sun</button>
+                        <button type="button" data-day="all" onclick="selectTimetableDay('all')">All</button>
+                    </nav>
+                    <div id="timetable">Loading...</div>
+                </div>
             </div>
-            <nav class="timetable-day-nav" aria-label="Filter timetable by day">
-                <button type="button" data-day="0" onclick="selectTimetableDay(0)">Mon</button>
-                <button type="button" data-day="1" onclick="selectTimetableDay(1)">Tue</button>
-                <button type="button" data-day="2" onclick="selectTimetableDay(2)">Wed</button>
-                <button type="button" data-day="3" onclick="selectTimetableDay(3)">Thu</button>
-                <button type="button" data-day="4" onclick="selectTimetableDay(4)">Fri</button>
-                <button type="button" data-day="5" onclick="selectTimetableDay(5)">Sat</button>
-                <button type="button" data-day="6" onclick="selectTimetableDay(6)">Sun</button>
-                <button type="button" data-day="all" onclick="selectTimetableDay('all')">All</button>
-            </nav>
-            <div id="timetable">Loading...</div>
-        </div>
-    </div>
         </main>
     </div>
 
+    <!-- MODAL: ADD TIME BLOCK -->
     <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 class="text-xl font-bold mb-4">Add Time Block</h3>
-
             <label class="block text-sm font-medium mb-2 text-gray-700">Repeat on</label>
             <div id="dayPicker" class="day-picker mb-1">
                 <button type="button" class="day-chip" data-day="0">Mon</button>
@@ -131,8 +122,6 @@
                 <button type="button" class="day-chip" data-day="5">Sat</button>
                 <button type="button" class="day-chip" data-day="6">Sun</button>
             </div>
-            <p class="text-xs text-gray-500 mb-3">Select one day, or several to add the same block to each at once.</p>
-
             <label for="blockStart" class="block text-sm font-medium mb-1 text-gray-700">Start time</label>
             <input type="time" id="blockStart" class="timetable-form-field w-full p-2 border rounded mb-3" step="60" value="09:00">
             <label for="blockEnd" class="block text-sm font-medium mb-1 text-gray-700">End time</label>
@@ -147,10 +136,11 @@
         </div>
     </div>
 
+    <!-- DIALOG: DELETE BLOCK -->
     <dialog id="deleteBlockDialog" class="timetable-delete-dialog" aria-labelledby="deleteBlockTitle" aria-describedby="deleteBlockDescription">
         <div class="timetable-delete-icon" aria-hidden="true">!</div>
         <h2 id="deleteBlockTitle">Delete time block?</h2>
-        <p id="deleteBlockDescription">This will permanently delete the block and every reflection saved for it, including reflections from previous weeks. This cannot be undone.</p>
+        <p id="deleteBlockDescription">This will permanently delete the block and every reflection saved for it.</p>
         <p id="deleteBlockLabel" class="timetable-delete-label"></p>
         <div id="deleteBlockError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
         <div class="timetable-delete-actions">
@@ -159,16 +149,39 @@
         </div>
     </dialog>
 
+    <!-- MODAL: ADD REFLECTION -->
     <div id="reflectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 id="reflectionTitle" class="text-xl font-bold mb-4">Add Reflection</h3>
             <p id="reflectionDate" class="text-sm text-gray-600 mb-3"></p>
+            
+            <!-- What you did -->
             <label for="reflectionSummary" class="block text-sm font-medium mb-1 text-gray-700">What did you actually do?</label>
+            <div class="mt-2 mb-2">
+                <button type="button" id="voice-btn-summary" class="btn btn-sm btn-outline-primary" onclick="toggleRecording('reflectionSummary', 'summary')">🎤 Voice Reflection</button>
+                <small id="status-summary" class="text-muted ms-2"></small>
+                <input type="hidden" name="audio_url" id="url-summary">
+            </div>
             <textarea id="reflectionSummary" rows="3" placeholder="What did you actually do?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
+            
+            <!-- Challenges -->
             <label for="reflectionChallenges" class="block text-sm font-medium mb-1 text-gray-700">Challenges faced?</label>
+            <div class="mt-2 mb-2">
+                <button type="button" id="voice-btn-challenges" class="btn btn-sm btn-outline-primary" onclick="toggleRecording('reflectionChallenges', 'challenges')">🎤 Voice Reflection</button>
+                <small id="status-challenges" class="text-muted ms-2"></small>
+                <input type="hidden" id="url-challenges">
+            </div>
             <textarea id="reflectionChallenges" rows="2" placeholder="Challenges faced?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
+            
+            <!-- Learnings -->
             <label for="reflectionLearnings" class="block text-sm font-medium mb-1 text-gray-700">What did you learn?</label>
+            <div class="mt-2 mb-2">
+                <button type="button" id="voice-btn-learnings" class="btn btn-sm btn-outline-primary" onclick="toggleRecording('reflectionLearnings', 'learnings')">🎤 Voice Reflection</button>
+                <small id="status-learnings" class="text-muted ms-2"></small>
+                <input type="hidden" id="url-learnings">
+            </div>
             <textarea id="reflectionLearnings" rows="2" placeholder="What did you learn?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
+            
             <div id="reflectionFormError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
             <button id="saveReflectionButton" onclick="saveReflection()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save reflection</button>
             <button onclick="closeReflectionModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
@@ -188,7 +201,6 @@
         let currentBlockDate = null;
         let existingReflections = {};
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
         let timetableDay = (new Date().getDay() + 6) % 7;
 
         function selectTimetableDay(day) {
@@ -196,335 +208,94 @@
             document.querySelectorAll('.timetable-day-card').forEach(section => {
                 section.hidden = day !== 'all' && section.id !== `day-${day}`;
             });
-            document.querySelectorAll('.timetable-day-nav button').forEach(button => {
-                button.setAttribute('aria-pressed', String(button.dataset.day === String(day)));
-            });
         }
         selectTimetableDay(timetableDay);
 
-        window.logout = async function() {
-            await endSession(token);
-        };
+        window.logout = async function() { await endSession(token); };
 
         async function loadTimetable() {
             try {
-                let reflectionsWarning = '';
                 const [blocksResult, reflectionsResult] = await Promise.allSettled([
                     readAPI('/api/v1/timetable', token),
                     readAPI('/api/v1/reflections', token)
                 ]);
-                if (blocksResult.status === 'rejected') throw blocksResult.reason;
                 const blocks = blocksResult.value;
                 existingReflections = {};
                 if (reflectionsResult.status === 'fulfilled') {
                     for (const r of reflectionsResult.value) {
                         existingReflections[`${r.timetable_id}|${r.log_date}`] = r;
                     }
-                } else {
-                    if (reflectionsResult.reason.message === 'Session expired') return;
-                    console.error('Error loading reflections:', reflectionsResult.reason);
-                    reflectionsWarning = '<p class="text-amber-700 mb-4">Reflections could not be checked. ' +
-                        '<button type="button" onclick="loadTimetable()" class="underline">Try again</button></p>';
                 }
-
                 const grouped = {};
                 for (let i = 0; i < 7; i++) grouped[i] = [];
-                for (const b of blocks) {
-                    if (grouped[b.day_of_week]) grouped[b.day_of_week].push(b);
-                }
-
+                for (const b of blocks) { grouped[b.day_of_week].push(b); }
                 const today = new Date();
                 const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-                const todayDay = (today.getDay() + 6) % 7;
                 let html = '';
                 for (let i = 0; i < 7; i++) {
                     html += `<section id="day-${i}" class="timetable-day-card border rounded-lg p-4 mb-4"${timetableDay !== 'all' && timetableDay !== i ? ' hidden' : ''}>`;
-                    html += `<h3 class="text-xl font-bold mb-2">${days[i]}${i === todayDay ? ' · Today' : ''}</h3>`;
-
-                    if (!grouped[i] || grouped[i].length === 0) {
-                        html += `<p class="text-gray-400 italic">No activities planned</p>`;
-                    } else {
-                        for (const block of grouped[i]) {
-                            const reflectionKey = `${block.id}|${todayStr}`;
-                            const hasReflection = existingReflections[reflectionKey];
-
-                            let reflectionButton = '';
-                            if (!hasReflection) {
-                                reflectionButton = `<button onclick="openReflection(${block.id}, '${escapeHtml(block.activity)}', '${todayStr}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Add Reflection</button>`;
-                            } else {
-                                reflectionButton = `<span class="text-green-600 text-sm">✅ Reflection added</span>`;
-                            }
-
-                            html += `
-                                <div class="bg-gray-50 p-3 rounded mb-2">
-                                    <p><span class="font-bold block-time">${block.start_time} - ${block.end_time}</span></p>
-                                    <p><strong>Activity:</strong> ${escapeHtml(block.activity)}</p>
-                                    ${block.goal ? `<p class="text-gray-600"><strong>Goal:</strong> ${escapeHtml(block.goal)}</p>` : ''}
-                                    <div class="flex gap-2 mt-2">
-                                        ${reflectionButton}
-                                        <button onclick="deleteBlock(${block.id}, this)" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Delete</button>
-                                    </div>
+                    html += `<h3 class="font-bold mb-2">${days[i]}</h3>`;
+                    if (grouped[i].length === 0) html += `<p class="italic">No activities</p>`;
+                    for (const b of grouped[i]) {
+                        const hasRef = existingReflections[`${b.id}|${todayStr}`];
+                        html += `
+                            <div class="bg-gray-50 p-3 rounded mb-2">
+                                <p><strong>${b.start_time} - ${b.end_time}</strong>: ${b.activity}</p>
+                                <div class="flex gap-2 mt-2">
+                                    ${!hasRef ? `<button onclick="openReflection(${b.id}, '${b.activity}', '${todayStr}')" class="bg-blue-600 text-white px-2 py-1 rounded text-sm">Reflect</button>` : `<span class="text-green-600">✅</span>`}
+                                    <button onclick="deleteBlock(${b.id}, this)" class="bg-red-500 text-white px-2 py-1 rounded text-sm">Delete</button>
                                 </div>
-                            `;
-                        }
+                            </div>`;
                     }
                     html += `</section>`;
                 }
-                document.getElementById('timetable').innerHTML = reflectionsWarning + html;
-                selectTimetableDay(timetableDay);
-            } catch(e) {
-                console.error('Error:', e);
-                if (e.message === 'Session expired') return;
-                document.getElementById('timetable').innerHTML =
-                    `<div class="text-red-500">Could not load timetable (${escapeHtml(e.message)}). ` +
-                    '<button type="button" onclick="loadTimetable()" class="underline">Try again</button></div>';
-            }
+                document.getElementById('timetable').innerHTML = html;
+            } catch(e) { console.error(e); }
         }
 
-        let selectedDays = new Set();
-
-        document.getElementById('dayPicker').addEventListener('click', function(e) {
-            const chip = e.target.closest('.day-chip');
-            if (!chip) return;
-            const day = parseInt(chip.dataset.day);
-            if (selectedDays.has(day)) {
-                selectedDays.delete(day);
-                chip.classList.remove('selected');
-            } else {
-                selectedDays.add(day);
-                chip.classList.add('selected');
-            }
-        });
-
-        window.showAddBlock = function() {
-            document.getElementById('addModal').classList.remove('hidden');
-            document.getElementById('addModal').classList.add('flex');
-            const error = document.getElementById('blockFormError');
-            error.hidden = true;
-            error.textContent = '';
-            document.getElementById('blockStart').value = '09:00';
-            document.getElementById('blockEnd').value = '10:00';
-            document.getElementById('blockActivity').value = '';
-            document.getElementById('blockGoal').value = '';
-            selectedDays.clear();
-            document.querySelectorAll('#dayPicker .day-chip').forEach(c => c.classList.remove('selected'));
-        };
-
-        window.closeAddModal = function() {
-            document.getElementById('addModal').classList.add('hidden');
-            document.getElementById('addModal').classList.remove('flex');
-        };
-
-        window.saveTimeBlock = async function() {
-            const start = document.getElementById('blockStart').value;
-            const end = document.getElementById('blockEnd').value;
-            const activity = document.getElementById('blockActivity').value.trim();
-            const goal = document.getElementById('blockGoal').value;
-            const error = document.getElementById('blockFormError');
-            error.hidden = true;
-            if (selectedDays.size === 0) {
-                error.textContent = 'Choose at least one day for this block.';
-                error.hidden = false;
-                document.querySelector('#dayPicker .day-chip').focus();
-                return;
-            }
-            if (!activity) {
-                error.textContent = 'Add an activity for this block.';
-                error.hidden = false;
-                document.getElementById('blockActivity').focus();
-                return;
-            }
-            if (!start || !end || start >= end) {
-                error.textContent = 'Set an end time later than the start time.';
-                error.hidden = false;
-                document.getElementById('blockEnd').focus();
-                return;
-            }
-
-            const button = document.getElementById('saveBlockButton');
-            if (button.disabled) return;
-            button.disabled = true;
-            button.textContent = 'Saving…';
-            const selectedDaysArr = [...selectedDays];
-            // Different days are independent; submit them concurrently.
-            const outcomes = await Promise.allSettled(selectedDaysArr.map(async day => {
-                const res = await fetch('/api/v1/timetable', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({
-                        day_of_week: day,
-                        start_time: start + ':00',
-                        end_time: end + ':00',
-                        activity,
-                        goal
-                    })
-                });
-                if (!res.ok) throw Error('Could not save ' + days[day]);
-            }));
-            button.disabled = false;
-            button.textContent = 'Save time block';
-            const successCount = outcomes.filter(outcome => outcome.status === 'fulfilled').length;
-            const failedDays = selectedDaysArr.filter((_, index) => outcomes[index].status === 'rejected').map(day => days[day]);
-
-            if (successCount) await invalidateReadCache(['/api/v1/timetable'], token);
-            if (successCount) await loadTimetable();
-            if (failedDays.length) {
-                selectedDaysArr.forEach((day, index) => {
-                    if (outcomes[index].status === 'fulfilled') {
-                        selectedDays.delete(day);
-                        document.querySelector(`#dayPicker .day-chip[data-day="${day}"]`).classList.remove('selected');
-                    }
-                });
-                error.textContent = successCount
-                    ? `Saved ${successCount} day(s). Could not save ${failedDays.join(', ')}. Try again for the remaining day(s).`
-                    : `Could not save ${failedDays.join(', ')}. Please try again.`;
-                error.hidden = false;
-                return;
-            }
-            closeAddModal();
-            const notice = document.getElementById('timetableNotice');
-            notice.textContent = successCount > 1 ? `Time block added to ${successCount} days.` : 'Time block added.';
-            notice.hidden = false;
-        };
-
-        const deleteDialog = document.getElementById('deleteBlockDialog');
-        let pendingDeleteId = null;
-        let deleteTrigger = null;
-        deleteDialog.addEventListener('cancel', event => {
-            if (document.getElementById('confirmDeleteBlock').disabled) event.preventDefault();
-        });
-        document.getElementById('cancelDeleteBlock').addEventListener('click', () => deleteDialog.close());
-        deleteDialog.addEventListener('close', () => {
-            pendingDeleteId = null;
-            if (deleteTrigger?.isConnected) deleteTrigger.focus();
-            deleteTrigger = null;
-        });
-
-        window.deleteBlock = function(id, trigger) {
-            pendingDeleteId = id;
-            deleteTrigger = trigger;
-            const block = trigger.closest('.bg-gray-50');
-            const day = trigger.closest('.timetable-day-card').querySelector('h3').textContent.replace(' · Today', '');
-            document.getElementById('deleteBlockLabel').textContent = `${day}, ${block.querySelector('.block-time').textContent}`;
-            const error = document.getElementById('deleteBlockError');
-            error.hidden = true;
-            error.textContent = '';
-            deleteDialog.showModal();
-            document.getElementById('cancelDeleteBlock').focus();
-        };
-
-        document.getElementById('confirmDeleteBlock').addEventListener('click', async () => {
-            if (pendingDeleteId === null) return;
-            const confirmButton = document.getElementById('confirmDeleteBlock');
-            const cancelButton = document.getElementById('cancelDeleteBlock');
-            confirmButton.disabled = true;
-            cancelButton.disabled = true;
-            confirmButton.textContent = 'Deleting…';
-            try {
-                const res = await fetch(`/api/v1/timetable/${pendingDeleteId}`, {
-                    method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (!res.ok) throw new Error('Could not delete the block. Please try again.');
-                await invalidateReadCache(['/api/v1/timetable', '/api/v1/reflections'], token);
-                deleteDialog.close();
-                await loadTimetable();
-                const notice = document.getElementById('timetableNotice');
-                notice.textContent = 'Time block and its linked reflections deleted.';
-                notice.hidden = false;
-                document.querySelector('[onclick="showAddBlock()"]')?.focus();
-            } catch (failure) {
-                const error = document.getElementById('deleteBlockError');
-                error.textContent = failure.message;
-                error.hidden = false;
-            } finally {
-                confirmButton.disabled = false;
-                cancelButton.disabled = false;
-                confirmButton.textContent = 'Delete block and reflections';
-            }
-        });
-
-        window.openReflection = function(blockId, activity, date) {
-            currentBlockId = blockId;
-            currentBlockDate = date;
-            document.getElementById('reflectionTitle').textContent = `Reflection: ${activity}`;
-            document.getElementById('reflectionDate').textContent = `For: ${date}`;
-            const error = document.getElementById('reflectionFormError');
-            error.hidden = true;
-            error.textContent = '';
+        window.openReflection = function(id, activity, date) {
+            currentBlockId = id; currentBlockDate = date;
+            document.getElementById('reflectionTitle').textContent = activity;
             document.getElementById('reflectionSummary').value = '';
-            document.getElementById('reflectionChallenges').value = '';
-            document.getElementById('reflectionLearnings').value = '';
+            document.getElementById('url-summary').value = '';
             document.getElementById('reflectionModal').classList.remove('hidden');
             document.getElementById('reflectionModal').classList.add('flex');
         };
 
-        window.closeReflectionModal = function() {
-            document.getElementById('reflectionModal').classList.add('hidden');
-            document.getElementById('reflectionModal').classList.remove('flex');
-        };
+        window.closeReflectionModal = function() { document.getElementById('reflectionModal').classList.add('hidden'); };
 
         window.saveReflection = async function() {
             const summary = document.getElementById('reflectionSummary').value.trim();
             const challenges = document.getElementById('reflectionChallenges').value;
             const learnings = document.getElementById('reflectionLearnings').value;
-            const error = document.getElementById('reflectionFormError');
-            error.hidden = true;
-            if (!summary) {
-                error.textContent = 'Add what you did before saving your reflection.';
-                error.hidden = false;
-                document.getElementById('reflectionSummary').focus();
-                return;
-            }
+            const audioUrl = document.getElementById('url-summary').value; // GRAB VOICE URL
+
+            if (!summary) return alert("Please add summary");
+
             const button = document.getElementById('saveReflectionButton');
-            if (button.disabled) return;
             button.disabled = true;
-            button.textContent = 'Saving…';
             try {
                 const res = await fetch('/api/v1/reflections', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ timetable_id: currentBlockId, log_date: currentBlockDate, summary, challenges, learnings })
+                    body: JSON.stringify({ 
+                        timetable_id: currentBlockId, 
+                        log_date: currentBlockDate, 
+                        summary, 
+                        challenges, 
+                        learnings,
+                        audio_url: audioUrl // SEND TO GO BACKEND
+                    })
                 });
-                if (!res.ok) {
-                    const data = await res.json().catch(() => ({}));
-                    throw new Error(data.error || 'Could not save your reflection. Please try again.');
-                }
-                await invalidateReadCache(['/api/v1/reflections'], token);
+                if (!res.ok) throw new Error('Failed');
                 closeReflectionModal();
-                document.getElementById('reflectionSavedNotice').hidden = false;
-                await loadTimetable();
-            } catch (failure) {
-                error.textContent = failure.message;
-                error.hidden = false;
-            } finally {
-                button.disabled = false;
-                button.textContent = 'Save reflection';
-            }
+                loadTimetable();
+            } catch (e) { alert(e.message); } finally { button.disabled = false; }
         };
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-
+        function toggleDark() { document.documentElement.classList.toggle('dark'); }
         loadTimetable();
-
-        function toggleDark() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('darkMode', isDark);
-            document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
-        }
-        // Sync icon on load
-        if (localStorage.getItem('darkMode') === 'true') {
-            const btn = document.getElementById('darkToggle');
-            if (btn) btn.textContent = '☀️';
-        }
-
     </script>
 </body>
 </html>
+<script src="/static/js/voice-reflection.js"></script>

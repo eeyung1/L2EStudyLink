@@ -1,21 +1,19 @@
 let mediaRecorder;
 let audioChunks = [];
 
-async function toggleRecording() {
-    const btn = document.getElementById('voice-btn');
-    const status = document.getElementById('recording-status');
-    const contentArea = document.getElementById('reflection-content'); // Matches your textarea ID
+async function toggleRecording(targetId, suffix) {
+    const btn = document.getElementById(`voice-btn-${suffix}`) || document.getElementById('voice-btn');
+    const status = document.getElementById(`status-${suffix}`) || document.getElementById('recording-status');
+    const contentArea = document.getElementById(targetId);
+    const urlInput = document.getElementById(`url-${suffix}`) || document.getElementById('audio-url');
 
     if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-        // Start Recording
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
             audioChunks = [];
 
-            mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
-            };
+            mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);
 
             mediaRecorder.onstop = async () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
@@ -31,30 +29,24 @@ async function toggleRecording() {
                     });
                     const data = await response.json();
                     
-                    // Update the textarea with transcribed text
-                    contentArea.value = data.text;
-                    // Store the audio URL in a hidden input for the final form submission
-                    document.getElementById('audio-url').value = data.audio_url;
+                    // SMART PART: Append to existing text or replace
+                    contentArea.value = (contentArea.value ? contentArea.value + " " : "") + data.text;
+                    if(urlInput) urlInput.value = data.audio_url;
                     
-                    status.innerText = "Voice processed!";
+                    status.innerText = "Done!";
                 } catch (err) {
-                    console.error("Upload failed:", err);
-                    status.innerText = "Upload failed.";
+                    status.innerText = "Error.";
                 }
             };
 
             mediaRecorder.start();
-            btn.innerHTML = "🛑 Stop Recording";
-            btn.classList.add('btn-danger');
+            btn.innerHTML = "🛑 Stop";
             status.innerText = "Recording...";
         } catch (err) {
-            console.error("Microphone access denied:", err);
-            alert("Please allow microphone access to use this feature.");
+            alert("Microphone access denied.");
         }
     } else {
-        // Stop Recording
         mediaRecorder.stop();
-        btn.innerHTML = "🎤 Start Voice Reflection";
-        btn.classList.remove('btn-danger');
+        btn.innerHTML = "🎤 Voice";
     }
 }
