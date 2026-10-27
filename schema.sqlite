@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
     is_suspended INTEGER DEFAULT 0,
     is_admin INTEGER DEFAULT 0,
     marketing_opt_in_at DATETIME,
+    public_handle TEXT,
+    portfolio_public INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -128,16 +130,17 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 );
 
 -- Indexes
-CREATE INDEX idx_skills_user ON skills(user_id);
-CREATE INDEX idx_skills_name ON skills(skill_name);
-CREATE INDEX idx_availability_user ON availability(user_id);
-CREATE INDEX idx_bookings_tutor ON bookings(tutor_id);
-CREATE INDEX idx_bookings_student ON bookings(student_id);
-CREATE INDEX idx_bookings_date ON bookings(session_date);
-CREATE INDEX idx_reviews_reviewee ON reviews(reviewee_id);
-CREATE INDEX idx_timetable_user ON timetable(user_id);
-CREATE INDEX idx_activity_logs_timetable ON activity_logs(timetable_id);
-CREATE INDEX idx_activity_logs_user ON activity_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_skills_user ON skills(user_id);
+CREATE INDEX IF NOT EXISTS idx_skills_name ON skills(skill_name);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_handle ON users (lower(public_handle));
+CREATE INDEX IF NOT EXISTS idx_availability_user ON availability(user_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_tutor ON bookings(tutor_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_student ON bookings(student_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings(session_date);
+CREATE INDEX IF NOT EXISTS idx_reviews_reviewee ON reviews(reviewee_id);
+CREATE INDEX IF NOT EXISTS idx_timetable_user ON timetable(user_id);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_timetable ON activity_logs(timetable_id);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs(user_id);
 
 -- Project collaboration
 CREATE TABLE IF NOT EXISTS collaboration_preferences (

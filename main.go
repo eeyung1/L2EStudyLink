@@ -76,6 +76,13 @@ func main() {
     router.GET("/reflections", func(c *gin.Context) {
         c.HTML(200, "reflections.html", nil)
     })
+    router.GET("/portfolio", func(c *gin.Context) {
+        c.HTML(200, "portfolio.html", nil)
+    })
+    router.GET("/u/:handle", func(c *gin.Context) {
+        c.HTML(200, "portfolio.html", nil)
+    })
+    router.GET("/planner", middleware.AuthRequired, handlers.PlannerPage)
     router.GET("/masterclass", func(c *gin.Context) { c.HTML(200, "masterclass.html", nil) })
     router.GET("/projects", func(c *gin.Context) {
         c.HTML(200, "projects.html", nil)
@@ -110,6 +117,7 @@ func main() {
         api.GET("/articles", handlers.ListLearningArticles)
         api.GET("/articles/:slug", handlers.GetLearningArticle)
         api.GET("/articles/:slug/comments", handlers.ListLearningComments)
+        api.GET("/portfolio/:handle", handlers.GetPublicPortfolio)
         api.POST("/voice/upload", handlers.HandleVoiceUpload)
         router.POST("/api/voice/upload", handlers.HandleVoiceUpload)
 
@@ -118,6 +126,11 @@ func main() {
         {
             protected.GET("/me", handlers.GetProfile)
             protected.GET("/me/streaks", handlers.GetUserStreaks)
+            protected.GET("/planner/week", handlers.GetPlannerWeek)
+            protected.POST("/planner/analyze", handlers.AnalyzePlannerWeek)
+            protected.GET("/portfolio/me", handlers.GetMyPortfolio)
+            protected.PUT("/portfolio/handle", handlers.ClaimPortfolioHandle)
+            protected.PUT("/portfolio/visibility", handlers.SetPortfolioVisibility)
             protected.POST("/articles/:slug/comments", handlers.AddLearningComment)
             protected.POST("/session/migrate", handlers.MigrateSession)
             protected.PUT("/profile", handlers.UpdateProfile)
