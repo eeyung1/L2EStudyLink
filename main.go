@@ -117,6 +117,7 @@ func main() {
         protected.Use(middleware.AuthRequired)
         {
             protected.GET("/me", handlers.GetProfile)
+            protected.GET("/me/streaks", handlers.GetUserStreaks)
             protected.POST("/articles/:slug/comments", handlers.AddLearningComment)
             protected.POST("/session/migrate", handlers.MigrateSession)
             protected.PUT("/profile", handlers.UpdateProfile)

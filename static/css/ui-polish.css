@@ -218,3 +218,34 @@ html.dark .timetable-delete-dialog h2 { color:#f5f8ff; }
 html.dark .timetable-delete-label { background:#273952; color:#e2e8f0; }
 html.dark .timetable-delete-cancel { background:#273952; border-color:#52647d; color:#f5f8ff; }
 @media(max-width:480px) { .timetable-delete-dialog { padding:20px; } .timetable-delete-actions { flex-direction:column-reverse; } .timetable-delete-actions button { width:100%; } }
+
+/* Consistency Heatmap & Streak Badges */
+.heatmap-card { margin-bottom: 24px; }
+.heatmap-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 16px; }
+.streak-badges { display: flex; gap: 10px; flex-wrap: wrap; }
+.streak-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 9999px; font-size: 13px; font-weight: 700; background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; }
+.streak-badge.streak-fire { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.streak-badge.streak-longest { background: #fefce8; color: #854d0e; border-color: #fef08a; }
+.streak-badge.streak-total { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+.heatmap-scroll { overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+.heatmap-grid { display: grid; grid-template-rows: repeat(7, 13px); grid-auto-flow: column; grid-auto-columns: 13px; gap: 4px; padding: 6px 2px; }
+.heatmap-cell { width: 13px; height: 13px; border-radius: 3px; background-color: #e2e8f0; transition: transform 0.12s, outline 0.12s; cursor: pointer; }
+.heatmap-cell:hover { transform: scale(1.35); outline: 1px solid rgba(0,0,0,0.3); z-index: 10; position: relative; }
+.heatmap-cell.level-0 { background-color: #e2e8f0; }
+.heatmap-cell.level-1 { background-color: #a7f3d0; }
+.heatmap-cell.level-2 { background-color: #34d399; }
+.heatmap-cell.level-3 { background-color: #059669; }
+.heatmap-cell.level-4 { background-color: #064e3b; }
+.heatmap-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--muted); }
+.heatmap-legend { display: flex; align-items: center; gap: 5px; }
+.heatmap-legend .heatmap-cell { cursor: default; }
+
+html.dark .streak-badge { background: #1e1b4b; color: #c7d2fe; border-color: #3730a3; }
+html.dark .streak-badge.streak-fire { background: #431407; color: #fdba74; border-color: #7c2d12; }
+html.dark .streak-badge.streak-longest { background: #422006; color: #fef08a; border-color: #713f12; }
+html.dark .streak-badge.streak-total { background: #052e16; color: #86efac; border-color: #14532d; }
+html.dark .heatmap-cell.level-0 { background-color: #273549; }
+html.dark .heatmap-cell.level-1 { background-color: #064e3b; }
+html.dark .heatmap-cell.level-2 { background-color: #059669; }
+html.dark .heatmap-cell.level-3 { background-color: #10b981; }
+html.dark .heatmap-cell.level-4 { background-color: #34d399; }
