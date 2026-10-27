@@ -163,7 +163,16 @@
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 id="reflectionTitle" class="text-xl font-bold mb-4">Add Reflection</h3>
             <p id="reflectionDate" class="text-sm text-gray-600 mb-3"></p>
-            <label for="reflectionSummary" class="block text-sm font-medium mb-1 text-gray-700">What did you actually do?</label>
+            <div class="flex items-center justify-between mb-1">
+                <label for="reflectionSummary" class="block text-sm font-medium text-gray-700">What did you actually do?</label>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="voice-btn-summary" onclick="toggleRecording('reflectionSummary', 'summary')" class="text-xs px-2.5 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md border border-gray-300 dark:border-gray-600 inline-flex items-center gap-1 transition">
+                        🎤 <span id="voice-label-summary">Voice note</span>
+                    </button>
+                    <span id="status-summary" class="text-xs text-gray-500" aria-live="polite"></span>
+                </div>
+            </div>
+            <input type="hidden" id="url-summary" value="">
             <textarea id="reflectionSummary" rows="3" placeholder="What did you actually do?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
             <label for="reflectionChallenges" class="block text-sm font-medium mb-1 text-gray-700">Challenges faced?</label>
             <textarea id="reflectionChallenges" rows="2" placeholder="Challenges faced?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
@@ -176,6 +185,7 @@
     </div>
 
     <script src="/static/js/read-api.js"></script>
+    <script src="/static/js/voice-reflection.js"></script>
     <script>
         const token = sessionToken();
         if (!token) window.location.href = '/page/login';
@@ -454,6 +464,15 @@
             document.getElementById('reflectionSummary').value = '';
             document.getElementById('reflectionChallenges').value = '';
             document.getElementById('reflectionLearnings').value = '';
+            const urlInput = document.getElementById('url-summary');
+            if (urlInput) urlInput.value = '';
+            const statusEl = document.getElementById('status-summary');
+            if (statusEl) statusEl.textContent = '';
+            const voiceBtn = document.getElementById('voice-btn-summary');
+            if (voiceBtn) {
+                voiceBtn.innerHTML = '🎤 <span id="voice-label-summary">Voice note</span>';
+                voiceBtn.classList.remove('recording-active');
+            }
             document.getElementById('reflectionModal').classList.remove('hidden');
             document.getElementById('reflectionModal').classList.add('flex');
         };
@@ -467,6 +486,7 @@
             const summary = document.getElementById('reflectionSummary').value.trim();
             const challenges = document.getElementById('reflectionChallenges').value;
             const learnings = document.getElementById('reflectionLearnings').value;
+            const audioUrl = document.getElementById('url-summary')?.value || '';
             const error = document.getElementById('reflectionFormError');
             error.hidden = true;
             if (!summary) {
@@ -483,7 +503,7 @@
                 const res = await fetch('/api/v1/reflections', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ timetable_id: currentBlockId, log_date: currentBlockDate, summary, challenges, learnings })
+                    body: JSON.stringify({ timetable_id: currentBlockId, log_date: currentBlockDate, summary, challenges, learnings, audio_url: audioUrl })
                 });
                 if (!res.ok) {
                     const data = await res.json().catch(() => ({}));

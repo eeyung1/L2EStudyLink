@@ -31,6 +31,7 @@ func main() {
 
     // Static assets (CSS, JS, images)
     router.Static("/static", "./static")
+    router.Static("/uploads", "./uploads")
     router.StaticFile("/sw.js", "./static/sw.js")
 
     // Static HTML pages
@@ -109,6 +110,8 @@ func main() {
         api.GET("/articles", handlers.ListLearningArticles)
         api.GET("/articles/:slug", handlers.GetLearningArticle)
         api.GET("/articles/:slug/comments", handlers.ListLearningComments)
+        api.POST("/voice/upload", handlers.HandleVoiceUpload)
+        router.POST("/api/voice/upload", handlers.HandleVoiceUpload)
 
         protected := api.Group("/")
         protected.Use(middleware.AuthRequired)

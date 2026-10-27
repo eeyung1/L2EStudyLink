@@ -62,6 +62,17 @@ func InitDB() error {
         return fmt.Errorf("failed to add product email preference: %w", err)
     }
 
+    // Ensure audio_url exists on activity_logs for voice reflections if the table is present
+    if _, err = DB.Exec(`
+        DO $$ BEGIN
+            IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='activity_logs') THEN
+                ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS audio_url TEXT;
+            END IF;
+        END $$;
+    `); err != nil {
+        log.Printf("Warning: failed to add audio_url to activity_logs: %v", err)
+    }
+
     // Existing production databases may predate this table. Ensure the
     // recovery feature has its storage before the server accepts requests.
     ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)

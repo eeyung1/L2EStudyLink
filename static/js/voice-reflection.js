@@ -1,60 +1,116 @@
-let mediaRecorder;
+let mediaRecorder = null;
 let audioChunks = [];
+let activeStream = null;
 
-async function toggleRecording() {
-    const btn = document.getElementById('voice-btn');
-    const status = document.getElementById('recording-status');
-    const contentArea = document.getElementById('reflection-content'); // Matches your textarea ID
+async function toggleRecording(targetId = 'reflectionSummary', suffix = 'summary') {
+    const btn = document.getElementById(`voice-btn-${suffix}`) || document.getElementById('voice-btn');
+    const status = document.getElementById(`status-${suffix}`) || document.getElementById('recording-status');
+    const contentArea = document.getElementById(targetId) || document.getElementById('reflection-content');
+    const urlInput = document.getElementById(`url-${suffix}`) || document.getElementById('audio-url');
 
     if (!mediaRecorder || mediaRecorder.state === 'inactive') {
         // Start Recording
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Audio recording is not supported on this browser.");
+                return;
+            }
 
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            activeStream = stream;
+
+            let options = {};
+            if (typeof MediaRecorder.isTypeSupported === 'function') {
+                if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                    options = { mimeType: 'audio/webm;codecs=opus' };
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options = { mimeType: 'audio/webm' };
+                } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options = { mimeType: 'audio/mp4' };
+                }
+            }
+
+            try {
+                mediaRecorder = new MediaRecorder(stream, options);
+            } catch (e) {
+                mediaRecorder = new MediaRecorder(stream);
+            }
+
+            audioChunks = [];
             mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
+                if (event.data && event.data.size > 0) {
+                    audioChunks.push(event.data);
+                }
             };
 
             mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                status.innerText = "Transcribing...";
-                
+                if (activeStream) {
+                    activeStream.getTracks().forEach(track => track.stop());
+                    activeStream = null;
+                }
+
+                const mimeType = mediaRecorder.mimeType || 'audio/webm';
+                const audioBlob = new Blob(audioChunks, { type: mimeType });
+                if (status) status.innerText = "Transcribing...";
+
+                const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
                 const formData = new FormData();
-                formData.append('audio', audioBlob);
+                formData.append('audio', audioBlob, `voice-reflection.${ext}`);
 
                 try {
-                    const response = await fetch('/api/voice/upload', {
+                    const headers = {};
+                    const token = (typeof sessionToken === 'function' ? sessionToken() : '') || localStorage.getItem('token') || '';
+                    if (token) {
+                        headers['Authorization'] = 'Bearer ' + token;
+                    }
+
+                    const response = await fetch('/api/v1/voice/upload', {
                         method: 'POST',
+                        headers: headers,
                         body: formData
                     });
+
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        throw new Error(errData.error || `Upload failed with status ${response.status}`);
+                    }
+
                     const data = await response.json();
-                    
-                    // Update the textarea with transcribed text
-                    contentArea.value = data.text;
-                    // Store the audio URL in a hidden input for the final form submission
-                    document.getElementById('audio-url').value = data.audio_url;
-                    
-                    status.innerText = "Voice processed!";
+
+                    if (contentArea && data.text) {
+                        const current = contentArea.value.trim();
+                        contentArea.value = current ? current + " " + data.text : data.text;
+                        contentArea.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+
+                    if (urlInput && data.audio_url) {
+                        urlInput.value = data.audio_url;
+                    }
+
+                    if (status) status.innerText = "Voice processed!";
                 } catch (err) {
-                    console.error("Upload failed:", err);
-                    status.innerText = "Upload failed.";
+                    console.error("Voice upload failed:", err);
+                    if (status) status.innerText = "Upload failed.";
                 }
             };
 
             mediaRecorder.start();
-            btn.innerHTML = "🛑 Stop Recording";
-            btn.classList.add('btn-danger');
-            status.innerText = "Recording...";
+            if (btn) {
+                btn.innerHTML = "🛑 Stop";
+                btn.classList.add('recording-active');
+            }
+            if (status) status.innerText = "Recording...";
         } catch (err) {
             console.error("Microphone access denied:", err);
-            alert("Please allow microphone access to use this feature.");
+            alert("Please allow microphone access to use voice reflection.");
+            if (status) status.innerText = "";
         }
     } else {
         // Stop Recording
         mediaRecorder.stop();
-        btn.innerHTML = "🎤 Start Voice Reflection";
-        btn.classList.remove('btn-danger');
+        if (btn) {
+            btn.innerHTML = "🎤 Voice note";
+            btn.classList.remove('recording-active');
+        }
     }
 }
