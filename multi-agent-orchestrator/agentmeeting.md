@@ -4,10 +4,10 @@
 
 | Agent/session ID | Role | Status | Heartbeat UTC | Feature | Branch/worktree | Claim reference |
 | --- | --- | --- | --- | --- | --- | --- |
-| planner-agent | PLANNER | ACTIVE | 2026-10-27T22:17:00Z | planning | - | structured-state |
+| planner-agent | PLANNER | ACTIVE | 2026-10-27T22:24:00Z | planning | - | structured-state |
 | MiMo-20261027-c2dbc030-20261027-efb40718 | worker | COMPLETE | 2026-10-27T22:03:59Z | task-opay-reflection-modal | agent/task-opay-reflection-modal @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-opay-reflection-modal | claim-mimo-20261027-c2dbc030 |
 | Codex-20261027-0dda2028 | worker | COMPLETE | 2026-10-27T22:14:09Z | task-decouple-reflections | agent/task-decouple-reflections @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-decouple-reflections | claim-codex-decouple-20261027 |
-| Codex-20261027-ddffbda9 | worker | WORKING | 2026-10-27T22:14:31Z | task-ai-planner-metrics | agent/task-ai-planner-metrics @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-ai-planner-metrics | claim-codex-metrics-20261027 |
+| Codex-20261027-ddffbda9 | worker | COMPLETE | 2026-10-27T22:22:50Z | task-ai-planner-metrics | agent/task-ai-planner-metrics @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-ai-planner-metrics | claim-codex-metrics-20261027 |
 | MiMo-20261027-186ff181-20261027-32e4ac47 | worker | WORKING | 2026-10-27T22:15:36Z | task-public-portfolio | agent/task-public-portfolio @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-public-portfolio | claim-mimo-portfolio-20261027 |
 
 ## Standups
@@ -23,10 +23,10 @@
 | # | Feature | Scope | Status | Claimed By | Depends On | Acceptance Criteria | Validation |
 |---|---|---|---|---|---|---|---|
 | 1 | task-opay-reflection-modal | templates/timetable.html, templates/reflections.html, static/css/ui-polish.css, static/js/voice-reflection.js | Done-waiting | MiMo-20261027-c2dbc030-20261027-efb40718 | - | Implement OPay-standard UI: Segmented tab switcher between Text & Voice; vibrant emerald green (#00B875 / #059669) pill active state; pulsating waveform/ripple animation while recording; recording duration timer (00:00/03:00); in-modal audio playback preview with scrubber; one-tap re-record and delete buttons before saving; direct payload upload to /api/v1/voice/upload and attach to activity_logs.audio_url. | node --check static/js/voice-reflection.js |
-| 2 | task-decouple-reflections | schema.sql, schema.sqlite, db/postgres.go, handlers/timetable.go, handlers/timetable_test.go | Done | Codex-20261027-0dda2028 | - | Decouple reflection history from timetable deletions: Change foreign key timetable_id to ON DELETE SET NULL; add activity_name VARCHAR(255) snapshot column to activity_logs; update Go handlers to save activity name snapshot and display reflections even after parent timetable block is removed. | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestTimetable |
-| 3 | task-ai-planner-metrics | handlers/planner.go, handlers/planner_test.go | Claimed | Codex-20261027-ddffbda9 | - | Deterministic Go weekly metrics engine: Compute scheduled minutes, reflected minutes, adherence percentage, streak changes, and missing reflection counts for any calendar week. | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestPlanner |
-| 4 | task-ai-coaching-eval | handlers/planner_ai.go, templates/planner.html | Unclaimed | - | 3 | Server-side LLM coaching integration via LLM_API_KEY adapting L2E_PLANNER_PROMPT_v3.md; generate qualitative feedback, bottlenecks, and coaching questions; render /planner UI with weekly cards. | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestPlannerAI |
-| 5 | task-public-portfolio | handlers/portfolio.go, templates/portfolio.html | Claimed | MiMo-20261027-186ff181-20261027-32e4ac47 | - | Public proof-of-work learner portfolio route (/@username or /u/:username): display verified study hours, heatmap streaks, mastered skills, tutor reviews, and completed projects with privacy toggle. | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestPortfolio |
+| 2 | task-decouple-reflections | schema.sql, schema.sqlite, db/postgres.go, handlers/timetable.go, handlers/timetable_test.go | Done | Codex-20261027-0dda2028 | - | Decouple reflection history from timetable deletions: Change foreign key timetable_id to ON DELETE SET NULL; add activity_name VARCHAR(255) snapshot column to activity_logs; update Go handlers to save activity name snapshot and display reflections even after parent timetable block is removed. (Merged via PR #55) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestTimetable |
+| 3 | task-ai-planner-metrics | handlers/planner.go, handlers/planner_test.go | Done | Codex-20261027-ddffbda9 | - | Deterministic Go weekly metrics engine: Compute scheduled minutes, reflected minutes, adherence percentage, streak changes, and missing reflection counts for any calendar week. (Merged via PR #57) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestPlanner |
+| 4 | task-ai-coaching-eval | handlers/planner_ai.go, templates/planner.html | Unclaimed | - | - | Server-side LLM coaching integration via LLM_API_KEY adapting L2E_PLANNER_PROMPT_v3.md; generate qualitative feedback, bottlenecks, and coaching questions; render /planner UI with weekly cards. (UNBLOCKED - Prerequisite Task 3 Merged) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestPlannerAI |
+| 5 | task-public-portfolio | main.go, handlers/portfolio.go, handlers/portfolio_test.go, schema.sql, schema.sqlite, db/postgres.go, templates/portfolio.html | Claimed | MiMo-20261027-186ff181-20261027-32e4ac47 | - | Public proof-of-work learner portfolio route (/@username or /u/:username): display verified study hours, heatmap streaks, mastered skills, tutor reviews, and completed projects with privacy toggle. | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestPortfolio |
 
 ## Worker Standups
 
@@ -52,9 +52,14 @@
 
 - 2026-10-27T22:16:44Z — Codex-20261027-ddffbda9: Implementation batch complete in two-file scope: explicit-timezone Monday-based weekly metric engine, due/pending reflection coverage, nominal/overnight scheduled minutes, detached-log handling, deterministic streak delta and user-scoped repeatable-read database loader. Added boundary, DST, duplicate, invalid input, isolation, and PostgreSQL loader regressions. Focused TestPlanner validation running; no routes/UI/schema/AI changes.
 
+- 2026-10-27T22:18:13Z — Codex-20261027-ddffbda9: Metrics engine committed 82b36c7, focused tests/build passed; PostgreSQL test skipped, full suite hit existing sandbox email socket restriction. Push failed DNS; publication and exact-head CI pending integrator manual push. Resolution records scope, semantics and commands. HANDOFF with claim retained.
+
+- 2026-10-27T22:22:03Z — Codex-20261027-ddffbda9: User manually pushed agent/task-ai-planner-metrics. PR #57 exists; exact-head 82b36c753dff13402ec748d1e4de2b63cc2c356d workflow Go checks run 40594198720 (#77) is in progress. Monitoring before reporting readiness.
+
+- 2026-10-27T22:22:50Z — Codex-20261027-ddffbda9: PR #57 at 82b36c7 has successful exact-head CI (run 40594198720); final live state shows already merged externally. Implementation/integration evidenced; no deployment verification performed.
+
 ## Atomic Claims
 
 | Token | Agent/session ID | Feature | Scope | Claimed UTC |
 | --- | --- | --- | --- | --- |
-| claim-codex-metrics-20261027 | Codex-20261027-ddffbda9 | task-ai-planner-metrics | handlers/planner.go,handlers/planner_test.go | 2026-10-27T22:14:31Z |
-| claim-mimo-portfolio-20261027 | MiMo-20261027-186ff181-20261027-32e4ac47 | task-public-portfolio | handlers/portfolio.go,templates/portfolio.html | 2026-10-27T22:15:36Z |
+| claim-mimo-portfolio-20261027 | MiMo-20261027-186ff181-20261027-32e4ac47 | task-public-portfolio | main.go,handlers/portfolio.go,handlers/portfolio_test.go,schema.sql,schema.sqlite,db/postgres.go,templates/portfolio.html | 2026-10-27T22:15:36Z |
