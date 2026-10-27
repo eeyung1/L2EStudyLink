@@ -160,24 +160,62 @@
     </dialog>
 
     <div id="reflectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 id="reflectionTitle" class="text-xl font-bold mb-4">Add Reflection</h3>
-            <p id="reflectionDate" class="text-sm text-gray-600 mb-3"></p>
-            <div class="flex items-center justify-between mb-1">
-                <label for="reflectionSummary" class="block text-sm font-medium text-gray-700">What did you actually do?</label>
-                <div class="flex items-center gap-2">
-                    <button type="button" id="voice-btn-summary" onclick="toggleRecording('reflectionSummary', 'summary')" class="text-xs px-2.5 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md border border-gray-300 dark:border-gray-600 inline-flex items-center gap-1 transition">
-                        🎤 <span id="voice-label-summary">Voice note</span>
-                    </button>
-                    <span id="status-summary" class="text-xs text-gray-500" aria-live="polite"></span>
+        <div class="reflection-modal" role="dialog" aria-modal="true" aria-labelledby="reflectionTitle">
+            <h3 id="reflectionTitle">Add Reflection</h3>
+            <p id="reflectionDate" class="reflection-modal-date"></p>
+
+            <div class="reflection-mode-switch" role="tablist" aria-label="Reflection mode">
+                <button type="button" id="modeWriteTab" role="tab" aria-selected="true" aria-controls="reflectionWritePanel" onclick="setReflectionMode('write')">✍️ Write Reflection</button>
+                <button type="button" id="modeSpeakTab" role="tab" aria-selected="false" aria-controls="reflectionVoicePanel" onclick="setReflectionMode('voice')">🎙️ Speak Reflection</button>
+            </div>
+
+            <div id="reflectionWritePanel" class="reflection-write-panel" role="tabpanel" aria-labelledby="modeWriteTab">
+                <label for="reflectionSummary">What did you actually do?</label>
+                <textarea id="reflectionSummary" rows="3" maxlength="2000" placeholder="What did you actually do?"></textarea>
+                <div class="reflection-field-meta">
+                    <span class="reflection-field-hint">Describe the activity you worked on and what happened.</span>
+                    <span class="reflection-char-count"><span id="summaryCount">0</span>/2000</span>
+                </div>
+
+                <label for="reflectionChallenges">Challenges faced?</label>
+                <textarea id="reflectionChallenges" rows="2" maxlength="1000" placeholder="Challenges faced?"></textarea>
+                <div class="reflection-field-meta">
+                    <span class="reflection-field-hint">What got in the way or felt difficult?</span>
+                    <span class="reflection-char-count"><span id="challengesCount">0</span>/1000</span>
+                </div>
+
+                <label for="reflectionLearnings">What did you learn?</label>
+                <textarea id="reflectionLearnings" rows="2" maxlength="1000" placeholder="What did you learn?"></textarea>
+                <div class="reflection-field-meta">
+                    <span class="reflection-field-hint">The key takeaway you want to keep.</span>
+                    <span class="reflection-char-count"><span id="learningsCount">0</span>/1000</span>
                 </div>
             </div>
+
+            <div id="reflectionVoicePanel" class="reflection-voice-panel" role="tabpanel" aria-labelledby="modeSpeakTab" hidden>
+                <p class="reflection-voice-intro">Record up to 3 minutes. Listen back, re-record or delete before saving.</p>
+                <div class="reflection-recorder">
+                    <button type="button" id="voiceRecordBtn" class="reflection-record-btn" aria-label="Start recording" onclick="toggleVoiceRecording()">🎤</button>
+                    <div id="voiceWaveform" class="reflection-waveform" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                    <p id="voiceTimer" class="reflection-timer">00:00 <span>/ 03:00</span></p>
+                    <p id="voiceStatus" class="reflection-voice-status" role="status" aria-live="polite"></p>
+                </div>
+                <div id="voicePreview" class="reflection-voice-preview" hidden>
+                    <audio id="voicePreviewAudio" preload="metadata"></audio>
+                    <div class="reflection-scrubber">
+                        <button type="button" id="voicePlayBtn" class="reflection-play-btn" aria-label="Play recording" onclick="toggleVoicePlayback()">▶</button>
+                        <input type="range" id="voiceScrubber" min="0" max="100" step="0.1" value="0" aria-label="Recording position">
+                        <span class="reflection-scrub-time"><span id="voiceCurrentTime">0:00</span> / <span id="voiceDuration">0:00</span></span>
+                    </div>
+                    <div class="reflection-voice-actions">
+                        <button type="button" class="reflection-voice-action" onclick="rerecordVoiceTake()">🔄 Re-record</button>
+                        <button type="button" class="reflection-voice-action reflection-voice-action-danger" onclick="deleteVoiceTake()">🗑 Delete</button>
+                        <span id="voiceAttachedLabel" class="reflection-voice-attached" hidden>✓ Attached to reflection</span>
+                    </div>
+                </div>
+            </div>
+
             <input type="hidden" id="url-summary" value="">
-            <textarea id="reflectionSummary" rows="3" placeholder="What did you actually do?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
-            <label for="reflectionChallenges" class="block text-sm font-medium mb-1 text-gray-700">Challenges faced?</label>
-            <textarea id="reflectionChallenges" rows="2" placeholder="Challenges faced?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
-            <label for="reflectionLearnings" class="block text-sm font-medium mb-1 text-gray-700">What did you learn?</label>
-            <textarea id="reflectionLearnings" rows="2" placeholder="What did you learn?" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
             <div id="reflectionFormError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
             <button id="saveReflectionButton" onclick="saveReflection()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save reflection</button>
             <button onclick="closeReflectionModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
@@ -458,28 +496,17 @@
             currentBlockDate = date;
             document.getElementById('reflectionTitle').textContent = `Reflection: ${activity}`;
             document.getElementById('reflectionDate').textContent = `For: ${date}`;
-            const error = document.getElementById('reflectionFormError');
-            error.hidden = true;
-            error.textContent = '';
-            document.getElementById('reflectionSummary').value = '';
-            document.getElementById('reflectionChallenges').value = '';
-            document.getElementById('reflectionLearnings').value = '';
-            const urlInput = document.getElementById('url-summary');
-            if (urlInput) urlInput.value = '';
-            const statusEl = document.getElementById('status-summary');
-            if (statusEl) statusEl.textContent = '';
-            const voiceBtn = document.getElementById('voice-btn-summary');
-            if (voiceBtn) {
-                voiceBtn.innerHTML = '🎤 <span id="voice-label-summary">Voice note</span>';
-                voiceBtn.classList.remove('recording-active');
-            }
+            resetReflectionModal();
             document.getElementById('reflectionModal').classList.remove('hidden');
             document.getElementById('reflectionModal').classList.add('flex');
+            onReflectionModalOpened();
         };
 
         window.closeReflectionModal = function() {
+            abortVoiceRecording();
             document.getElementById('reflectionModal').classList.add('hidden');
             document.getElementById('reflectionModal').classList.remove('flex');
+            onReflectionModalClosed();
         };
 
         window.saveReflection = async function() {
