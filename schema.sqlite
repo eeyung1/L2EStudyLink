@@ -112,7 +112,8 @@ CREATE TABLE IF NOT EXISTS timetable (
 -- Activity logs (reflections on timetable blocks)
 CREATE TABLE IF NOT EXISTS activity_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    timetable_id INTEGER NOT NULL,
+    timetable_id INTEGER,
+    activity_name VARCHAR(255) NOT NULL DEFAULT '',
     user_id INTEGER NOT NULL,
     log_date TEXT NOT NULL,
     summary TEXT NOT NULL DEFAULT '',
@@ -121,7 +122,7 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     audio_url TEXT,
     completed INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (timetable_id) REFERENCES timetable(id) ON DELETE CASCADE,
+    FOREIGN KEY (timetable_id) REFERENCES timetable(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE(timetable_id, user_id, log_date)
 );

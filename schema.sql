@@ -106,7 +106,8 @@ CREATE TABLE IF NOT EXISTS timetable (
 -- Activity logs (reflections on timetable blocks)
 CREATE TABLE IF NOT EXISTS activity_logs (
     id SERIAL PRIMARY KEY,
-    timetable_id INT NOT NULL REFERENCES timetable(id) ON DELETE CASCADE,
+    timetable_id INT REFERENCES timetable(id) ON DELETE SET NULL,
+    activity_name VARCHAR(255) NOT NULL DEFAULT '',
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     log_date DATE NOT NULL,
     summary TEXT NOT NULL DEFAULT '',
