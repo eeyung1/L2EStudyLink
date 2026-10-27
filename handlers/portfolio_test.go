@@ -79,7 +79,7 @@ func TestPortfolio(t *testing.T) {
 	}
 	// Three consecutive reflection days ending today.
 	for i := 0; i < 3; i++ {
-		if _, err := db.Exec(`INSERT INTO activity_logs(user_id,log_date,summary) VALUES($1,CURRENT_DATE-$2,'Studied')`, alice, i); err != nil {
+		if _, err := db.Exec(`INSERT INTO activity_logs(user_id,log_date,summary) VALUES($1,CURRENT_DATE-$2::integer,'Studied')`, alice, i); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -228,7 +228,9 @@ func TestPortfolioSQLiteSchema(t *testing.T) {
 	script := `
 import sqlite3
 c = sqlite3.connect(':memory:')
-c.executescript(open('../schema.sqlite').read())
+schema = open('../schema.sqlite').read()
+c.executescript(schema)
+c.executescript(schema)
 cols = {r[1] for r in c.execute('PRAGMA table_info(users)')}
 assert 'public_handle' in cols and 'portfolio_public' in cols, cols
 c.execute("INSERT INTO users(name,email,password_hash) VALUES('A','a@example.com','x')")
