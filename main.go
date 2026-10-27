@@ -82,6 +82,7 @@ func main() {
     router.GET("/u/:handle", func(c *gin.Context) {
         c.HTML(200, "portfolio.html", nil)
     })
+    router.GET("/planner", middleware.AuthRequired, handlers.PlannerPage)
     router.GET("/masterclass", func(c *gin.Context) { c.HTML(200, "masterclass.html", nil) })
     router.GET("/projects", func(c *gin.Context) {
         c.HTML(200, "projects.html", nil)
@@ -125,6 +126,8 @@ func main() {
         {
             protected.GET("/me", handlers.GetProfile)
             protected.GET("/me/streaks", handlers.GetUserStreaks)
+            protected.GET("/planner/week", handlers.GetPlannerWeek)
+            protected.POST("/planner/analyze", handlers.AnalyzePlannerWeek)
             protected.GET("/portfolio/me", handlers.GetMyPortfolio)
             protected.PUT("/portfolio/handle", handlers.ClaimPortfolioHandle)
             protected.PUT("/portfolio/visibility", handlers.SetPortfolioVisibility)
