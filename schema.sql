@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS users (
     is_suspended BOOLEAN DEFAULT FALSE,
     is_admin BOOLEAN DEFAULT FALSE,
     marketing_opt_in_at TIMESTAMPTZ,
+    public_handle VARCHAR(30),
+    portfolio_public BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -130,6 +132,7 @@ CREATE INDEX IF NOT EXISTS idx_reviews_reviewee ON reviews(reviewee_id);
 CREATE INDEX idx_timetable_user ON timetable(user_id);
 CREATE INDEX idx_activity_logs_timetable ON activity_logs(timetable_id);
 CREATE INDEX idx_activity_logs_user ON activity_logs(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_handle ON users (lower(public_handle));
 -- Project collaboration
 CREATE TABLE IF NOT EXISTS collaboration_preferences (
     user_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,

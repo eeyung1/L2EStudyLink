@@ -62,6 +62,17 @@ func InitDB() error {
 		return fmt.Errorf("failed to add product email preference: %w", err)
 	}
 
+	// Public portfolios are opt-in: no handle, hidden by default.
+	if _, err = DB.Exec(`ALTER TABLE users ADD COLUMN IF NOT EXISTS public_handle VARCHAR(30)`); err != nil {
+		return fmt.Errorf("failed to add public portfolio handle: %w", err)
+	}
+	if _, err = DB.Exec(`ALTER TABLE users ADD COLUMN IF NOT EXISTS portfolio_public BOOLEAN NOT NULL DEFAULT FALSE`); err != nil {
+		return fmt.Errorf("failed to add portfolio visibility flag: %w", err)
+	}
+	if _, err = DB.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_handle ON users (lower(public_handle))`); err != nil {
+		return fmt.Errorf("failed to add public handle uniqueness index: %w", err)
+	}
+
 	// Ensure audio_url exists on activity_logs for voice reflections if the table is present
 	if _, err = DB.Exec(`
         DO $$ BEGIN
