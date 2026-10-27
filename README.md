@@ -77,6 +77,8 @@ PostgreSQL creates the two new tables and seeds the first guide on startup throu
 - The timetable opens on today’s blocks using the user’s device date. Day buttons show only the selected day; **All** shows the full week. The selection stays active after adding/deleting blocks or saving a reflection, with accessible controls on desktop and phones.
 - Personal weekly timetable: add/list/delete time blocks (`GET`/`POST /api/v1/timetable`, `DELETE /api/v1/timetable/:id`). The read handler returns `HH:MM` times and an empty JSON array when there are no blocks.
 - Reflections tied to a timetable block and date, upsert-style (creating a reflection for an existing block+date updates it) (`POST`/`GET /api/v1/reflections`). The read handler returns `YYYY-MM-DD` dates, `HH:MM` times, and an empty JSON array when there are no reflections.
+- Voice reflection recording & uploads: audio recordings can be uploaded (`POST /api/v1/voice/upload`) and saved to `uploads/voice/`, storing an `audio_url` reference on `activity_logs` with audio player preview support.
+- Habit consistency heatmap & streak tracking: `GET /api/v1/me/streaks` computes the user's active daily streak, longest streak, and total active reflection days, powering an interactive GitHub-style contribution heatmap on both Dashboard and Reflections pages.
 - Saving a reflection from the timetable shows a styled, accessible confirmation with a link to the Reflections page; validation and save errors appear within the form instead of browser alert dialogs.
 - Deleting a timetable block currently cascades to its reflections in PostgreSQL; a styled confirmation dialog now explains this explicitly before deletion. Timetable creation feedback and validation appear in the page and form instead of browser popups. Recovering deleted entries requires a backup or another saved copy. Retaining reflections independently of a block remains a follow-up data-model change.
 - Both pages retry transient network or server failures on GET requests up to three attempts, redirect to login on an expired session, and show a **Try again** control for errors. The timetable remains viewable when its separate reflections request fails. Database query and scan failures are logged on the server rather than silently dropping rows.
@@ -195,6 +197,79 @@ A fellow can opt in to invitations on the Projects page. Owners can browse opted
 `/projects` is a mobile-friendly page. Authenticated API routes are `GET`/`POST /api/v1/projects`, `GET /api/v1/projects/:id`, `PUT /api/v1/projects/:id/status`, `POST /api/v1/projects/:id/requests`, `GET`/`PUT /api/v1/collaboration/preferences`, `GET /api/v1/collaborators`, `GET /api/v1/project-requests`, and `PUT /api/v1/project-requests/:id/status`. Project tables are added automatically to existing PostgreSQL databases on startup; both schema files define them for fresh databases. GitHub Actions runs Go tests/build and a fresh SQLite schema check.
 
 Project discovery and team membership live here; code, issues and day-to-day team communication remain in the tools fellows already use. Assess real project posts, relevant requests, accepted teammates, and first working sessions during a pilot before expanding to messaging or automated matching.
+
+---
+
+## Product Roadmap & Features Yet to Be Implemented
+
+The following backlog defines the key architectural improvements and product features planned for L2EStudyLink. As governed by the multi-agent orchestrator, each feature will be decomposed into non-overlapping tasks in `agentmeeting.md` for parallel worker execution.
+
+### 1. Add Reflection: OPay-Standard UI (Seamless Text vs. Voice Switching)
+- **Context & Current Gap:** Currently, reflections support text entry and an initial audio upload pipeline, but the reflection modal lacks a unified, high-standard interaction flow. Voice recording appears as an unstyled button next to a text label without dedicated recording states, audio waveform visualization, or mode selection.
+- **OPay UI Standard Requirements:**
+  - **Segmented Pill Mode Switcher:** Top of the modal features a high-contrast segmented pill switch:
+    - `[ ✍️ Write Reflection ]` vs. `[ 🎙️ Speak Reflection ]`
+    - Styled with OPay's signature vibrant emerald green accent (`#00B875` / `#059669`), crisp border radii, smooth tab transition animations, and dark-mode compatibility.
+  - **Voice Mode Experience:**
+    - **Prominent Mic Action:** Large central circular record button with tactile tap feedback and clear visual states (Ready, Recording, Reviewing).
+    - **Pulsing Ripple & Waveform:** Concentric pulsing ripple effect or live equalizer bars indicating active audio input.
+    - **Live Duration Timer:** Real-time recording counter (e.g., `00:18 / 03:00 max`).
+    - **Post-Recording Audio Preview:** An in-modal audio player preview with scrubbing controls, enabling users to listen before saving.
+    - **Re-record & Discard:** One-tap action to discard the take and record again without losing modal context.
+    - **Direct Upload Integration:** Seamless upload to `/api/v1/voice/upload` with automatic attachment of `audio_url` to the reflection log payload.
+  - **Text Mode Experience:**
+    - Clean, spacious inputs with crisp focus rings, character counters, and guided prompts for Activity, Challenges, and Key Learnings.
+  - **Mobile-First Ergonomics:**
+    - Bottom-sheet capable modal presentation on mobile viewports (`max-w-md`), accessible keyboard trapping, Escape key dismissal, and non-blocking background backdrop.
+
+### 2. Reflection Data Safety & Timetable Cascade Decoupling
+- **Context & Current Gap:** In `schema.sql` and `schema.sqlite`, `activity_logs.timetable_id` is defined with `ON DELETE CASCADE`. When a user deletes or modifies a weekly timetable slot, historical reflection entries (and associated streaks/heatmaps) for that slot are wiped.
+- **Requirements:**
+  - Alter the foreign key constraint to `ON DELETE SET NULL`.
+  - Add an `activity_name VARCHAR(255)` column to `activity_logs` as an immutable snapshot captured at reflection creation time.
+  - Update Go reflection handlers (`handlers/timetable.go`) to preserve and display reflections independently of active timetable blocks, ensuring historical learning records and streak calculations remain permanent.
+
+### 3. AI Growth Coach & Weekly Review Engine (`L2E_PLANNER_PROMPT_v3.md`)
+- **Context & Current Gap:** `L2E_PLANNER_PROMPT_v3.md` outlines an intelligent reflection evaluation model, but the backend AI execution pipeline, database storage, and front-end coaching view are not yet implemented.
+- **Requirements:**
+  - **Deterministic Metrics Engine (Go):** Compute objective weekly stats (scheduled hours, completed reflection hours, reflection adherence rate, streak gains/losses, consistency index).
+  - **LLM Coaching Integration:** Adapter calling a model provider (Gemini / Claude / OpenAI) via server-side `LLM_API_KEY`. Adapt `L2E_PLANNER_PROMPT_v3.md` to evaluate the user's weekly activities, isolate bottlenecks, celebrate wins, and ask a single high-leverage coaching question.
+  - **Data Persistence:** Migration adding `planner_analyses` table (`user_id`, `week_start`, `metrics_json`, `ai_review_text`, `created_at`).
+  - **Phone-First `/planner` Interface:** An on-demand dashboard to view weekly breakdowns, trends over time, and past coaching evaluations.
+
+### 4. Proof-of-Work Public Learner Portfolio (`/@username`)
+- **Context & Current Gap:** Fellow profiles are currently private or limited to tutor discovery. Students lack a public, shareable showcase of their verified learning track record.
+- **Requirements:**
+  - Publicly accessible fellow route (`/@username` or `/u/:username`).
+  - Showcases verified learning hours, interactive reflection heatmap, mastered skills with peer reviews, completed collaborative projects, and authored guides.
+  - User-configurable privacy settings (toggle public visibility on/off).
+
+### 5. Virtual Silent Focus / Co-Working Rooms (Live Pomodoro)
+- **Context & Current Gap:** Solo studying often suffers from isolation and lack of focus.
+- **Requirements:**
+  - Synchronized Pomodoro focus rooms (`/focus`) with structured 25-minute focus and 5-minute break cycles.
+  - Live participant roster showing who is currently focusing and their session target.
+  - Ambient audio cues and one-click post-session reflection logging.
+
+### 6. Peer Accountability Buddy Matching & Nudges
+- **Context & Current Gap:** Habits are more effectively maintained when paired with peer accountability.
+- **Requirements:**
+  - Opt-in matching algorithm pairing fellows with similar study schedules and target skills.
+  - Automated Discord and Brevo transactional email alerts when a study partner logs a milestone or misses their scheduled reflection.
+  - Shared streak badges celebrating mutual accountability.
+
+### 7. Real-Time In-App Notifications (Server-Sent Events)
+- **Context & Current Gap:** All current notifications rely on Discord webhooks or Brevo transactional emails. The in-app experience has no real-time push mechanism.
+- **Requirements:**
+  - Lightweight SSE endpoint (`GET /api/v1/notifications/stream`).
+  - Header notification tray with unread badge counter.
+  - Real-time alerts for booking confirmations, project join requests, tutor reviews, and guide comments.
+
+### 8. Community Group Masterclasses & Workshops
+- **Context & Current Gap:** `/masterclass` currently only supports 1-on-1 tutor booking.
+- **Requirements:**
+  - Tutors can create group learning sessions with fixed date/time, topic agenda, and student seat limits (e.g. 10 attendees).
+  - Multi-student enrollment with real-time seat availability tracking.
 
 ---
 
