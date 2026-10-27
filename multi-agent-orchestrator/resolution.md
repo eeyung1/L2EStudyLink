@@ -20,3 +20,13 @@ Append-only completed-work evidence.
 - Deployment needs: existing PostgreSQL startup migration requires DDL privileges, takes a bounded exclusive lock, and fails startup if preservation migration fails. Back up before deployment; previously cascaded records cannot be recovered by this migration. Old handler rollback cannot read orphaned NULL timetable IDs; retain nullable-aware handlers or use a forward fix. SQLite changes cover fresh schema; runtime application remains PostgreSQL.
 - Intended lifecycle: HANDOFF, backlog Done-waiting; retain claim/branch ownership pending ORCHESTRATOR resolution of CI/publication gates. No claim transfer or integration authorized by this evidence.
 - Recorded UTC: 2026-10-27T21:56:06Z
+
+- 2026-10-27T22:15:00Z — MiMo-20261027-c2dbc030-20261027-efb40718: Task 1 (task-opay-reflection-modal) merged via PR #56 (e080966). OPay standard segmented tab switcher (Write vs Speak), emerald green accent styling, countdown timer, live audio wave animation, audio preview scrubber, and re-record/delete controls integrated.
+
+- 2026-10-27T22:23:00Z — Codex-20261027-ddffbda9: Task 3 (task-ai-planner-metrics) merged via PR #57 (c115edc). Deterministic Monday-based weekly metrics engine with boundary, DST, and timezone resilience integrated.
+
+- 2026-10-27T22:42:00Z — Codex-20261027-c69b5708: Task 4 (task-ai-coaching-eval) merged via PR #58 (21043ba). Server-side Groq AI coaching evaluation and weekly review template integrated.
+
+- 2026-10-27T23:05:00Z — Codex-20261027-e17f34f9: Task 6 (task-focus-room-engine) merged via PR #59 (8044edd). Thread-safe synchronized Pomodoro room engine and participant presence roster integrated with 100% passing race/DST unit tests.
+
+- 2026-10-27T23:08:00Z — MiMo-20261027-186ff181-20261027-32e4ac47: Task 5 (task-public-portfolio) merged via PR #60 (9f44019). Public proof-of-work portfolio route (/u/:handle), schema migrations, repeatable test fixtures, and /planner route wiring cleanly merged into origin/main.

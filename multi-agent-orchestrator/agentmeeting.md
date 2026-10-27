@@ -4,13 +4,13 @@
 
 | Agent/session ID | Role | Status | Heartbeat UTC | Feature | Branch/worktree | Claim reference |
 | --- | --- | --- | --- | --- | --- | --- |
-| planner-agent | PLANNER | ACTIVE | 2026-10-27T22:57:00Z | planning | - | structured-state |
+| planner-agent | PLANNER | ACTIVE | 2026-10-27T23:20:00Z | planning | - | structured-state |
 | MiMo-20261027-c2dbc030-20261027-efb40718 | worker | COMPLETE | 2026-10-27T22:03:59Z | task-opay-reflection-modal | agent/task-opay-reflection-modal @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-opay-reflection-modal | claim-mimo-20261027-c2dbc030 |
 | Codex-20261027-0dda2028 | worker | COMPLETE | 2026-10-27T22:14:09Z | task-decouple-reflections | agent/task-decouple-reflections @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-decouple-reflections | claim-codex-decouple-20261027 |
 | Codex-20261027-ddffbda9 | worker | COMPLETE | 2026-10-27T22:22:50Z | task-ai-planner-metrics | agent/task-ai-planner-metrics @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-ai-planner-metrics | claim-codex-metrics-20261027 |
 | Codex-20261027-c69b5708 | worker | COMPLETE | 2026-10-27T22:40:17Z | task-ai-coaching-eval | agent/task-ai-coaching-eval @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-ai-coaching-eval | claim-codex-coaching-20261027 |
-| MiMo-20261027-186ff181-20261027-32e4ac47 | worker | HANDOFF | 2026-10-27T22:56:51Z | task-public-portfolio | agent/task-public-portfolio @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-public-portfolio | claim-mimo-portfolio-20261027 |
-| Codex-20261027-e17f34f9 | worker | HANDOFF | 2026-10-27T22:54:20Z | task-focus-room-engine | agent/task-focus-room-engine @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-focus-room-engine | claim-codex-focus-20261027 |
+| MiMo-20261027-186ff181-20261027-32e4ac47 | worker | COMPLETE | 2026-10-27T23:10:00Z | task-public-portfolio | agent/task-public-portfolio @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-public-portfolio | claim-mimo-portfolio-20261027 |
+| Codex-20261027-e17f34f9 | worker | COMPLETE | 2026-10-27T23:10:00Z | task-focus-room-engine | agent/task-focus-room-engine @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-focus-room-engine | claim-codex-focus-20261027 |
 
 ## Standups
 
@@ -28,8 +28,8 @@
 | 2 | task-decouple-reflections | schema.sql, schema.sqlite, db/postgres.go, handlers/timetable.go, handlers/timetable_test.go | Done | Codex-20261027-0dda2028 | - | Decouple reflection history from timetable deletions: Change foreign key timetable_id to ON DELETE SET NULL; add activity_name VARCHAR(255) snapshot column to activity_logs; update Go handlers to save activity name snapshot and display reflections even after parent timetable block is removed. (Merged via PR #55) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestTimetable |
 | 3 | task-ai-planner-metrics | handlers/planner.go, handlers/planner_test.go | Done | Codex-20261027-ddffbda9 | - | Deterministic Go weekly metrics engine: Compute scheduled minutes, reflected minutes, adherence percentage, streak changes, and missing reflection counts for any calendar week. (Merged via PR #57) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestPlanner |
 | 4 | task-ai-coaching-eval | handlers/planner_ai.go, handlers/planner_ai_test.go, templates/planner.html | Done | Codex-20261027-c69b5708 | - | Server-side LLM coaching integration via LLM_API_KEY adapting L2E_PLANNER_PROMPT_v3.md; generate qualitative feedback, bottlenecks, and coaching questions; render /planner UI with weekly cards. (Merged via PR #58; route registration wired in main.go) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestPlannerAI |
-| 5 | task-public-portfolio | main.go, handlers/portfolio.go, handlers/portfolio_test.go, schema.sql, schema.sqlite, db/postgres.go, templates/portfolio.html | Done-waiting | MiMo-20261027-186ff181-20261027-32e4ac47 | - | Public proof-of-work learner portfolio route (/@username or /u/:username): display verified study hours, heatmap streaks, mastered skills, tutor reviews, and completed projects with privacy toggle. (Pushed head 2b107f5) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestPortfolio |
-| 6 | task-focus-room-engine | focus/room.go, focus/room_test.go, focus/README.md | Done-waiting | Codex-20261027-e17f34f9 | - | Foundation synchronized timer engine for virtual silent focus rooms; thread-safe room roster with joined participants, Pomodoro interval states (focus/break), and race tests. (PR #59 CI green) | /home/recoding/sdk/go/bin/go test -v ./focus/... |
+| 5 | task-public-portfolio | main.go, handlers/portfolio.go, handlers/portfolio_test.go, schema.sql, schema.sqlite, db/postgres.go, templates/portfolio.html | Done | MiMo-20261027-186ff181-20261027-32e4ac47 | - | Public proof-of-work learner portfolio route (/@username or /u/:username): display verified study hours, heatmap streaks, mastered skills, tutor reviews, and completed projects with privacy toggle. (Merged via PR #60) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestPortfolio |
+| 6 | task-focus-room-engine | focus/room.go, focus/room_test.go, focus/README.md | Done | Codex-20261027-e17f34f9 | - | Foundation synchronized timer engine for virtual silent focus rooms; thread-safe room roster with joined participants, Pomodoro interval states (focus/break), and race tests. (Merged via PR #59) | /home/recoding/sdk/go/bin/go test -v ./focus/... |
 
 ## Worker Standups
 
@@ -85,9 +85,11 @@
 
 - 2026-10-27T22:56:51Z — MiMo-20261027-186ff181-20261027-32e4ac47: Authenticated integrator successfully pushed agent/task-public-portfolio; remote and local head are exactly 2b107f55d1b9c12d436dc37ab70b4213fd0fcf4f. Remote provided PR creation URL https://github.com/eeyung1/L2EStudyLink/pull/new/agent/task-public-portfolio. Exact-head pull-request CI remains pending. Also verified origin/main contains PR #56 merge e080966 with feature head a522cc9; backlog task #1 advanced from Done-waiting to Done.
 
+- 2026-10-27T23:05:00Z — Codex-20261027-e17f34f9 (worker, COMPLETE): PR #59 merged into origin/main (8044edd). Synchronized focus room engine foundation (focus/room.go, focus/room_test.go) merged with 100% passing race/DST unit tests. Feature task-focus-room-engine marked Done; claim released.
+
+- 2026-10-27T23:08:00Z — MiMo-20261027-186ff181-20261027-32e4ac47 (worker, COMPLETE): PR #60 merged into origin/main (9f44019). Public proof-of-work portfolio (/u/:handle), schema migrations, and /planner route wiring cleanly integrated with green CI. Feature task-public-portfolio marked Done; claim released.
+
 ## Atomic Claims
 
 | Token | Agent/session ID | Feature | Scope | Claimed UTC |
 | --- | --- | --- | --- | --- |
-| claim-mimo-portfolio-20261027 | MiMo-20261027-186ff181-20261027-32e4ac47 | task-public-portfolio | main.go,handlers/portfolio.go,handlers/portfolio_test.go,schema.sql,schema.sqlite,db/postgres.go,templates/portfolio.html | 2026-10-27T22:15:36Z |
-| claim-codex-focus-20261027 | Codex-20261027-e17f34f9 | task-focus-room-engine | focus/room.go,focus/room_test.go,focus/README.md | 2026-10-27T22:46:48Z |
