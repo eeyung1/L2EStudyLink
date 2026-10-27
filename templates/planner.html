@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172537">
+  <title>Weekly growth coach · L2EStudyLink</title>
+  <script>(function(){if(localStorage.getItem('darkMode')!=='false')document.documentElement.classList.add('dark');})();</script>
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+  <link rel="stylesheet" href="/static/css/dark-mode.css">
+  <link rel="stylesheet" href="/static/css/ui-polish.css">
+  <script src="/static/js/session.js"></script>
+  <script src="/static/js/mobile-nav.js" defer></script>
+  <style>
+    .coach-page{--coach-card:#fff;--coach-text:#172537;--coach-muted:#576579;--coach-line:#dce4e8;max-width:1080px;margin:auto;padding:clamp(18px,4vw,40px);color:var(--coach-text)}
+    .dark .coach-page{--coach-card:#172537;--coach-text:#eef5f8;--coach-muted:#b0bfce;--coach-line:#35495b}
+    .coach-page h1{font-size:clamp(1.8rem,5vw,2.7rem);line-height:1.15;margin:10px 0}.coach-page h2{font-size:1.15rem;margin:0 0 12px}.coach-page p{line-height:1.6}
+    .coach-eyebrow{font-size:.75rem;letter-spacing:.14em;font-weight:800;color:#059669}.coach-muted{color:var(--coach-muted)}
+    .coach-panel,.coach-stat{background:var(--coach-card);border:1px solid var(--coach-line);border-radius:20px;padding:22px;margin-top:20px}
+    .coach-controls{display:flex;flex-wrap:wrap;gap:14px;align-items:end}.coach-controls label{display:grid;gap:8px;font-size:.9rem;font-weight:600;flex:1;min-width:160px}
+    .coach-page input,.coach-page button{font:inherit;border-radius:10px;padding:12px;border:1px solid var(--coach-line);color:var(--coach-text);background:var(--coach-card)}
+    .coach-page input{min-width:0;width:100%;box-sizing:border-box}.coach-page button{cursor:pointer;font-weight:700}.coach-page button:disabled{cursor:wait;opacity:.55}
+    .coach-page .coach-primary{background:#059669;color:white;border-color:#059669}.coach-page :focus-visible{outline:3px solid #00b875;outline-offset:3px}
+    .coach-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.coach-stat strong{display:block;font-size:1.8rem;margin-top:8px}.coach-stat span{font-size:.82rem;color:var(--coach-muted)}
+    .coach-chart{display:grid;gap:14px;margin-top:20px}.coach-day{display:grid;grid-template-columns:48px minmax(0,1fr) 90px;gap:12px;align-items:center;font-size:.85rem}.coach-track{height:12px;border-radius:9px;background:var(--coach-line);overflow:hidden}.coach-bar{height:100%;background:#059669;border-radius:9px}
+    .coach-message{padding:14px 18px;border-radius:12px;background:var(--coach-card);border:1px solid var(--coach-line);margin-top:18px;line-height:1.6}.coach-error{border-color:#cf795e}.coach-action{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:18px}
+    .coach-review-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:22px}.coach-page li{margin-bottom:10px;line-height:1.6}.coach-question{border-left:4px solid #00b875;padding-left:18px;margin-top:22px}.coach-page [hidden]{display:none!important}
+    @media(max-width:700px){.coach-stats{grid-template-columns:1fr 1fr}.coach-review-grid{grid-template-columns:1fr}.coach-day{grid-template-columns:40px minmax(0,1fr) 76px}.coach-panel,.coach-stat{padding:17px}.coach-controls button{width:100%}}
+    @media(prefers-reduced-motion:no-preference){.coach-bar{transition:width .2s ease}}
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard">L2E<span>Study</span>Link</a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span aria-hidden="true">☰</span><span>Menu</span></button></div>
+    <nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation">
+      <span class="nav-kicker">WORKSPACE</span><a class="sidebar-link" href="/dashboard">Dashboard</a><a class="sidebar-link" href="/timetable">My timetable</a><a class="sidebar-link" href="/reflections">My reflections</a><a class="sidebar-link active" aria-current="page" href="/planner">Weekly growth coach</a><a class="sidebar-link" href="/projects">Projects</a>
+    </nav>
+    <div class="sidebar-foot"><button class="logout-link" onclick="logout()">Log out</button><button class="icon-btn" onclick="toggleDark()" aria-label="Toggle dark mode">◐</button></div>
+  </aside>
+  <main class="main-content">
+    <div class="coach-page">
+      <header><p class="coach-eyebrow">REFLECT. REFOCUS. GROW.</p><h1>Your week, with perspective.</h1><p class="coach-muted">See your learning rhythm, celebrate progress, and choose a clearer next step.</p></header>
+      <form id="week-form" class="coach-panel coach-controls">
+        <label for="week-start">Week starting Monday<input id="week-start" type="date" required></label>
+        <label for="timezone">Your timezone<input id="timezone" type="text" placeholder="Africa/Lagos" required autocomplete="off"></label>
+        <button type="submit" id="load-week">View week</button>
+      </form>
+      <p id="status" class="coach-message" role="status" aria-live="polite">Choose a week to see your learning rhythm.</p>
+      <section id="weekly-summary" hidden aria-label="Weekly metrics">
+        <div class="coach-stats">
+          <article class="coach-stat"><span>Scheduled time</span><strong id="scheduled">—</strong></article>
+          <article class="coach-stat"><span>Time covered by reflections</span><strong id="reflected">—</strong></article>
+          <article class="coach-stat"><span>Due blocks with a reflection</span><strong id="coverage">—</strong></article>
+          <article class="coach-stat"><span>Missing reflections</span><strong id="missing">—</strong></article>
+        </div>
+        <section class="coach-panel"><h2>Your daily rhythm</h2><p class="coach-muted" id="streak"></p><div class="coach-chart" id="daily-chart" role="list" aria-label="Scheduled time covered by completed reflections each day"></div><p class="coach-muted" id="schedule-note">These are minutes from your current timetable, not measured study time. Editing your timetable changes historical estimates.</p><p class="coach-muted" id="unmatched"></p></section>
+        <section class="coach-panel" aria-labelledby="coaching-title"><h2 id="coaching-title">Find your next step</h2><p class="coach-muted">When you request coaching, this week’s reflection text and metrics are sent to Groq. Feedback is generated on demand and is not saved here. You can request up to three reviews per hour.</p><div class="coach-action"><button type="button" id="analyze" class="coach-primary">Get weekly coaching</button><span id="coaching-note" class="coach-muted"></span></div></section>
+      </section>
+      <article id="review" class="coach-panel" hidden aria-labelledby="review-title"><p class="coach-eyebrow">AI SUGGESTIONS · GROQ</p><h2 id="review-title">A little perspective for the week ahead</h2><p id="review-summary"></p><div class="coach-review-grid"><section><h2>Worth celebrating</h2><ul id="wins"></ul></section><section><h2>What got in the way</h2><ul id="bottlenecks"></ul></section></div><h2>Next week’s priorities</h2><ol id="priorities"></ol><div class="coach-question"><h2>One question to think about</h2><p id="question"></p></div><p class="coach-muted" id="context-note"></p></article>
+    </div>
+  </main>
+</div>
+<script>
+'use strict';
+const byId=id=>document.getElementById(id);
+const token=sessionToken();
+function logout(){return endSession(token);}
+function toggleDark(){localStorage.setItem('darkMode',String(document.documentElement.classList.toggle('dark')));}
+let currentMetrics=null, busy=false, requestSequence=0;
+const headers=()=>token?{'Authorization':'Bearer '+token}:{};
+const localDate=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+const today=new Date();today.setHours(12,0,0,0);today.setDate(today.getDate()-(today.getDay()+6)%7);
+byId('week-start').value=localDate(today);
+byId('timezone').value=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
+function message(text,error=false){byId('status').textContent=text;byId('status').classList.toggle('coach-error',error);}
+function setBusy(value){busy=value;byId('load-week').disabled=value;byId('week-start').disabled=value;byId('timezone').disabled=value;byId('analyze').disabled=value||!currentMetrics||byId('analyze').dataset.available!=='true';byId('analyze').textContent=value?'Working…':'Get weekly coaching';}
+async function readResponse(response){let data;try{data=await response.json();}catch(_){throw new Error('We could not load your weekly review. Please try again.');}if(response.status===401){window.location.href='/page/login';throw new Error('Please sign in again.');}if(!response.ok)throw new Error(data.error||'We could not load your weekly review. Please try again.');return data;}
+function renderMetrics(metrics,available){
+ currentMetrics=metrics;byId('weekly-summary').hidden=false;
+ byId('scheduled').textContent=metrics.scheduled_minutes+' min';byId('reflected').textContent=metrics.reflected_minutes+' min';byId('coverage').textContent=metrics.adherence_percent+'%';byId('missing').textContent=String(metrics.missing_reflections);
+ const delta=metrics.streak_change;byId('streak').textContent=`${metrics.active_days} active days · Reflection streak: ${metrics.streak_at_end} days (${delta>=0?'+':''}${delta} this week) · ${metrics.pending_reflections} blocks not yet due.`;
+ byId('unmatched').textContent=metrics.unmatched_reflections?`${metrics.unmatched_reflections} reflections have no matching timetable duration. They still contribute to your reflection habit.`:'';
+ const chart=byId('daily-chart');chart.replaceChildren();
+ for(const day of metrics.days){
+  const row=document.createElement('div');row.className='coach-day';row.setAttribute('role','listitem');
+  const label=document.createElement('span');label.textContent=new Intl.DateTimeFormat(undefined,{weekday:'short',timeZone:'UTC'}).format(new Date(day.date+'T12:00:00Z'));
+  const track=document.createElement('div');track.className='coach-track';const bar=document.createElement('div');bar.className='coach-bar';bar.style.width=(day.scheduled_minutes?Math.min(100,100*day.reflected_minutes/day.scheduled_minutes):0)+'%';track.append(bar);track.setAttribute('aria-hidden','true');
+  const value=document.createElement('span');value.textContent=`${day.reflected_minutes}/${day.scheduled_minutes} min`;row.setAttribute('aria-label',`${day.date}: ${value.textContent}, ${day.missing_reflections} missing reflections`);row.append(label,track,value);chart.append(row);
+ }
+ byId('analyze').dataset.available=available&&metrics.active_days>0?'true':'false';byId('coaching-note').textContent=!available?'AI coaching is not available yet.':metrics.active_days===0?'Add a reflection for this week to begin.':'';
+}
+async function loadWeek(event){
+ if(event)event.preventDefault();if(busy)return;
+ const sequence=++requestSequence;currentMetrics=null;byId('weekly-summary').hidden=true;byId('review').hidden=true;setBusy(true);message('Loading your week…');
+ try{
+  const selected=new Date(byId('week-start').value+'T12:00:00');if(Number.isNaN(selected.getTime()))throw new Error('Choose a valid week.');selected.setDate(selected.getDate()-(selected.getDay()+6)%7);byId('week-start').value=localDate(selected);
+  const query=new URLSearchParams({week_start:byId('week-start').value,timezone:byId('timezone').value.trim()});
+  const data=await readResponse(await fetch('/api/v1/planner/week?'+query,{headers:headers(),cache:'no-store'}));if(sequence!==requestSequence)return;
+  renderMetrics(data.metrics,data.coaching_available);message(data.metrics.active_days?'Your week is ready.':'No reflections for this week yet. Your timetable is shown below.');
+ }catch(error){message(error.message,true);}finally{setBusy(false);}
+}
+function renderList(id,items,empty){const list=byId(id);list.replaceChildren();for(const text of items.length?items:[empty]){const item=document.createElement('li');item.textContent=text;list.append(item);}}
+byId('week-form').addEventListener('submit',loadWeek);
+for(const id of ['week-start','timezone'])byId(id).addEventListener('change',()=>{currentMetrics=null;byId('weekly-summary').hidden=true;byId('review').hidden=true;message('Select View week to refresh your metrics.');});
+byId('analyze').addEventListener('click',async()=>{
+ if(busy||!currentMetrics)return;setBusy(true);byId('review').hidden=true;message('Your coach is reviewing this week’s reflections…');
+ try{
+  const data=await readResponse(await fetch('/api/v1/planner/analyze',{method:'POST',headers:{...headers(),'Content-Type':'application/json'},body:JSON.stringify({week_start:currentMetrics.week_start,timezone:currentMetrics.timezone})}));
+  renderMetrics(data.metrics,true);const review=data.coaching;byId('review-summary').textContent=review.summary;renderList('wins',review.wins,'No specific wins identified in this week’s reflections.');renderList('bottlenecks',review.bottlenecks,'No specific bottlenecks identified.');renderList('priorities',review.priorities,'');byId('question').textContent=review.coaching_question;byId('context-note').textContent=data.context_truncated?'Some reflections were shortened or omitted to keep this review focused.':'';byId('review').hidden=false;message('Your coaching is ready. Use what helps as you plan your next week.');
+ }catch(error){message(error.message,true);}finally{setBusy(false);}
+});
+loadWeek();
+</script>
+</body>
+</html>
