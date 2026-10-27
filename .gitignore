@@ -4,3 +4,5 @@ env*
 *.backup*
 uploads/*
 !uploads/.gitkeep
+.agent-worktrees/
+.agent-coordination-lock/
