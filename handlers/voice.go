@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -16,47 +16,44 @@ type VoiceResponse struct {
 	Text     string `json:"text"`
 }
 
-func HandleVoiceUpload(w http.ResponseWriter, r *http.Request) {
+func HandleVoiceUpload(c *gin.Context) {
 	// 1. Limit upload size (5MB for voice notes is plenty)
-	r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
-	
-	err := r.ParseMultipartForm(5 << 20)
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 5<<20)
+
+	// 2. Get the file from multipart form
+	file, err := c.FormFile("audio")
 	if err != nil {
-		http.Error(w, "File too large or invalid form", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get audio file or file exceeds 5MB limit"})
 		return
 	}
 
-	// 2. Get the file from the form
-	file, _, err := r.FormFile("audio")
-	if err != nil {
-		http.Error(w, "Could not get audio file", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
-
-	// 3. Create a unique filename
-	fileName := fmt.Sprintf("%s.webm", uuid.New().String())
-	filePath := filepath.Join("uploads", fileName)
-
-	// 4. Save to local disk
-	dst, err := os.Create(filePath)
-	if err != nil {
-		http.Error(w, "Failed to save file locally", http.StatusInternalServerError)
-		return
-	}
-	defer dst.Close()
-
-	if _, err := io.Copy(dst, file); err != nil {
-		http.Error(w, "Failed to write file", http.StatusInternalServerError)
+	// 3. Ensure uploads directory exists
+	uploadDir := "uploads"
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to prepare storage"})
 		return
 	}
 
-	// 5. Respond with the path (Transcription step comes next)
+	// 4. Safely determine file extension
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	if ext != ".webm" && ext != ".ogg" && ext != ".mp4" && ext != ".wav" && ext != ".m4a" && ext != ".mp3" {
+		ext = ".webm"
+	}
+
+	// 5. Create a unique filename and save
+	fileName := fmt.Sprintf("%s%s", uuid.New().String(), ext)
+	filePath := filepath.Join(uploadDir, fileName)
+
+	if err := c.SaveUploadedFile(file, filePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+		return
+	}
+
+	// 6. Respond with the path (Transcription step comes next)
 	resp := VoiceResponse{
-		AudioURL: "/" + filePath,
+		AudioURL: "/" + filepath.ToSlash(filePath),
 		Text:     "Audio received. Transcription pending...",
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	c.JSON(http.StatusOK, resp)
 }

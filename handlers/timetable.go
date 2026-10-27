@@ -25,6 +25,7 @@ type ActivityLog struct {
     Challenges  string `json:"challenges"`
     Learnings   string `json:"learnings"`
     Completed   bool   `json:"completed"`
+    AudioURL    string `json:"audio_url,omitempty"`
 }
 
 func GetTimetable(c *gin.Context) {
@@ -131,9 +132,9 @@ func AddReflection(c *gin.Context) {
         // Update existing reflection
         _, err = db.Exec(`
             UPDATE activity_logs 
-            SET summary = $1, challenges = $2, learnings = $3, completed = true
-            WHERE id = $4
-        `, input.Summary, input.Challenges, input.Learnings, existingID)
+            SET summary = $1, challenges = $2, learnings = $3, audio_url = COALESCE(NULLIF($4, ''), audio_url), completed = true
+            WHERE id = $5
+        `, input.Summary, input.Challenges, input.Learnings, input.AudioURL, existingID)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update reflection"})
             return
@@ -145,10 +146,10 @@ func AddReflection(c *gin.Context) {
     // Insert new reflection - let database auto-generate ID
     var id int64
     err = db.QueryRow(`
-        INSERT INTO activity_logs (timetable_id, user_id, log_date, summary, challenges, learnings, completed)
-        VALUES ($1, $2, $3, $4, $5, $6, true)
+        INSERT INTO activity_logs (timetable_id, user_id, log_date, summary, challenges, learnings, audio_url, completed)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, true)
         RETURNING id
-    `, input.TimetableID, userID, input.LogDate, input.Summary, input.Challenges, input.Learnings).Scan(&id)
+    `, input.TimetableID, userID, input.LogDate, input.Summary, input.Challenges, input.Learnings, input.AudioURL).Scan(&id)
 
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save reflection: " + err.Error()})
@@ -164,7 +165,7 @@ func GetReflections(c *gin.Context) {
 
     rows, err := db.QueryContext(c.Request.Context(), `
         SELECT al.id, al.timetable_id, to_char(al.log_date, 'YYYY-MM-DD'), al.summary,
-               al.challenges, al.learnings, al.completed,
+               al.challenges, al.learnings, al.completed, COALESCE(al.audio_url, ''),
                t.activity, t.day_of_week, to_char(t.start_time, 'HH24:MI'), to_char(t.end_time, 'HH24:MI')
         FROM activity_logs al
         JOIN timetable t ON al.timetable_id = t.id
@@ -185,11 +186,12 @@ func GetReflections(c *gin.Context) {
         var logDate string
         var summary, challenges, learnings string
         var completed bool
+        var audioURL string
         var activity string
         var dayOfWeek int
         var startTime, endTime string
 
-        if err := rows.Scan(&id, &timetableID, &logDate, &summary, &challenges, &learnings, &completed,
+        if err := rows.Scan(&id, &timetableID, &logDate, &summary, &challenges, &learnings, &completed, &audioURL,
             &activity, &dayOfWeek, &startTime, &endTime); err != nil {
             log.Printf("GetReflections scan: %v", err)
             c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to load reflections"})
@@ -204,6 +206,7 @@ func GetReflections(c *gin.Context) {
             "challenges":   challenges,
             "learnings":    learnings,
             "completed":    completed,
+            "audio_url":    audioURL,
             "activity":     activity,
             "day_of_week":  dayOfWeek,
             "start_time":   startTime,

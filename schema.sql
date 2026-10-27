@@ -112,6 +112,7 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     summary TEXT NOT NULL DEFAULT '',
     challenges TEXT NOT NULL DEFAULT '',
     learnings TEXT NOT NULL DEFAULT '',
+    audio_url TEXT,
     completed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(timetable_id, user_id, log_date)

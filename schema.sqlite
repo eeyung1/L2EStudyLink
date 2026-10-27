@@ -118,6 +118,7 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     summary TEXT NOT NULL DEFAULT '',
     challenges TEXT NOT NULL DEFAULT '',
     learnings TEXT NOT NULL DEFAULT '',
+    audio_url TEXT,
     completed INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (timetable_id) REFERENCES timetable(id) ON DELETE CASCADE,
