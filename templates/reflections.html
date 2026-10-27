@@ -92,6 +92,27 @@
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow p-6">
 
+            <div id="reflectionStreakSection" class="mb-6 pb-6 border-b border-gray-200">
+                <div class="heatmap-header">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">Reflection Habit</h2>
+                        <p class="text-xs text-gray-500">Track your daily reflection consistency and streaks.</p>
+                    </div>
+                    <div class="streak-badges">
+                        <span class="streak-badge streak-fire" title="Current active daily streak">
+                            🔥 <strong id="statCurrentStreak">0 days</strong> streak
+                        </span>
+                        <span class="streak-badge streak-longest" title="Best consecutive streak">
+                            🏆 Best: <strong id="statLongestStreak">0 days</strong>
+                        </span>
+                        <span class="streak-badge streak-total" title="Total active days with learning reflections">
+                            📅 <strong id="statTotalActiveDays">0 days</strong> active
+                        </span>
+                    </div>
+                </div>
+                <div id="activityHeatmap" class="heatmap-target">Loading activity habit…</div>
+            </div>
+
             <div id="reflectionFilters" class="reflection-filters hidden">
                 <label for="reflectionDateFilter">Show a date</label>
                 <input type="date" id="reflectionDateFilter" aria-controls="reflectionsList">
@@ -104,6 +125,7 @@
     </div>
 
     <script src="/static/js/read-api.js"></script>
+    <script src="/static/js/heatmap.js"></script>
     <script>
         const token = sessionToken();
         if (!token) window.location.href = '/page/login';
@@ -188,6 +210,7 @@
         }
 
         loadReflections();
+        loadAndRenderStreaks('reflectionStreakSection');
 
         function toggleDark() {
             const isDark = document.documentElement.classList.toggle('dark');

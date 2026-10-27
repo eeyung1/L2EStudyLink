@@ -124,6 +124,27 @@
                 </div>
             </div>
 
+            <section class="card heatmap-card" id="streakSection" aria-labelledby="consistencyTitle">
+                <div class="heatmap-header">
+                    <div>
+                        <h2 id="consistencyTitle">Consistency &amp; Learning Habit</h2>
+                        <p class="page-sub">Daily reflections and completed study sessions build real evidence of progress.</p>
+                    </div>
+                    <div class="streak-badges">
+                        <span class="streak-badge streak-fire" title="Current active daily streak">
+                            🔥 <strong id="statCurrentStreak">0 days</strong> streak
+                        </span>
+                        <span class="streak-badge streak-longest" title="Best consecutive streak">
+                            🏆 Best: <strong id="statLongestStreak">0 days</strong>
+                        </span>
+                        <span class="streak-badge streak-total" title="Total active days with learning reflections">
+                            📅 <strong id="statTotalActiveDays">0 days</strong> active
+                        </span>
+                    </div>
+                </div>
+                <div id="activityHeatmap" class="heatmap-target">Loading activity habit…</div>
+            </section>
+
             <section class="card" aria-labelledby="discoveryTitle">
                 <div class="discovery-heading"><div><h2 id="discoveryTitle">Find your next collaboration</h2><p class="page-sub">Open projects and fellows who opted in to invitations, with matches based on your skills.</p></div><a href="/projects">See all projects →</a></div>
                 <h3>Projects for you</h3><div id="discoveryProjects" class="discovery-grid" aria-live="polite">Loading projects…</div>
@@ -135,6 +156,7 @@
     </div>
 
     <script src="/static/js/read-api.js"></script>
+    <script src="/static/js/heatmap.js"></script>
     <script>
         const token = sessionToken();
         if (!token) window.location.href = '/page/login';
@@ -263,6 +285,7 @@
         }
 
         loadProfile();
+        loadAndRenderStreaks('streakSection');
         // Warm the two personal pages after the dashboard becomes interactive.
         const warmPlanningPages = () => Promise.allSettled([
             readAPI('/api/v1/timetable', token), readAPI('/api/v1/reflections', token)
