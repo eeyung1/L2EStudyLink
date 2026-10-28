@@ -121,37 +121,82 @@ func AddReflection(c *gin.Context) {
 		return
 	}
 
-	// Snapshot only an owned block, in the same statement as the write. The
-	// conflict update deliberately keeps the name captured on first reflection.
-	var id int64
-	var inserted bool
+	// 1. Verify user owns the timetable block and snapshot activity name
+	var activityName string
 	err := db.QueryRowContext(c.Request.Context(), `
-        INSERT INTO activity_logs (timetable_id, user_id, log_date, summary, challenges, learnings, audio_url, completed, activity_name)
-        SELECT t.id, t.user_id, $3::date, $4, $5, $6, $7, true, t.activity
-        FROM timetable t
-        WHERE t.id = $1 AND t.user_id = $2
-        ON CONFLICT (timetable_id, user_id, log_date) DO UPDATE
-        SET summary = EXCLUDED.summary, challenges = EXCLUDED.challenges,
-            learnings = EXCLUDED.learnings,
-            audio_url = COALESCE(NULLIF(EXCLUDED.audio_url, ''), activity_logs.audio_url),
-            completed = true
-        RETURNING id, (xmax = 0)
-    `, input.TimetableID, userID, input.LogDate, input.Summary, input.Challenges, input.Learnings, input.AudioURL).Scan(&id, &inserted)
+		SELECT activity FROM timetable WHERE id = $1 AND user_id = $2
+	`, input.TimetableID, userID).Scan(&activityName)
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Time block not found"})
 		return
 	}
 	if err != nil {
-		log.Printf("AddReflection: %v", err)
+		log.Printf("AddReflection check block: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save reflection"})
 		return
 	}
-	if !inserted {
-		c.JSON(http.StatusOK, gin.H{"message": "Reflection updated", "id": id})
+
+	// 2. Check if a reflection already exists for this block, user, and date
+	var existingID int64
+	err = db.QueryRowContext(c.Request.Context(), `
+		SELECT id FROM activity_logs
+		WHERE timetable_id = $1 AND user_id = $2 AND log_date = $3::date
+	`, input.TimetableID, userID, input.LogDate).Scan(&existingID)
+
+	if err == nil {
+		// Existing reflection: update it, keeping the originally captured activity name
+		_, err = db.ExecContext(c.Request.Context(), `
+			UPDATE activity_logs
+			SET summary = $1, challenges = $2, learnings = $3,
+			    audio_url = COALESCE(NULLIF($4, ''), audio_url),
+			    completed = true
+			WHERE id = $5 AND user_id = $6
+		`, input.Summary, input.Challenges, input.Learnings, input.AudioURL, existingID, userID)
+		if err != nil {
+			log.Printf("AddReflection update: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save reflection"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "Reflection updated", "id": existingID})
+		return
+	} else if err != sql.ErrNoRows {
+		log.Printf("AddReflection check existing: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save reflection"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Reflection saved", "id": id})
+	// 3. New reflection: insert with captured activity_name snapshot
+	var newID int64
+	err = db.QueryRowContext(c.Request.Context(), `
+		INSERT INTO activity_logs (timetable_id, user_id, log_date, summary, challenges, learnings, audio_url, completed, activity_name)
+		VALUES ($1, $2, $3::date, $4, $5, $6, $7, true, $8)
+		RETURNING id
+	`, input.TimetableID, userID, input.LogDate, input.Summary, input.Challenges, input.Learnings, input.AudioURL, activityName).Scan(&newID)
+	if err != nil {
+		// Handle concurrent insert race condition gracefully
+		var raceID int64
+		retryErr := db.QueryRowContext(c.Request.Context(), `
+			SELECT id FROM activity_logs
+			WHERE timetable_id = $1 AND user_id = $2 AND log_date = $3::date
+		`, input.TimetableID, userID, input.LogDate).Scan(&raceID)
+		if retryErr == nil {
+			_, updateErr := db.ExecContext(c.Request.Context(), `
+				UPDATE activity_logs
+				SET summary = $1, challenges = $2, learnings = $3,
+				    audio_url = COALESCE(NULLIF($4, ''), audio_url), completed = true
+				WHERE id = $5 AND user_id = $6
+			`, input.Summary, input.Challenges, input.Learnings, input.AudioURL, raceID, userID)
+			if updateErr == nil {
+				c.JSON(http.StatusOK, gin.H{"message": "Reflection updated", "id": raceID})
+				return
+			}
+		}
+		log.Printf("AddReflection insert: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save reflection"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Reflection saved", "id": newID})
 }
 
 func GetReflections(c *gin.Context) {

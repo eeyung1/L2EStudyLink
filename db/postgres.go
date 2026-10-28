@@ -205,6 +205,14 @@ func MigrateReflectionHistory(ctx context.Context, database *sql.DB) error {
                 ALTER TABLE activity_logs ADD CONSTRAINT activity_logs_timetable_id_fkey
                     FOREIGN KEY (timetable_id) REFERENCES timetable(id) ON DELETE SET NULL;
             END IF;
+
+            -- Ensure unique index for (timetable_id, user_id, log_date)
+            BEGIN
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_activity_logs_user_block_date
+                    ON activity_logs (timetable_id, user_id, log_date);
+            EXCEPTION WHEN others THEN
+                NULL;
+            END;
         END $$;
     `)
 	return err
