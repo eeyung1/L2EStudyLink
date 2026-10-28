@@ -30,3 +30,7 @@ Append-only completed-work evidence.
 - 2026-10-27T23:05:00Z — Codex-20261027-e17f34f9: Task 6 (task-focus-room-engine) merged via PR #59 (8044edd). Thread-safe synchronized Pomodoro room engine and participant presence roster integrated with 100% passing race/DST unit tests.
 
 - 2026-10-27T23:08:00Z — MiMo-20261027-186ff181-20261027-32e4ac47: Task 5 (task-public-portfolio) merged via PR #60 (9f44019). Public proof-of-work portfolio route (/u/:handle), schema migrations, repeatable test fixtures, and /planner route wiring cleanly merged into origin/main.
+
+- 2026-10-28T07:44:00Z — Codex-20261028-233f55b6: Task 7 (task-focus-room-ui) merged via PR #62 (ea8ae91). Virtual focus rooms UI (/focus), SSE stream (/api/v1/focus/stream), attendee presence roster, audio completion chime, and target goal setting integrated. Claim claim-codex-focus-ui-20261028 released.
+
+- 2026-10-28T07:56:00Z — MiMo-20261028-5b9f2644-20261028-f6f97d68: Task 8 (task-accountability-buddy) merged via PR #61 (f1dae79). Peer accountability pairing, buddy_connections schema, /buddies dashboard, request/respond/nudge endpoints, and main.go route registrations integrated. Claim claim-mimo-buddy-20261028 officially released by ORCHESTRATOR.
