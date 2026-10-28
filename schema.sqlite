@@ -216,3 +216,76 @@ CREATE TABLE IF NOT EXISTS learning_comments (
 );
 CREATE INDEX IF NOT EXISTS idx_learning_comments_article ON learning_comments(article_id, created_at, id);
 CREATE INDEX IF NOT EXISTS idx_learning_comments_parent ON learning_comments(parent_id);
+
+-- In-app notifications (SQLite parity).
+CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_key TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL DEFAULT '',
+    link_url TEXT NOT NULL DEFAULT '/dashboard',
+    is_read INTEGER NOT NULL DEFAULT 0 CHECK (is_read IN (0,1)),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id,event_key),
+    CHECK (link_url LIKE '/%' AND link_url NOT LIKE '//%')
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id,id DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_unread ON notifications(user_id,is_read);
+CREATE TRIGGER IF NOT EXISTS l2e_booking_insert AFTER INSERT ON bookings BEGIN
+    INSERT OR IGNORE INTO notifications(user_id,event_key,title,message,link_url)
+    SELECT id,'booking:'||NEW.id||':'||COALESCE(NEW.status,'pending'),'Study booking requested',
+        'A study booking request was created.','/my-bookings'
+    FROM users WHERE id IN (NEW.tutor_id,NEW.student_id) AND COALESCE(is_suspended,0)=0;
+END;
+CREATE TRIGGER IF NOT EXISTS l2e_booking_update AFTER UPDATE OF status ON bookings
+WHEN NEW.status IS NOT OLD.status BEGIN
+    INSERT OR IGNORE INTO notifications(user_id,event_key,title,message,link_url)
+    SELECT id,'booking:'||NEW.id||':'||COALESCE(NEW.status,'pending'),'Study booking updated',
+        'Booking status: '||COALESCE(NEW.status,'pending')||'.','/my-bookings'
+    FROM users WHERE id IN (NEW.tutor_id,NEW.student_id) AND COALESCE(is_suspended,0)=0;
+END;
+CREATE TRIGGER IF NOT EXISTS l2e_buddy_insert AFTER INSERT ON buddy_connections
+WHEN NEW.status='pending' BEGIN
+    INSERT OR IGNORE INTO notifications(user_id,event_key,title,message,link_url)
+    SELECT id,'buddy:'||NEW.id||':pending','New buddy request',
+        'A fellow would like to be your accountability buddy.','/buddies'
+    FROM users WHERE id=NEW.recipient_id AND COALESCE(is_suspended,0)=0;
+END;
+CREATE TRIGGER IF NOT EXISTS l2e_buddy_update AFTER UPDATE OF status ON buddy_connections
+WHEN NEW.status IS NOT OLD.status AND NEW.status IN ('active','declined') BEGIN
+    INSERT OR IGNORE INTO notifications(user_id,event_key,title,message,link_url)
+    SELECT id,'buddy:'||NEW.id||':'||NEW.status,'Buddy request updated',
+        CASE WHEN NEW.status='active' THEN 'Your buddy connection is now active.'
+            ELSE 'Your buddy request was declined.' END,'/buddies'
+    FROM users WHERE (id=NEW.requester_id OR (NEW.status='active' AND id=NEW.recipient_id))
+        AND COALESCE(is_suspended,0)=0;
+END;
+CREATE TRIGGER IF NOT EXISTS l2e_reflection_insert AFTER INSERT ON activity_logs
+WHEN NEW.completed=1 BEGIN
+    INSERT OR IGNORE INTO notifications(user_id,event_key,title,message,link_url)
+    SELECT id,'reflection:'||NEW.id||':saved','Reflection saved',
+        'Your learning reflection is ready in your history.','/reflections'
+    FROM users WHERE id=NEW.user_id AND COALESCE(is_suspended,0)=0;
+    INSERT OR IGNORE INTO notifications(user_id,event_key,title,message,link_url)
+    SELECT u.id,'reflection:'||NEW.id||':buddy','Your buddy reflected',
+        'An accountability buddy logged a learning reflection.','/buddies'
+    FROM buddy_connections bc JOIN users u ON u.id=
+        CASE WHEN bc.requester_id=NEW.user_id THEN bc.recipient_id ELSE bc.requester_id END
+    WHERE bc.status='active' AND (bc.requester_id=NEW.user_id OR bc.recipient_id=NEW.user_id)
+        AND COALESCE(u.is_suspended,0)=0;
+END;
+CREATE TRIGGER IF NOT EXISTS l2e_reflection_update AFTER UPDATE OF completed ON activity_logs
+WHEN NEW.completed=1 AND COALESCE(OLD.completed,0)<>1 BEGIN
+    INSERT OR IGNORE INTO notifications(user_id,event_key,title,message,link_url)
+    SELECT id,'reflection:'||NEW.id||':saved','Reflection saved',
+        'Your learning reflection is ready in your history.','/reflections'
+    FROM users WHERE id=NEW.user_id AND COALESCE(is_suspended,0)=0;
+    INSERT OR IGNORE INTO notifications(user_id,event_key,title,message,link_url)
+    SELECT u.id,'reflection:'||NEW.id||':buddy','Your buddy reflected',
+        'An accountability buddy logged a learning reflection.','/buddies'
+    FROM buddy_connections bc JOIN users u ON u.id=
+        CASE WHEN bc.requester_id=NEW.user_id THEN bc.recipient_id ELSE bc.requester_id END
+    WHERE bc.status='active' AND (bc.requester_id=NEW.user_id OR bc.recipient_id=NEW.user_id)
+        AND COALESCE(u.is_suspended,0)=0;
+END;

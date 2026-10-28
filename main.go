@@ -127,6 +127,7 @@ func main() {
         protected.Use(middleware.AuthRequired)
         {
             handlers.RegisterFocusRoutes(protected)
+            handlers.RegisterNotificationRoutes(protected)
             protected.GET("/buddies", handlers.ListBuddies)
             protected.POST("/buddies/request", handlers.RequestBuddy)
             protected.POST("/buddies/respond", handlers.RespondBuddy)
