@@ -216,3 +216,90 @@ DO $$ BEGIN
         EXECUTE 'REVOKE ALL ON learning_articles, learning_comments FROM authenticated';
     END IF;
 END $$;
+
+-- In-app notifications. Event inserts share the source transaction.
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGSERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_key VARCHAR(160) NOT NULL,
+    title VARCHAR(120) NOT NULL,
+    message TEXT NOT NULL DEFAULT '',
+    link_url VARCHAR(255) NOT NULL DEFAULT '/dashboard',
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(user_id,event_key),
+    CHECK (link_url LIKE '/%' AND link_url NOT LIKE '//%')
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id,id DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_unread ON notifications(user_id,is_read);
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+        REVOKE ALL ON notifications FROM anon;
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+        REVOKE ALL ON notifications FROM authenticated;
+    END IF;
+END $$;
+CREATE OR REPLACE FUNCTION l2e_notify_event() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+    IF TG_TABLE_NAME='bookings' THEN
+        IF TG_OP='UPDATE' THEN
+            IF NEW.status IS NOT DISTINCT FROM OLD.status THEN RETURN NEW; END IF;
+        END IF;
+        INSERT INTO notifications(user_id,event_key,title,message,link_url)
+        SELECT id,'booking:'||NEW.id||':'||COALESCE(NEW.status,'pending'),
+            CASE WHEN TG_OP='INSERT' THEN 'Study booking requested' ELSE 'Study booking updated' END,
+            CASE WHEN TG_OP='INSERT' THEN 'A study booking request was created.'
+                 ELSE 'Booking status: '||COALESCE(NEW.status,'pending')||'.' END,'/my-bookings'
+        FROM users WHERE id IN (NEW.tutor_id,NEW.student_id) AND COALESCE(is_suspended,FALSE)=FALSE
+        ON CONFLICT(user_id,event_key) DO NOTHING;
+    ELSIF TG_TABLE_NAME='buddy_connections' THEN
+        IF TG_OP='INSERT' THEN
+            IF NEW.status='pending' THEN
+                INSERT INTO notifications(user_id,event_key,title,message,link_url)
+                SELECT id,'buddy:'||NEW.id||':pending','New buddy request',
+                    'A fellow would like to be your accountability buddy.','/buddies'
+                FROM users WHERE id=NEW.recipient_id AND COALESCE(is_suspended,FALSE)=FALSE
+                ON CONFLICT(user_id,event_key) DO NOTHING;
+            END IF;
+        ELSIF NEW.status IS DISTINCT FROM OLD.status AND NEW.status IN ('active','declined') THEN
+            INSERT INTO notifications(user_id,event_key,title,message,link_url)
+            SELECT id,'buddy:'||NEW.id||':'||NEW.status,'Buddy request updated',
+                CASE WHEN NEW.status='active' THEN 'Your buddy connection is now active.'
+                     ELSE 'Your buddy request was declined.' END,'/buddies'
+            FROM users WHERE (id=NEW.requester_id OR (NEW.status='active' AND id=NEW.recipient_id))
+                AND COALESCE(is_suspended,FALSE)=FALSE
+            ON CONFLICT(user_id,event_key) DO NOTHING;
+        END IF;
+    ELSIF TG_TABLE_NAME='activity_logs' THEN
+        IF NEW.completed IS NOT TRUE THEN RETURN NEW; END IF;
+        IF TG_OP='UPDATE' THEN
+            IF OLD.completed IS TRUE THEN RETURN NEW; END IF;
+        END IF;
+        INSERT INTO notifications(user_id,event_key,title,message,link_url)
+        SELECT id,'reflection:'||NEW.id||':saved','Reflection saved',
+            'Your learning reflection is ready in your history.','/reflections'
+        FROM users WHERE id=NEW.user_id AND COALESCE(is_suspended,FALSE)=FALSE
+        ON CONFLICT(user_id,event_key) DO NOTHING;
+        INSERT INTO notifications(user_id,event_key,title,message,link_url)
+        SELECT u.id,'reflection:'||NEW.id||':buddy','Your buddy reflected',
+            'An accountability buddy logged a learning reflection.','/buddies'
+        FROM buddy_connections bc JOIN users u ON u.id=
+            CASE WHEN bc.requester_id=NEW.user_id THEN bc.recipient_id ELSE bc.requester_id END
+        WHERE bc.status='active' AND (bc.requester_id=NEW.user_id OR bc.recipient_id=NEW.user_id)
+            AND COALESCE(u.is_suspended,FALSE)=FALSE
+        ON CONFLICT(user_id,event_key) DO NOTHING;
+    END IF;
+    RETURN NEW;
+END $$;
+DO $$
+DECLARE source_table TEXT;
+BEGIN
+    FOREACH source_table IN ARRAY ARRAY['bookings','buddy_connections','activity_logs'] LOOP
+        IF to_regclass(source_table) IS NOT NULL THEN
+            EXECUTE format('DROP TRIGGER IF EXISTS l2e_notification_event ON %I',source_table);
+            EXECUTE format('CREATE TRIGGER l2e_notification_event AFTER INSERT OR UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION l2e_notify_event()',source_table);
+        END IF;
+    END LOOP;
+END $$;

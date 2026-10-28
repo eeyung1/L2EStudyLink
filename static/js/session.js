@@ -41,3 +41,20 @@ async function endSession(token) {
     localStorage.removeItem('token');
     window.location.href = '/page/login';
 }
+
+// Each page keeps its standalone template. Load the shared notification bell
+// only on a signed-in workspace page, after the sidebar exists.
+(function () {
+    function mountNotifications() {
+        if (typeof document.querySelector !== 'function') return;
+        if (!document.querySelector('.sidebar') || (!sessionScope() && !localStorage.getItem('token'))) return;
+        if (document.getElementById('notification-client-script')) return;
+        const script = document.createElement('script');
+        script.id = 'notification-client-script';
+        script.src = '/static/js/notifications.js';
+        script.defer = true;
+        document.head.append(script);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountNotifications, {once: true});
+    else mountNotifications();
+})();
