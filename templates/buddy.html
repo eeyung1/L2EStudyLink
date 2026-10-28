@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Pair with an accountability buddy and compare learning streaks on L2EStudyLink.">
+  <meta name="theme-color" content="#172537">
+  <title>Accountability buddies · L2EStudyLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>(function(){if(localStorage.getItem('darkMode')!=='false')document.documentElement.classList.add('dark')})()</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;family=Fraunces:wght@600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/dark-mode.css">
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+  <link rel="stylesheet" href="/static/css/ui-polish.css">
+  <script src="/static/js/mobile-nav.js" defer></script>
+  <script src="/static/js/session.js"></script>
+  <style>
+    .buddy-page{max-width:1120px;margin:0 auto;padding:8px 0 56px}.buddy-hero{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:25px}.buddy-eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:#047857;margin:0 0 8px}.buddy-title{font:600 clamp(34px,5vw,52px)/1.05 'Fraunces',serif;color:#17304e;margin:0}.buddy-subtitle{color:#64748b;max-width:650px;line-height:1.65;margin:12px 0 0}.buddy-refresh{border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#254466;padding:10px 14px;font-weight:800;cursor:pointer}.buddy-message{min-height:22px;margin:0 0 14px;color:#47617d}.buddy-message.error{color:#b4233e}.buddy-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}.buddy-stat{background:linear-gradient(135deg,#0f766e,#059669);border-radius:16px;padding:22px;color:white;box-shadow:0 12px 28px rgba(5,150,105,.16)}.buddy-stat:nth-child(2){background:linear-gradient(135deg,#1e3a5f,#315b8b)}.buddy-stat:nth-child(3){background:linear-gradient(135deg,#6d4b12,#b7791f)}.buddy-stat strong{display:block;font:600 34px 'Fraunces',serif}.buddy-stat span{font-size:13px;font-weight:700;opacity:.88}.buddy-layout{display:grid;grid-template-columns:1.12fr .88fr;gap:20px}.buddy-column{display:grid;gap:20px;align-content:start}.buddy-card{background:#fff;border:1px solid #dbe4ee;border-radius:17px;padding:23px;box-shadow:0 8px 28px rgba(26,49,77,.055)}.buddy-heading{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:17px}.buddy-heading h2{font:600 25px 'Fraunces',serif;color:#17304e;margin:0}.buddy-heading p{font-size:13px;color:#718096;margin:0}.buddy-list{display:grid;gap:12px}.person{border:1px solid #e2e8f0;border-radius:13px;padding:16px;background:#fbfdff}.person-top{display:flex;justify-content:space-between;align-items:start;gap:15px}.person h3{font-size:16px;color:#1e3a5f;margin:0}.person-handle{font-size:12px;color:#64748b;margin:3px 0 0}.person-bio{color:#5e7187;font-size:13px;line-height:1.5;margin:10px 0 0}.person-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.buddy-button{border:0;border-radius:9px;padding:9px 13px;font:800 13px 'DM Sans',sans-serif;cursor:pointer;background:#047857;color:#fff}.buddy-button:hover{background:#036b4e}.buddy-button.secondary{background:#e9eff6;color:#274563}.buddy-button.danger{background:#fff0f2;color:#a61b34}.buddy-button:disabled{opacity:.55;cursor:not-allowed}.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:15px;background:#edf8f4;border-radius:11px;padding:13px}.compare-side{text-align:center}.compare-side strong{display:block;color:#075e4a;font:600 24px 'Fraunces',serif}.compare-side span{font-size:11px;color:#527365;font-weight:700}.compare-vs{font-size:11px;font-weight:900;color:#7c8f88}.empty{color:#718096;font-size:14px;margin:0;padding:8px 0}.pending-tag{display:inline-flex;padding:5px 9px;border-radius:999px;background:#fff7df;color:#8a5a08;font-size:11px;font-weight:800}.dark .buddy-title,.dark .buddy-heading h2,.dark .person h3{color:#f1f5f9}.dark .buddy-card,.dark .person,.dark .buddy-refresh{background:#172337;border-color:#33445d;color:#e2e8f0}.dark .person-bio,.dark .person-handle,.dark .buddy-subtitle,.dark .buddy-heading p{color:#a9b7ca}.dark .compare{background:#123b35}.dark .compare-side strong{color:#7de0ba}@media(max-width:850px){.buddy-layout{grid-template-columns:1fr}.buddy-stats{grid-template-columns:1fr 1fr}.buddy-stat:last-child{grid-column:1/-1}}@media(max-width:520px){.buddy-hero{display:block}.buddy-refresh{margin-top:16px}.buddy-stats{grid-template-columns:1fr}.buddy-stat:last-child{grid-column:auto}.buddy-card{padding:18px}.person-top{display:block}.pending-tag{margin-top:9px}}
+  </style>
+</head>
+<body class="bg-gray-100">
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard">L2E<span>Study</span>Link</a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span aria-hidden="true">☰</span><span class="menu-label">Menu</span></button></div>
+    <nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation">
+      <span class="nav-kicker">WORKSPACE</span>
+      <a href="/dashboard" class="sidebar-link">⌂ Dashboard</a>
+      <a href="/search-page" class="sidebar-link">⌕ Find study partners</a>
+      <a href="/my-bookings" class="sidebar-link">▣ My study sessions</a>
+      <a href="/buddies" class="sidebar-link active" aria-current="page">♢ Accountability buddies</a>
+      <span class="nav-kicker nav-kicker-second">EXPLORE &amp; PLAN</span>
+      <a href="/planner" class="sidebar-link">✦ Weekly planner</a>
+      <a href="/projects" class="sidebar-link">▤ Projects</a>
+      <a href="/focus" class="sidebar-link">◉ Focus room</a>
+      <a href="/reflections" class="sidebar-link">◇ Reflections</a>
+    </nav>
+    <div class="sidebar-foot"><button class="logout-link" id="logoutButton">↪ Logout</button><button id="darkToggle" class="icon-btn" type="button" title="Toggle dark mode">🌙</button></div>
+  </aside>
+
+  <main class="main-content">
+    <div class="buddy-page">
+      <header class="buddy-hero"><div><p class="buddy-eyebrow">CONSISTENCY, TOGETHER</p><h1 class="buddy-title">Accountability buddies</h1><p class="buddy-subtitle">Pair with fellow learners, encourage steady progress, and compare verified learning streaks after you both agree.</p></div><button id="refreshButton" class="buddy-refresh" type="button">Refresh</button></header>
+      <p id="buddyMessage" class="buddy-message" role="status" aria-live="polite"></p>
+      <section class="buddy-stats" aria-label="Your learning consistency"><div class="buddy-stat"><strong id="myCurrent">—</strong><span>Current streak</span></div><div class="buddy-stat"><strong id="myLongest">—</strong><span>Longest streak</span></div><div class="buddy-stat"><strong id="myActiveDays">—</strong><span>Total active days</span></div></section>
+
+      <div class="buddy-layout">
+        <div class="buddy-column">
+          <section class="buddy-card" aria-labelledby="activeHeading"><div class="buddy-heading"><div><h2 id="activeHeading">Your buddies</h2><p>Accepted connections can compare streaks.</p></div></div><div id="activeList" class="buddy-list">Loading…</div></section>
+          <section class="buddy-card" aria-labelledby="discoverHeading"><div class="buddy-heading"><div><h2 id="discoverHeading">Find a buddy</h2><p>Send one respectful request.</p></div></div><div id="suggestionList" class="buddy-list">Loading…</div></section>
+        </div>
+        <div class="buddy-column">
+          <section class="buddy-card" aria-labelledby="incomingHeading"><div class="buddy-heading"><div><h2 id="incomingHeading">Requests for you</h2><p>You decide who joins your journey.</p></div></div><div id="incomingList" class="buddy-list">Loading…</div></section>
+          <section class="buddy-card" aria-labelledby="outgoingHeading"><div class="buddy-heading"><div><h2 id="outgoingHeading">Sent requests</h2><p>Waiting for a response.</p></div></div><div id="outgoingList" class="buddy-list">Loading…</div></section>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  const token = sessionToken();
+  const byId = id => document.getElementById(id);
+  const message = (copy, error=false) => { const node=byId('buddyMessage'); node.textContent=copy; node.classList.toggle('error',error); };
+  const localToday = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  async function api(path, options={}) {
+    const response = await fetch('/api/v1'+path, {...options, credentials:'same-origin', headers:{Authorization:'Bearer '+token, ...(options.body?{'Content-Type':'application/json'}:{})}});
+    let body={}; try{body=await response.json()}catch(_){}
+    if(!response.ok) throw new Error(body.error||'Something went wrong.');
+    return body;
+  }
+  function empty(container, copy){const p=document.createElement('p');p.className='empty';p.textContent=copy;container.replaceChildren(p)}
+  function profile(person, controls, comparison) {
+    const card=document.createElement('article');card.className='person';
+    const top=document.createElement('div');top.className='person-top';
+    const identity=document.createElement('div');const name=document.createElement('h3');name.textContent=person.name;identity.append(name);
+    if(person.handle){const handle=document.createElement('p');handle.className='person-handle';handle.textContent='@'+person.handle;identity.append(handle)}
+    top.append(identity);if(person.status==='pending'){const tag=document.createElement('span');tag.className='pending-tag';tag.textContent='Pending';top.append(tag)}card.append(top);
+    if(person.bio){const bio=document.createElement('p');bio.className='person-bio';bio.textContent=person.bio;card.append(bio)}
+    if(comparison&&person.streak){const row=document.createElement('div');row.className='compare';row.innerHTML='<div class="compare-side"><strong id="comparisonMe"></strong><span>Your current streak</span></div><span class="compare-vs">VS</span><div class="compare-side"><strong id="comparisonBuddy"></strong><span>Their current streak</span></div>';row.querySelector('#comparisonMe').textContent=comparison.current_streak+'d';row.querySelector('#comparisonBuddy').textContent=person.streak.current_streak+'d';card.append(row)}
+    if(controls&&controls.length){const actions=document.createElement('div');actions.className='person-actions';controls.forEach(control=>{const button=document.createElement('button');button.type='button';button.className='buddy-button '+(control.kind||'');button.textContent=control.label;button.addEventListener('click',()=>control.run(button));actions.append(button)});card.append(actions)}
+    return card;
+  }
+  function render(data) {
+    byId('myCurrent').textContent=data.me.current_streak+' days';byId('myLongest').textContent=data.me.longest_streak+' days';byId('myActiveDays').textContent=data.me.total_active_days;
+    const active=byId('activeList');data.active.length?active.replaceChildren(...data.active.map(person=>profile(person,[],data.me))):empty(active,'No active buddy yet. Accept a request or invite a fellow below.');
+    const incoming=byId('incomingList');data.incoming.length?incoming.replaceChildren(...data.incoming.map(person=>profile(person,[{label:'Accept',run:button=>respond(person.connection_id,'active',button)},{label:'Decline',kind:'danger',run:button=>respond(person.connection_id,'declined',button)}]))):empty(incoming,'No incoming requests.');
+    const outgoing=byId('outgoingList');data.outgoing.length?outgoing.replaceChildren(...data.outgoing.map(person=>profile(person,[]))):empty(outgoing,'No requests waiting.');
+    const suggestions=byId('suggestionList');data.suggestions.length?suggestions.replaceChildren(...data.suggestions.map(person=>profile(person,[{label:'Send request',run:button=>requestBuddy(person.user_id,button)}]))):empty(suggestions,'No new fellows are available right now.');
+  }
+  async function load(){message('Loading your buddy dashboard…');try{render(await api('/buddies?today='+localToday()));message('')}catch(error){message(error.message,true)}}
+  async function requestBuddy(userID,button){button.disabled=true;try{await api('/buddies/request',{method:'POST',body:JSON.stringify({buddy_id:userID})});message('Buddy request sent.');await load()}catch(error){message(error.message,true);button.disabled=false}}
+  async function respond(connectionID,status,button){button.disabled=true;try{await api('/buddies/respond',{method:'POST',body:JSON.stringify({connection_id:connectionID,status})});message(status==='active'?'Buddy request accepted.':'Buddy request declined.');await load()}catch(error){message(error.message,true);button.disabled=false}}
+  byId('refreshButton').addEventListener('click',load);byId('logoutButton').addEventListener('click',()=>endSession(token));byId('darkToggle').addEventListener('click',()=>{const dark=document.documentElement.classList.toggle('dark');localStorage.setItem('darkMode',String(dark))});
+  load();
+})();
+</script>
+</body>
+</html>
