@@ -3,15 +3,85 @@
     "repository_id": "local-git:/home/recoding/Projects/L2EStudyLink#/home/recoding/Projects/L2EStudyLink/.git",
     "protocol": "orchestrator/v1",
     "schema": 4,
-    "generation": 2,
+    "generation": 12,
     "enrollment": "NATIVE",
     "provenance": "Human authorized project coordination",
     "enrolled_utc": "2026-10-27T21:28:20Z"
   },
-  "sessions": {},
-  "claims": {},
+  "sessions": {
+    "Codex-20261027-0dda2028": {
+      "id": "Codex-20261027-0dda2028",
+      "role": "worker",
+      "state": "ACTIVE",
+      "generation": 4
+    },
+    "Codex-20261027-c69b5708": {
+      "id": "Codex-20261027-c69b5708",
+      "role": "worker",
+      "state": "ACTIVE",
+      "generation": 7
+    },
+    "Codex-20261027-ddffbda9": {
+      "id": "Codex-20261027-ddffbda9",
+      "role": "worker",
+      "state": "ACTIVE",
+      "generation": 5
+    },
+    "Codex-20261027-e17f34f9": {
+      "id": "Codex-20261027-e17f34f9",
+      "role": "worker",
+      "state": "ACTIVE",
+      "generation": 8
+    },
+    "Codex-20261028-233f55b6": {
+      "id": "Codex-20261028-233f55b6",
+      "role": "worker",
+      "state": "ACTIVE",
+      "generation": 9
+    },
+    "Codex-20261028-c127573f": {
+      "id": "Codex-20261028-c127573f",
+      "role": "worker",
+      "state": "WORKING",
+      "generation": 12
+    },
+    "MiMo-20261027-186ff181-20261027-32e4ac47": {
+      "id": "MiMo-20261027-186ff181-20261027-32e4ac47",
+      "role": "worker",
+      "state": "ACTIVE",
+      "generation": 6
+    },
+    "MiMo-20261027-c2dbc030-20261027-efb40718": {
+      "id": "MiMo-20261027-c2dbc030-20261027-efb40718",
+      "role": "worker",
+      "state": "ACTIVE",
+      "generation": 3
+    },
+    "MiMo-20261028-5b9f2644-20261028-f6f97d68": {
+      "id": "MiMo-20261028-5b9f2644-20261028-f6f97d68",
+      "role": "worker",
+      "state": "ACTIVE",
+      "generation": 10
+    }
+  },
+  "claims": {
+    "claim-codex-notifications-20261028": {
+      "token": "claim-codex-notifications-20261028",
+      "session_id": "Codex-20261028-c127573f",
+      "feature": "task-realtime-notifications",
+      "scope": "schema.sql,schema.sqlite,db/postgres.go,handlers/notifications.go,handlers/notifications_test.go,static/js/notifications.js,templates/layout.html,main.go,static/js/session.js",
+      "claimed_utc": "2026-10-28T08:08:03Z"
+    }
+  },
   "objectives": {},
-  "tasks": {},
+  "tasks": {
+    "task-realtime-notifications": {
+      "id": "task-realtime-notifications",
+      "session_id": "Codex-20261028-c127573f",
+      "status": "WORKING",
+      "claim_token": "claim-codex-notifications-20261028"
+    }
+  },
   "results": {},
   "reviews": {},
   "events": [
@@ -21,6 +91,76 @@
       "operation": "authority-enrollment",
       "generation": 2,
       "utc": "2026-10-27T21:28:20Z"
+    },
+    {
+      "id": "3-register-session",
+      "actor": "MiMo-20261027-c2dbc030-20261027-efb40718",
+      "operation": "register-session",
+      "generation": 3,
+      "utc": "2026-10-27T21:38:41Z"
+    },
+    {
+      "id": "4-register-session",
+      "actor": "Codex-20261027-0dda2028",
+      "operation": "register-session",
+      "generation": 4,
+      "utc": "2026-10-27T21:42:00Z"
+    },
+    {
+      "id": "5-register-session",
+      "actor": "Codex-20261027-ddffbda9",
+      "operation": "register-session",
+      "generation": 5,
+      "utc": "2026-10-27T22:14:31Z"
+    },
+    {
+      "id": "6-register-session",
+      "actor": "MiMo-20261027-186ff181-20261027-32e4ac47",
+      "operation": "register-session",
+      "generation": 6,
+      "utc": "2026-10-27T22:15:36Z"
+    },
+    {
+      "id": "7-register-session",
+      "actor": "Codex-20261027-c69b5708",
+      "operation": "register-session",
+      "generation": 7,
+      "utc": "2026-10-27T22:25:41Z"
+    },
+    {
+      "id": "8-register-session",
+      "actor": "Codex-20261027-e17f34f9",
+      "operation": "register-session",
+      "generation": 8,
+      "utc": "2026-10-27T22:46:48Z"
+    },
+    {
+      "id": "9-register-session",
+      "actor": "Codex-20261028-233f55b6",
+      "operation": "register-session",
+      "generation": 9,
+      "utc": "2026-10-28T07:14:35Z"
+    },
+    {
+      "id": "10-register-session",
+      "actor": "MiMo-20261028-5b9f2644-20261028-f6f97d68",
+      "operation": "register-session",
+      "generation": 10,
+      "utc": "2026-10-28T07:15:28Z"
+    },
+    {
+      "id": "11-register-session",
+      "actor": "Codex-20261028-c127573f",
+      "operation": "register-session",
+      "generation": 11,
+      "utc": "2026-10-28T08:05:32Z"
+    },
+    {
+      "id": "12-restore-claim",
+      "actor": "ORCHESTRATOR",
+      "operation": "authorize-recovery",
+      "generation": 12,
+      "utc": "2026-10-28T11:40:00Z"
     }
   ]
 }

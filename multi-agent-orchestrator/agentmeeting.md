@@ -4,7 +4,7 @@
 
 | Agent/session ID | Role | Status | Heartbeat UTC | Feature | Branch/worktree | Claim reference |
 | --- | --- | --- | --- | --- | --- | --- |
-| planner-agent | PLANNER | ACTIVE | 2026-10-28T07:11:00Z | planning | - | structured-state |
+| planner-agent | PLANNER | ACTIVE | 2026-10-28T11:40:00Z | planning | - | structured-state |
 | MiMo-20261027-c2dbc030-20261027-efb40718 | worker | COMPLETE | 2026-10-27T22:03:59Z | task-opay-reflection-modal | agent/task-opay-reflection-modal @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-opay-reflection-modal | claim-mimo-20261027-c2dbc030 |
 | Codex-20261027-0dda2028 | worker | COMPLETE | 2026-10-27T22:14:09Z | task-decouple-reflections | agent/task-decouple-reflections @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-decouple-reflections | claim-codex-decouple-20261027 |
 | Codex-20261027-ddffbda9 | worker | COMPLETE | 2026-10-27T22:22:50Z | task-ai-planner-metrics | agent/task-ai-planner-metrics @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-ai-planner-metrics | claim-codex-metrics-20261027 |
@@ -12,6 +12,7 @@
 | MiMo-20261027-186ff181-20261027-32e4ac47 | worker | COMPLETE | 2026-10-27T23:10:00Z | task-public-portfolio | agent/task-public-portfolio @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-public-portfolio | claim-mimo-portfolio-20261027 |
 | Codex-20261027-e17f34f9 | worker | COMPLETE | 2026-10-27T23:10:00Z | task-focus-room-engine | agent/task-focus-room-engine @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-focus-room-engine | claim-codex-focus-20261027 |
 | MiMo-20261028-5b9f2644-20261028-f6f97d68 | worker | COMPLETE | 2026-10-28T08:02:00Z | task-accountability-buddy | - | - |
+| Codex-20261028-c127573f | worker | WORKING | 2026-10-28T11:40:00Z | task-realtime-notifications | agent/task-realtime-notifications @ /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-realtime-notifications | claim-codex-notifications-20261028 |
 
 ## Standups
 
@@ -22,6 +23,8 @@
 - **2026-10-27T22:14Z — MiMo-20261027-c2dbc030-20261027-efb40718 (worker, COMPLETE)**: Publication update — integrator rebased onto origin/main 797765f (PR #55 merge) and pushed; remote head a522cc92ffb38641e36edfef440bf91303d265da on agent/task-opay-reflection-modal, branch diff vs origin/main exactly the four claimed files. CI not yet triggered (workflow fires on pull_request only); PR creation URL and PR text handed to integrator. SHA mapping 15672f1 → a522cc9 recorded in resolution.md.
 
 - **2026-10-28T08:02Z — ORCHESTRATOR / Planner**: Confirmed PR #61 merged into origin/main (f1dae79). Claim claim-mimo-buddy-20261028 (task-accountability-buddy) is officially RELEASED. Shared schema scopes (schema.sql, schema.sqlite, db/postgres.go) and main.go are unreserved. Task 9 (task-realtime-notifications) dependency is fulfilled and its scope is completely open for immediate claiming.
+
+- **2026-10-28T11:40Z — ORCHESTRATOR / Planner**: Authorized ownership recovery for worker session Codex-20261028-c127573f on task-realtime-notifications. Active agent row, 9-file atomic claim (schema.sql, schema.sqlite, db/postgres.go, handlers/notifications.go, handlers/notifications_test.go, static/js/notifications.js, templates/layout.html, main.go, static/js/session.js), branch agent/task-realtime-notifications, and worktree mapping restored. Ownership confirmed active; worker is authorized to proceed immediately with test execution, branch publication, and PR verification.
 
 ## Feature Backlog
 
@@ -35,7 +38,7 @@
 | 6 | task-focus-room-engine | focus/room.go, focus/room_test.go, focus/README.md | Done | Codex-20261027-e17f34f9 | - | Foundation synchronized timer engine for virtual silent focus rooms; thread-safe room roster with joined participants, Pomodoro interval states (focus/break), and race tests. (Merged via PR #59) | /home/recoding/sdk/go/bin/go test -v ./focus/... |
 | 7 | task-focus-room-ui | handlers/focus.go, handlers/focus_test.go, templates/focus.html, static/js/focus-room.js, main.go | Done | - | - | Connect focus/room.go engine to UI route /focus (templates/focus.html) with Pomodoro 25/5 visual timer, attendee presence list, chime audio toggle, and SSE stream /api/v1/focus/stream broadcasting live clock ticks and presence events. Route registration in main.go. (Merged via PR #62) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestFocus |
 | 8 | task-accountability-buddy | schema.sql, schema.sqlite, db/postgres.go, handlers/buddy.go, handlers/buddy_test.go, templates/buddy.html | Done | - | - | Peer accountability pairing: buddy_connections schema with status (pending/active/declined), handlers for /buddies dashboard, request pairing (/api/v1/buddies/request), respond (/api/v1/buddies/respond), and study streak comparison. Repeatable schema migrations for PostgreSQL and SQLite. (Merged via PR #61) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestBuddy |
-| 9 | task-realtime-notifications | schema.sql, schema.sqlite, db/postgres.go, handlers/notifications.go, handlers/notifications_test.go, static/js/notifications.js, templates/layout.html | Open | - | - | Real-time notification system: notifications schema (user_id, title, message, link_url, is_read), SSE stream (GET /api/v1/notifications/stream) pushing real-time booking, buddy, and reflection alerts, JSON endpoints for mark-as-read, and live bell counter in templates/layout.html. (Unblocked: Task 8 merged) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestNotifications |
+| 9 | task-realtime-notifications | schema.sql, schema.sqlite, db/postgres.go, handlers/notifications.go, handlers/notifications_test.go, static/js/notifications.js, templates/layout.html, main.go, static/js/session.js | Claimed | Codex-20261028-c127573f | - | Real-time notification system: notifications schema (user_id, title, message, link_url, is_read), SSE stream (GET /api/v1/notifications/stream) pushing real-time booking, buddy, and reflection alerts, JSON endpoints for mark-as-read, and live bell counter in templates/layout.html. (Unblocked: Task 8 merged) | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestNotifications |
 | 10 | task-group-masterclass | schema.sql, schema.sqlite, db/postgres.go, handlers/masterclass.go, handlers/masterclass_test.go, templates/masterclass.html | Open | - | task-realtime-notifications | Multi-seat group masterclasses: masterclasses and masterclass_attendees schema, /masterclasses interactive discovery catalog, tutor creation flow (POST /api/v1/masterclasses), atomic capacity-checked RSVP booking, and reservation status tracking. | /home/recoding/sdk/go/bin/go test -v ./handlers -run TestMasterclass |
 
 ## Worker Standups
@@ -44,7 +47,7 @@
 
 - 2026-10-27T21:45:39Z — Codex-20261027-0dda2028: Implemented schema changes, atomic owned-block snapshot upsert, nullable history lookup, and repeatable startup migration. Added PostgreSQL integration regressions and executable SQLite preservation regression. Initial Go test hit read-only default cache; retry uses writable /tmp GOCACHE. No TEST_DATABASE_URL or local PostgreSQL binaries; temporary package download failed DNS resolution.
 
-- 2026-10-27T21:49:29Z — Codex-20261027-0dda2028: Standup: SQLite preservation regression and all 5 JavaScript tests passed; first Go compilation is still active. Reviewed changed paths against claim; no out-of-scope product edits. PostgreSQL integration and PR/CI remain pending due missing local database and unavailable remote base/network. Migration cannot recover previously cascaded records; old handler rollback is incompatible with newly orphaned nullable timetable IDs.
+- 2026-10-27T21:49:29Z — Codex-20261028-0dda2028: Standup: SQLite preservation regression and all 5 JavaScript tests passed; first Go compilation is still active. Reviewed changed paths against claim; no out-of-scope product edits. PostgreSQL integration and PR/CI remain pending due missing local database and unavailable remote base/network. Migration cannot recover previously cascaded records; old handler rollback is incompatible with newly orphaned nullable timetable IDs.
 
 - 2026-10-27T21:51:00Z — Codex-20261027-0dda2028: Review complete: only claimed paths changed; migration preserves user-deletion cascade and handles custom timetable FK names, serializes startup writers, and fails startup if preservation migration cannot complete. Existing saved snapshots survive renames and migration reruns. Go first-build cache is growing; no test results claimed yet.
 
@@ -70,7 +73,7 @@
 
 - 2026-10-27T22:26:38+00:00 — Codex-20261027-c69b5708: Claimed task-ai-coaching-eval via Go ORCHESTRATOR (claim-codex-coaching-20261027), branch agent/task-ai-coaching-eval, worktree .agent-worktrees/task-ai-coaching-eval, base 82b36c7. User selected Groq and approved test scope; main.go owner asked to register planner routes in coordination.md. Provider client, handlers, and UI implementation starting.
 
-- 2026-10-27T22:28:37Z — Codex-20261027-c69b5708: Groq client, handlers and phone-first weekly dashboard implemented in claimed scope. Generic coaching prompt preserves evaluation structure without reference author history; server-owned metrics, bounded user-owned reflection text, strict JSON validation, 25s deadline, one transient retry, and per-process 3/hour + single-flight quota. UI renders model text with textContent and explains Groq data sharing. Tests and validation next; /planner route registration remains with main.go owner.
+- 2026-10-28T22:28:37Z — Codex-20261027-c69b5708: Groq client, handlers and phone-first weekly dashboard implemented in claimed scope. Generic coaching prompt preserves evaluation structure without reference author history; server-owned metrics, bounded user-owned reflection text, strict JSON validation, 25s deadline, one transient retry, and per-process 3/hour + single-flight quota. UI renders model text with textContent and explains Groq data sharing. Tests and validation next; /planner route registration remains with main.go owner.
 
 - 2026-10-27T22:32:51Z — Codex-20261027-c69b5708: Scoped coaching implementation committed 857f7d2; focused tests/build passed; PostgreSQL flow skipped and full suite hit existing sandbox email socket restriction. Push failed DNS. HANDOFF pending main.go owner route integration (patch /tmp/coaching-route-registration.patch) and manual publication/CI; critical route gate recorded in resolution.md. Claim retained.
 
@@ -96,7 +99,14 @@
 
 - 2026-10-27T23:08:00Z — MiMo-20261027-186ff181-20261027-32e4ac47 (worker, COMPLETE): PR #60 merged into origin/main (9f44019). Public proof-of-work portfolio (/u/:handle), schema migrations, and /planner route wiring cleanly integrated with green CI. Feature task-public-portfolio marked Done; claim released.
 
+- 2026-10-28T08:08:03Z — Codex-20261028-c127573f: Buddy worker COMPLETE and all prior claims released. Claimed task-realtime-notifications, claim-codex-notifications-20261028, branch agent/task-realtime-notifications, worktree .agent-worktrees/task-realtime-notifications, base origin/main ad883e2. User explicitly approved adding main.go and static/js/session.js for route/bell wiring. Stopped edits (none made), released/reacquired the same logical claim through Go with expanded nine-file scope; ownership revalidated. Implementing durable notifications + authenticated SSE + user-scoped read endpoints + bell on existing signed-in pages.
+
+- 2026-10-28T11:31:39Z — Codex-20261028-c127573f: ACTIVATING / ownership recovery requested: resumed read-only inspection found missing live claim and presence. Existing notifications implementation preserved; tests and publication pending. Requested ORCHESTRATOR restore exact prior assignment in coordination.md before further product edits.
+
+- 2026-10-28T11:40:00Z — Codex-20261028-c127573f: Standup: Claim restored and authorized by ORCHESTRATOR. Resuming test execution, validation, and branch publication for task-realtime-notifications with 9 approved paths.
+
 ## Atomic Claims
 
 | Token | Agent/session ID | Feature | Scope | Claimed UTC |
 | --- | --- | --- | --- | --- |
+| claim-codex-notifications-20261028 | Codex-20261028-c127573f | task-realtime-notifications | schema.sql,schema.sqlite,db/postgres.go,handlers/notifications.go,handlers/notifications_test.go,static/js/notifications.js,templates/layout.html,main.go,static/js/session.js | 2026-10-28T08:08:03Z |
