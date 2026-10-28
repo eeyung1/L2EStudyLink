@@ -34,3 +34,5 @@ Append-only completed-work evidence.
 - 2026-10-28T07:44:00Z — Codex-20261028-233f55b6: Task 7 (task-focus-room-ui) merged via PR #62 (ea8ae91). Virtual focus rooms UI (/focus), SSE stream (/api/v1/focus/stream), attendee presence roster, audio completion chime, and target goal setting integrated. Claim claim-codex-focus-ui-20261028 released.
 
 - 2026-10-28T07:56:00Z — MiMo-20261028-5b9f2644-20261028-f6f97d68: Task 8 (task-accountability-buddy) merged via PR #61 (f1dae79). Peer accountability pairing, buddy_connections schema, /buddies dashboard, request/respond/nudge endpoints, and main.go route registrations integrated. Claim claim-mimo-buddy-20261028 officially released by ORCHESTRATOR.
+
+- 2026-10-28T12:18:00Z — Codex-20261028-c127573f: Task 9 (task-realtime-notifications) merged via PR #63 (fe21e14). Persistent notifications schema, multi-table database triggers for bookings/buddies/reflections, SSE stream (/api/v1/notifications/stream), authenticated mark-as-read endpoints, and global bell UI integrated with green CI. Claim claim-codex-notifications-20261028 released.
