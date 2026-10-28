@@ -83,6 +83,7 @@ func main() {
         c.HTML(200, "portfolio.html", nil)
     })
     router.GET("/planner", middleware.AuthRequired, handlers.PlannerPage)
+    router.GET("/focus", middleware.AuthRequired, handlers.FocusPage)
     router.GET("/masterclass", func(c *gin.Context) { c.HTML(200, "masterclass.html", nil) })
     router.GET("/projects", func(c *gin.Context) {
         c.HTML(200, "projects.html", nil)
@@ -124,6 +125,7 @@ func main() {
         protected := api.Group("/")
         protected.Use(middleware.AuthRequired)
         {
+            handlers.RegisterFocusRoutes(protected)
             protected.GET("/me", handlers.GetProfile)
             protected.GET("/me/streaks", handlers.GetUserStreaks)
             protected.GET("/planner/week", handlers.GetPlannerWeek)

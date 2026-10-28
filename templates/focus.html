@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172537">
+<title>Focus together · L2EStudyLink</title>
+<script>if(localStorage.getItem('darkMode')!=='false')document.documentElement.classList.add('dark');</script>
+<link rel="stylesheet" href="/static/css/dashboard.css"><link rel="stylesheet" href="/static/css/dark-mode.css"><link rel="stylesheet" href="/static/css/ui-polish.css">
+<script src="/static/js/session.js"></script><script src="/static/js/mobile-nav.js" defer></script><script src="/static/js/focus-room.js" defer></script>
+<style>
+.focus-page{--surface:#fff;--ink:#172537;--muted:#58687a;--line:#dce5e8;max-width:1120px;margin:auto;padding:clamp(20px,4vw,44px);color:var(--ink)}.dark .focus-page{--surface:#172537;--ink:#edf5f6;--muted:#b2c1ce;--line:#354a5c}
+.focus-page h1{font-size:clamp(2rem,5vw,3rem);line-height:1.12;margin:12px 0}.focus-page h2{font-size:1.15rem;margin:0 0 14px}.focus-page p{line-height:1.65}.focus-kicker{font-size:.73rem;letter-spacing:.16em;color:#059669;font-weight:800}.focus-muted{color:var(--muted)}
+.focus-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,1fr);gap:24px;margin-top:24px}.focus-panel{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:clamp(20px,3vw,30px);min-width:0}.focus-panel+.focus-panel{margin-top:20px}
+.focus-page input,.focus-page button{font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink)}.focus-page input[type=text]{width:100%;box-sizing:border-box}.focus-page label{display:grid;gap:8px;font-size:.9rem;font-weight:600;margin:14px 0}.focus-page button{font-weight:700;cursor:pointer}.focus-page button:disabled{opacity:.55;cursor:wait}.focus-page .focus-primary{background:#059669;color:#fff;border-color:#059669}.focus-page :focus-visible{outline:3px solid #00b875;outline-offset:3px}.focus-page [hidden]{display:none!important}
+.focus-clock{text-align:center;padding:30px 8px}.focus-phase{display:inline-block;color:#059669;background:rgba(5,150,105,.12);border-radius:99px;padding:8px 16px;font-weight:800}.focus-time{font-variant-numeric:tabular-nums;font-size:clamp(4rem,15vw,7rem);letter-spacing:-.05em;font-weight:800;line-height:1.3}.focus-progress{width:100%;height:8px;accent-color:#059669}.focus-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.focus-page .focus-chime{display:flex;align-items:center;gap:10px;font-weight:500}.focus-status{border-left:3px solid #00b875;padding:12px 16px;background:var(--surface);border-radius:8px;margin-top:20px}.focus-status.error{border-color:#cb7157}
+.focus-list{list-style:none;padding:0;margin:0;display:grid;gap:12px}.focus-room,.focus-person{border:1px solid var(--line);border-radius:14px;padding:16px;overflow-wrap:anywhere}.focus-room{display:flex;justify-content:space-between;gap:16px;align-items:center}.focus-room p,.focus-person p{margin:5px 0}.focus-person strong{display:block}.focus-count{font-size:.8rem;color:var(--muted)}.focus-link{color:#059669;font-weight:700}.focus-target-form{border-top:1px solid var(--line);padding-top:12px;margin-top:16px}
+@media(max-width:760px){.focus-grid{grid-template-columns:1fr}.focus-room{align-items:start;flex-direction:column}.focus-room button{width:100%}.focus-actions button{flex:1}.focus-panel{border-radius:18px}}
+</style>
+</head>
+<body>
+<div class="app-shell" id="focus-app">
+<aside class="sidebar"><div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard">L2E<span>Study</span>Link</a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span aria-hidden="true">☰</span><span>Menu</span></button></div>
+<nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation"><span class="nav-kicker">WORKSPACE</span><a class="sidebar-link" href="/dashboard">Dashboard</a><a class="sidebar-link" href="/timetable">My timetable</a><a class="sidebar-link" href="/reflections">My reflections</a><a class="sidebar-link" href="/planner">Growth coach</a><a class="sidebar-link active" aria-current="page" href="/focus">Focus together</a><a class="sidebar-link" href="/projects">Projects</a></nav>
+<div class="sidebar-foot"><button class="logout-link" id="focus-logout">Log out</button><button class="icon-btn" id="focus-theme" aria-label="Toggle dark mode">◐</button></div></aside>
+<main class="main-content"><div class="focus-page">
+<header><p class="focus-kicker">A LITTLE COMPANY. A LITTLE MORE FOCUS.</p><h1>Different goals.<br>One shared rhythm.</h1><p class="focus-muted">Set one intention. Settle in with your peers for 25 minutes, then take a 5-minute break together.</p></header>
+<p id="focus-status" class="focus-status" role="status" aria-live="polite">Finding your focus rooms…</p>
+<div class="focus-grid">
+<section>
+<section id="focus-lobby" class="focus-panel" aria-labelledby="lobby-title"><h2 id="lobby-title">What will you work on?</h2><label for="focus-goal">Your target for this session<input id="focus-goal" type="text" maxlength="160" placeholder="Write one parser test" required></label><p class="focus-muted">Your name and target are shared with the people in the room you join.</p><form id="focus-create"><label for="focus-room-title">Start a room<input id="focus-room-title" type="text" maxlength="80" placeholder="Quiet Go practice" required></label><button class="focus-primary" type="submit" id="focus-create-button">Create room &amp; join</button></form></section>
+<section id="focus-session" class="focus-panel" hidden aria-labelledby="focus-active-title"><p class="focus-kicker">YOUR SHARED SPACE</p><h2 id="focus-active-title"></h2><div class="focus-clock"><span id="focus-phase" class="focus-phase">Syncing…</span><div id="focus-time" class="focus-time" role="timer" aria-label="Time remaining" aria-live="off">25:00</div><progress id="focus-progress" class="focus-progress" max="1500" value="1500" aria-label="Time remaining in this interval"></progress><p id="focus-cycle" class="focus-muted"></p><p id="focus-connection" class="focus-muted" aria-live="polite">Connecting to the room…</p></div>
+<div class="focus-actions"><label class="focus-chime" for="focus-chime"><input type="checkbox" id="focus-chime">Chime when the interval changes</label><button id="focus-leave" type="button">Leave room</button></div><form id="focus-target-form" class="focus-target-form"><label for="focus-active-goal">Your study target<input id="focus-active-goal" type="text" maxlength="160" required></label><button type="submit" id="focus-save-target">Update target</button></form><p class="focus-muted">Finished something? <a class="focus-link" href="/timetable">Reflect on your timetable block →</a></p></section>
+</section>
+<aside>
+<section id="focus-discovery" class="focus-panel" aria-labelledby="rooms-title"><h2 id="rooms-title">Find your company</h2><p class="focus-muted">Join an existing rhythm, or start a fresh room.</p><ul id="focus-rooms" class="focus-list"></ul><button type="button" id="focus-refresh" style="margin-top:16px">Refresh rooms</button></section>
+<section id="focus-roster-panel" class="focus-panel" hidden aria-labelledby="roster-title"><h2 id="roster-title">Here with you <span id="focus-count" class="focus-count"></span></h2><ul id="focus-roster" class="focus-list"></ul><p class="focus-muted">Targets are intentions, not a measure of study hours. Your reflections tell the story.</p></section>
+</aside>
+</div></div></main></div>
+</body></html>
