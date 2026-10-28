@@ -123,6 +123,23 @@ func InitDB() error {
 	if _, err = DB.ExecContext(ctx, learningSchema); err != nil {
 		return fmt.Errorf("failed to create learning hub tables: %w", err)
 	}
+	if _, err = DB.ExecContext(ctx, `
+        CREATE TABLE IF NOT EXISTS buddy_connections (
+            id SERIAL PRIMARY KEY,
+            requester_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            recipient_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            status VARCHAR(10) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'declined')),
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CHECK (requester_id <> recipient_id)
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_buddy_connections_pair
+            ON buddy_connections (LEAST(requester_id, recipient_id), GREATEST(requester_id, recipient_id));
+        CREATE INDEX IF NOT EXISTS idx_buddy_connections_requester ON buddy_connections(requester_id, status);
+        CREATE INDEX IF NOT EXISTS idx_buddy_connections_recipient ON buddy_connections(recipient_id, status);
+    `); err != nil {
+		return fmt.Errorf("failed to create accountability buddy table: %w", err)
+	}
 	if err = RepairAvailabilitySequence(ctx); err != nil {
 		return fmt.Errorf("failed to repair availability IDs: %w", err)
 	}
