@@ -85,7 +85,8 @@ func main() {
     router.GET("/planner", middleware.AuthRequired, handlers.PlannerPage)
     router.GET("/focus", middleware.AuthRequired, handlers.FocusPage)
     router.GET("/buddies", middleware.AuthRequired, handlers.BuddyPage)
-    router.GET("/masterclass", func(c *gin.Context) { c.HTML(200, "masterclass.html", nil) })
+    router.GET("/masterclasses", middleware.AuthRequired, handlers.MasterclassPage)
+    router.GET("/masterclass", middleware.AuthRequired, handlers.MasterclassPage)
     router.GET("/projects", func(c *gin.Context) {
         c.HTML(200, "projects.html", nil)
     })
@@ -128,6 +129,11 @@ func main() {
         {
             handlers.RegisterFocusRoutes(protected)
             handlers.RegisterNotificationRoutes(protected)
+            protected.GET("/masterclasses", handlers.ListMasterclasses)
+            protected.POST("/masterclasses", handlers.CreateMasterclass)
+            protected.POST("/masterclasses/:id/rsvp", handlers.ReserveMasterclass)
+            protected.DELETE("/masterclasses/:id/rsvp", handlers.CancelMasterclassReservation)
+            protected.PUT("/masterclasses/:id/cancel", handlers.CancelMasterclass)
             protected.GET("/buddies", handlers.ListBuddies)
             protected.POST("/buddies/request", handlers.RequestBuddy)
             protected.POST("/buddies/respond", handlers.RespondBuddy)

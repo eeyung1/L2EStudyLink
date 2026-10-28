@@ -143,6 +143,9 @@ func InitDB() error {
 	if err = MigrateNotifications(ctx, DB); err != nil {
 		return fmt.Errorf("failed to create in-app notifications: %w", err)
 	}
+	if err = MigrateMasterclasses(ctx, DB); err != nil {
+		return fmt.Errorf("failed to create masterclasses: %w", err)
+	}
 	if err = RepairAvailabilitySequence(ctx); err != nil {
 		return fmt.Errorf("failed to repair availability IDs: %w", err)
 	}
@@ -338,5 +341,53 @@ BEGIN
             EXECUTE format('CREATE TRIGGER l2e_notification_event AFTER INSERT OR UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION l2e_notify_event()',source_table);
         END IF;
     END LOOP;
+END $$;
+`
+
+// MigrateMasterclasses atomically installs the repeatable masterclass schema.
+func MigrateMasterclasses(ctx context.Context, database *sql.DB) error {
+	tx, err := database.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, masterclassSchema); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+const masterclassSchema = `-- Multi-seat masterclasses. Reservations are retained when cancelled.
+CREATE TABLE IF NOT EXISTS masterclasses (
+    id BIGSERIAL PRIMARY KEY,
+    tutor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(100) NOT NULL CHECK (char_length(title) BETWEEN 3 AND 100),
+    description TEXT NOT NULL DEFAULT '' CHECK (char_length(description)<=2000),
+    starts_at TIMESTAMPTZ NOT NULL,
+    duration_minutes INT NOT NULL CHECK (duration_minutes BETWEEN 15 AND 240),
+    capacity INT NOT NULL CHECK (capacity BETWEEN 2 AND 100),
+    status VARCHAR(12) NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled','cancelled')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS masterclass_attendees (
+    masterclass_id BIGINT NOT NULL REFERENCES masterclasses(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(12) NOT NULL DEFAULT 'reserved' CHECK (status IN ('reserved','cancelled')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY(masterclass_id,user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_masterclasses_upcoming ON masterclasses(status,starts_at,id);
+CREATE INDEX IF NOT EXISTS idx_masterclasses_tutor ON masterclasses(tutor_id,id);
+CREATE INDEX IF NOT EXISTS idx_masterclass_attendees_user ON masterclass_attendees(user_id,masterclass_id);
+ALTER TABLE masterclasses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE masterclass_attendees ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+        REVOKE ALL ON masterclasses,masterclass_attendees FROM anon;
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+        REVOKE ALL ON masterclasses,masterclass_attendees FROM authenticated;
+    END IF;
 END $$;
 `

@@ -289,3 +289,27 @@ WHEN NEW.completed=1 AND COALESCE(OLD.completed,0)<>1 BEGIN
     WHERE bc.status='active' AND (bc.requester_id=NEW.user_id OR bc.recipient_id=NEW.user_id)
         AND COALESCE(u.is_suspended,0)=0;
 END;
+
+-- Multi-seat masterclasses. Reservations are retained when cancelled.
+CREATE TABLE IF NOT EXISTS masterclasses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tutor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(100) NOT NULL CHECK (length(title) BETWEEN 3 AND 100),
+    description TEXT NOT NULL DEFAULT '' CHECK (length(description)<=2000),
+    starts_at TEXT NOT NULL,
+    duration_minutes INT NOT NULL CHECK (duration_minutes BETWEEN 15 AND 240),
+    capacity INT NOT NULL CHECK (capacity BETWEEN 2 AND 100),
+    status VARCHAR(12) NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled','cancelled')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS masterclass_attendees (
+    masterclass_id INTEGER NOT NULL REFERENCES masterclasses(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(12) NOT NULL DEFAULT 'reserved' CHECK (status IN ('reserved','cancelled')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(masterclass_id,user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_masterclasses_upcoming ON masterclasses(status,starts_at,id);
+CREATE INDEX IF NOT EXISTS idx_masterclasses_tutor ON masterclasses(tutor_id,id);
+CREATE INDEX IF NOT EXISTS idx_masterclass_attendees_user ON masterclass_attendees(user_id,masterclass_id);
