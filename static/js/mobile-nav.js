@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const main = document.querySelector('main');
     if(location.pathname==='/admin')sidebar.querySelector('#adminNavLink')?.classList.remove('hidden');
     sidebar.querySelectorAll('.sidebar-nav a[href]').forEach(link => {
-        const active = new URL(link.href).pathname === location.pathname;
+        const currentPath=location.pathname==='/masterclasses'?'/masterclass':location.pathname;
+        const active = new URL(link.href).pathname === currentPath;
         link.classList.toggle('active', active);
         if (active) link.setAttribute('aria-current','page'); else link.removeAttribute('aria-current');
     });

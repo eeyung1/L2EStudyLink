@@ -103,7 +103,7 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 
 **Acceptance:** existing community actions are discoverable and retain their authorization and data-visibility rules. Do not advertise automated buddy matching, external nudges or notification coverage beyond verified implementation.
 
-**Community delivery evidence:** [community and post-session guide](docs/redesign/community.md) records the five-item scope, boundaries and CI/browser checks. Landing and login/account pages remain in Batch 6 below.
+**Community delivery evidence:** [PR #71](https://github.com/eeyung1/L2EStudyLink/pull/71) and the [community and post-session guide](docs/redesign/community.md) records the five-item scope, boundaries and CI/browser checks. Landing and login/account pages remain in Batch 6 below.
 
 #### Batch 5 — Weekly coach, focus and learner identity
 
