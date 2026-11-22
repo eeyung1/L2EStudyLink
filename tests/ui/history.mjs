@@ -15,6 +15,7 @@ export async function verifyHistoryAndDialogs(browser,origin,output,evidence) {
         },theme);
         const page=await context.newPage(),errors=[],external=[];page.on('pageerror',e=>errors.push(e.message));
         page.on('request',request=>{if(request.url().includes('example.invalid'))external.push(request.url());});
+        await page.clock.setFixedTime(new Date('2026-11-24T10:00:00Z'));
         let failHistory=false,retention=true;
         const rows=[{id:1,timetable_id:101,log_date:'2026-11-23',activity_name:'Learn Go',summary:'Go practice\n<script>window.pwned=true</script>',challenges:'Validation',audio_url:'/uploads/9001-00000000-0000-4000-8000-000000000001.wav',start_time:'09:00',end_time:'10:00'}, {id:2,timetable_id:null,log_date:'2026-11-22',activity_name:'Previous reading',summary:'Detached history retained',audio_url:'',day_of_week:0,start_time:'',end_time:''},{id:3,timetable_id:null,log_date:'2026-11-21',activity_name:'Older voice',summary:'Written summary remains',audio_url:'https://example.invalid/track.wav'}];
         await page.route('**/api/v1/**',async route=>{
@@ -24,7 +25,7 @@ export async function verifyHistoryAndDialogs(browser,origin,output,evidence) {
             if(path==='/api/v1/reflections/retention')return route.fulfill({status:retention?200:503,json:{verified:retention,policy:'preserve_reflections'}});
             let body=[];
             if(path==='/api/v1/reflections')body=rows;
-            if(path==='/api/v1/timetable')body=[{id:101,day_of_week:(new Date().getDay()+6)%7,start_time:'09:00',end_time:'10:00',activity:'Dialog fixture'}];
+            if(path==='/api/v1/timetable')body=[{id:101,day_of_week:1,start_time:'09:00',end_time:'10:00',activity:'Dialog fixture'}];
             if(path==='/api/v1/me')body={id:9001,name:'Fixture learner'};
             if(path==='/api/v1/me/streaks')body={current_streak:0,longest_streak:0,total_active_days:0,daily_counts:{}};
             await route.fulfill({status:200,json:body});
@@ -56,7 +57,7 @@ export async function verifyHistoryAndDialogs(browser,origin,output,evidence) {
         await page.locator('#reflectionSearch').fill('Go');failHistory=false;await page.getByRole('button',{name:'Try again',exact:true}).click();await page.locator('.history-card').waitFor();
         assert.equal(await page.locator('#reflectionSearch').inputValue(),'Go');assert.deepEqual(external,[]);
         await page.setViewportSize({width:390,height:844});await page.goto(origin+'/timetable');
-        const day=(new Date().getDay()+6)%7;await page.locator(`.timetable-day-nav [data-day="${day}"]`).click();
+        const day=1;await page.locator(`.timetable-day-nav [data-day="${day}"]`).click();
         // Fixture reflection dates are unrelated to today's clock, so this block remains reflectable.
         await page.locator('[data-reflect="101"]').click();
         await page.locator('#modeWriteTab').focus();await page.keyboard.press('Shift+Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),'cancelReflectionButton');

@@ -62,10 +62,12 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:ui
       - uses: actions/setup-go@v5
+        if: always()
         with:
           go-version-file: go.mod
           cache: true
       - name: Real-server reflection browser journey
+        if: always()
         run: L2E_BROWSER_E2E=1 go test ./handlers -run '^TestReflectionBrowserJourney$' -count=1 -v
       - uses: actions/upload-artifact@v4
         if: always()
