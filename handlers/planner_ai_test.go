@@ -261,7 +261,7 @@ func TestPlannerAIUserScopedFlow(t *testing.T) {
 	if err := database.QueryRow(`INSERT INTO users(name,email,password_hash) VALUES('Other','coaching-other@example.com','test') RETURNING id`).Scan(&other); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := database.Exec(`INSERT INTO activity_logs(user_id,timetable_id,log_date,summary,activity_name,completed) VALUES($1,$2,'2020-10-27','My reflection','Learn Go',true),($3,NULL,'2020-10-27','OTHER_USER_SECRET','Private',true)`, owner, block, other); err != nil {
+	if _, err := database.Exec(`INSERT INTO activity_logs(user_id,timetable_id,log_date,summary,activity_name,completed) VALUES($1,$2,'2020-10-28','My reflection','Learn Go',true),($3,NULL,'2020-10-28','OTHER_USER_SECRET','Private',true)`, owner, block, other); err != nil {
 		t.Fatal(err)
 	}
 	valid, _ := json.Marshal(plannerTestCoaching())

@@ -36,7 +36,7 @@ func TestLearningCoachBrowserJourney(t *testing.T) {
         if err:=database.QueryRow(`INSERT INTO users(name,email,password_hash,is_admin) VALUES($1,$2,'fixture',$3) RETURNING id`,[]string{"Guide moderator","Guide learner"}[i],fmt.Sprintf("reading-%d@example.invalid",i),i==0).Scan(target);err!=nil {t.Fatal(err)}
         var block int64
         end:=[]string{"10:00","10:30"}[i]
-        if err:=database.QueryRow(`INSERT INTO timetable(user_id,day_of_week,start_time,end_time,activity) VALUES($1,1,'09:00',$2,'Practice') RETURNING id`,*target,end).Scan(&block);err!=nil {t.Fatal(err)}
+        if err:=database.QueryRow(`INSERT INTO timetable(user_id,day_of_week,start_time,end_time,activity) VALUES($1,0,'09:00',$2,'Practice') RETURNING id`,*target,end).Scan(&block);err!=nil {t.Fatal(err)}
         if _,err:=database.Exec(`INSERT INTO activity_logs(user_id,timetable_id,log_date,completed,activity_name,summary) VALUES($1,$2,'2020-10-26',TRUE,'Practice',$3)`,*target,block,[]string{"ADMIN_ONLY_REFLECTION","MEMBER_ONLY_REFLECTION"}[i]);err!=nil {t.Fatal(err)}
     }
     if err:=database.QueryRow(`INSERT INTO learning_articles(slug,title,summary,body,category) VALUES('browser-guide','Plan a useful learning session','A practical guide to deliberate practice',$1,'Study habits') RETURNING id`,strings.Repeat("Read and try a useful learning step. ",40)).Scan(&article);err!=nil {t.Fatal(err)}

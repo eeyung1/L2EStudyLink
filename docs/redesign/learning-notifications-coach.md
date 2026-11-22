@@ -16,7 +16,7 @@ Guides and discussions are public. Comments use plain text and the existing 200-
 
 Notifications remain scoped to the signed-in account. Reading an update is separate from following its safe same-origin destination. Following a link attempts a read mark with keepalive and still navigates if marking fails; Refresh obtains the authoritative state later. Existing SSE events, pagination and all-read snapshot cutoff remain intact. No new event coverage or external delivery is advertised. The tray can retry an initial widget fetch failure.
 
-The weekly metrics/API/calculation rules are unchanged. Coaching still requires the existing provider configuration, explicit user request and quota. Reflection content is not included in notifications. Dedicated provider/rate-limit/empty-week/truncation presentation and planner privacy acceptance remain separately tracked next items; existing error messages and truncation disclosure are preserved here.
+API fields, duration rules and data schema are unchanged. A discovered weekday bug is corrected: the calculator now uses the timetable’s stored Monday=0…Sunday=6 values directly, so dated daily rows and same-day reflection coverage agree with the timetable. Tests cover all seven stored values, Monday/Sunday reflections, overnight blocks and existing date/timezone boundaries. Coaching still requires the existing provider configuration, explicit user request and quota. Reflection content is not included in notifications. Dedicated provider/rate-limit/empty-week/truncation presentation and planner privacy acceptance remain separately tracked next items; existing error messages and truncation disclosure are preserved here.
 
 ## Verification
 
