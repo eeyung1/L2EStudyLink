@@ -38,34 +38,30 @@ func CreateBooking(c *gin.Context) {
         return
     }
 
-    var count int
-    err := db.QueryRow(`
-        SELECT COUNT(*) FROM bookings 
-        WHERE tutor_id = $1 AND session_date = $2 AND start_time = $3 
-        AND status NOT IN ('cancelled', 'no_show')
-    `, input.TutorID, input.Date, input.StartTime).Scan(&count)
-
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check availability"})
-        return
+    input.Topic=strings.TrimSpace(input.Topic)
+    date,dateErr:=time.Parse("2006-01-02",input.Date)
+    parseClock:=func(value string)(time.Time,error){if len(value)==8&&strings.HasSuffix(value,":00"){value=value[:5]};return time.Parse("15:04",value)}
+    start,startErr:=parseClock(input.StartTime);end,endErr:=parseClock(input.EndTime)
+    if studentID<=0||input.TutorID<=0||dateErr!=nil||startErr!=nil||endErr!=nil||!start.Before(end)||len([]rune(input.Topic))<1||len([]rune(input.Topic))>200 {
+        c.JSON(400,gin.H{"error":"Choose a valid date, published time slot and topic of 1–200 characters"});return
     }
-
-    if count > 0 {
-        c.JSON(http.StatusConflict, gin.H{"error": "Slot already booked"})
-        return
-    }
-
+    input.Date=date.Format("2006-01-02");input.StartTime=start.Format("15:04");input.EndTime=end.Format("15:04")
+    tx,err:=db.BeginTx(c.Request.Context(),nil)
+    if err!=nil {c.JSON(503,gin.H{"error":"Booking is temporarily unavailable"});return};defer tx.Rollback()
+    // Lock both participants in a stable order, so concurrent requests cannot double-book either person.
+    first,second:=input.TutorID,studentID;if first>second {first,second=second,first}
+    for _,id:=range []int64{first,second}{if _,err=tx.ExecContext(c.Request.Context(),`SELECT pg_advisory_xact_lock(7241,$1::integer)`,id);err!=nil {c.JSON(503,gin.H{"error":"Could not check this slot"});return}}
+    var active int
+    if err=tx.QueryRowContext(c.Request.Context(),`SELECT count(*) FROM users WHERE id IN ($1,$2) AND COALESCE(is_suspended,FALSE)=FALSE`,input.TutorID,studentID).Scan(&active);err!=nil||active!=2 {c.JSON(400,gin.H{"error":"Both participants must have active accounts"});return}
+    var future,published,conflict bool
+    if err=tx.QueryRowContext(c.Request.Context(),`SELECT $1::date+$2::time > LOCALTIMESTAMP`,input.Date,input.StartTime).Scan(&future);err!=nil||!future {c.JSON(400,gin.H{"error":"Choose a session that starts in the future using the booking clock"});return}
+    if err=tx.QueryRowContext(c.Request.Context(),`SELECT EXISTS(SELECT 1 FROM availability WHERE user_id=$1 AND day_of_week=EXTRACT(ISODOW FROM $2::date)::int-1 AND start_time=$3::time AND end_time=$4::time)`,input.TutorID,input.Date,input.StartTime,input.EndTime).Scan(&published);err!=nil||!published {c.JSON(400,gin.H{"error":"Choose a published tutoring availability slot"});return}
+    if err=tx.QueryRowContext(c.Request.Context(),`SELECT EXISTS(SELECT 1 FROM bookings WHERE session_date=$1::date AND status NOT IN ('cancelled','no_show') AND (tutor_id IN ($2,$3) OR student_id IN ($2,$3)) AND start_time<$5::time AND end_time>$4::time)`,input.Date,input.TutorID,studentID,input.StartTime,input.EndTime).Scan(&conflict);err!=nil {c.JSON(503,gin.H{"error":"Could not check availability"});return}
+    if conflict {c.JSON(409,gin.H{"error":"A participant already has a session overlapping this time. Choose another slot."});return}
     var bookingID int64
-    err = db.QueryRow(`
-        INSERT INTO bookings (tutor_id, student_id, session_date, start_time, end_time, topic, meeting_type)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING id
-    `, input.TutorID, studentID, input.Date, input.StartTime, input.EndTime, input.Topic, input.MeetingType).Scan(&bookingID)
-
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create booking"})
-        return
-    }
+    err=tx.QueryRowContext(c.Request.Context(),`INSERT INTO bookings(tutor_id,student_id,session_date,start_time,end_time,topic,meeting_type) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id`,input.TutorID,studentID,input.Date,input.StartTime,input.EndTime,input.Topic,input.MeetingType).Scan(&bookingID)
+    if err!=nil {c.JSON(500,gin.H{"error":"Failed to create booking"});return}
+    if err=tx.Commit();err!=nil {c.JSON(500,gin.H{"error":"Could not confirm the booking request"});return}
 
     // Get tutor and student details
     var tutorName, tutorEmail, tutorDiscord, studentName, studentEmail, studentDiscord string
@@ -88,13 +84,15 @@ func CreateBooking(c *gin.Context) {
 }
 
 func GetMyBookings(c *gin.Context) {
+    c.Header("Cache-Control","private, no-store")
     userID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
 
     rows, err := db.Query(`
         SELECT b.id, b.tutor_id, t.name as tutor_name, b.student_id, s.name as student_name,
                b.session_date, b.start_time, b.end_time, b.topic, b.meeting_type, b.status,
-               b.created_at, EXISTS(SELECT 1 FROM reviews r WHERE r.booking_id=b.id AND r.reviewer_id=$1)
+               b.created_at, EXISTS(SELECT 1 FROM reviews r WHERE r.booking_id=b.id AND r.reviewer_id=$1),
+               (b.session_date+b.start_time>LOCALTIMESTAMP),(b.session_date+b.end_time<=LOCALTIMESTAMP),current_setting('TimeZone')
         FROM bookings b
         JOIN users t ON b.tutor_id = t.id
         JOIN users s ON b.student_id = s.id
@@ -114,10 +112,11 @@ func GetMyBookings(c *gin.Context) {
         var tutorName, studentName, topic, meetingType, status string
         var sessionDate, startTime, endTime string
         var createdAt time.Time
-        var reviewed bool
+        var reviewed,upcoming,ended bool
+        var timezone string
 
         if err:=rows.Scan(&id, &tutorID, &tutorName, &studentID, &studentName,
-            &sessionDate, &startTime, &endTime, &topic, &meetingType, &status, &createdAt,&reviewed);err!=nil {c.JSON(500,gin.H{"error":"Failed to fetch bookings"});return}
+            &sessionDate, &startTime, &endTime, &topic, &meetingType, &status, &createdAt,&reviewed,&upcoming,&ended,&timezone);err!=nil {c.JSON(500,gin.H{"error":"Failed to fetch bookings"});return}
 
         role := "student"
         if tutorID == userID {
@@ -139,6 +138,13 @@ func GetMyBookings(c *gin.Context) {
             "status":       status,
             "created_at":   createdAt,
             "reviewed_by_me": reviewed,
+            "timezone": timezone,
+            "can_cancel": upcoming && (status=="pending"||status=="confirmed"),
+            "can_accept": upcoming && status=="pending" && role=="tutor",
+            "can_decline": upcoming && status=="pending" && role=="tutor",
+            "can_complete": ended && status=="confirmed" && role=="tutor",
+            "can_no_show": ended && status=="confirmed" && role=="tutor",
+            "can_review": status=="completed" && role=="student" && !reviewed,
         })
     }
 
@@ -295,4 +301,13 @@ func UpdateBookingStatus(c *gin.Context) {
     }
     
     c.JSON(http.StatusOK, gin.H{"message": "Booking " + input.Status})
+}
+
+// Booking dates/clock times are stored without offsets; expose their actual shared database clock.
+func GetBookingClock(c *gin.Context) {
+    var zone,today,now string
+    err:=c.MustGet("db").(*sql.DB).QueryRowContext(c.Request.Context(),`SELECT current_setting('TimeZone'),to_char(CURRENT_DATE,'YYYY-MM-DD'),to_char(LOCALTIMESTAMP,'YYYY-MM-DD HH24:MI:SS')`).Scan(&zone,&today,&now)
+    c.Header("Cache-Control","no-store")
+    if err!=nil {c.JSON(503,gin.H{"error":"Booking clock is unavailable"});return}
+    c.JSON(200,gin.H{"timezone":zone,"today":today,"now":now})
 }

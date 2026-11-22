@@ -117,3 +117,19 @@
 .l2e-workspace #deleteBlockDialog { top:var(--l2e-visible-top,0px);bottom:auto;margin:12px auto;max-height:calc(var(--l2e-visible-height,100dvh) - 24px);overflow:auto; }
 .l2e-workspace .heatmap-footer span { color:var(--l2e-secondary)!important; }
 .l2e-workspace .l2e-ui #reflectionStreakSection p { color:var(--l2e-secondary)!important; }
+.tutoring-filters { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;gap:16px;margin:24px 0; }
+.tutoring-filters label,.booking-dialog label,.booking-review-form label { display:block;font-weight:700;margin:0 0 8px; }
+.l2e-workspace .l2e-ui select { min-height:44px;width:100%;padding:10px;border:1px solid var(--l2e-border);border-radius:10px;background:var(--l2e-surface);color:var(--l2e-text);font:inherit; }
+.tutoring-checkbox { display:flex!important;gap:12px;align-items:center;min-height:44px; }.tutoring-checkbox input { width:22px;height:22px;accent-color:var(--l2e-accent); }
+.tutor-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px; }
+.tutor-card,.session-card { padding:24px;border:1px solid var(--l2e-border);border-radius:16px;min-width:0;overflow-wrap:anywhere;margin:0 0 20px;background:var(--l2e-surface); }
+.l2e-workspace .l2e-ui .tutor-card h2,.l2e-workspace .l2e-ui .session-card h2 { font-size:1.3rem;font-weight:750;margin:0 0 12px; }
+.tutor-card p,.session-card p { margin:10px 0; }.tutor-card button { width:100%; }
+.l2e-workspace .booking-dialog { width:min(560px,calc(100% - 24px));max-width:none;max-height:calc(var(--l2e-visible-height,100dvh) - 24px);top:var(--l2e-visible-top,0px);bottom:auto;margin:12px auto;padding:0;border:1px solid var(--l2e-border);border-radius:16px;background:var(--l2e-surface);color:var(--l2e-text);overflow:hidden; }
+.booking-dialog[open] { display:flex;flex-direction:column; }.booking-dialog::backdrop { background:#0009; }.booking-dialog .dialog-header { display:flex;align-items:start;gap:12px;justify-content:space-between;padding-bottom:12px; }.booking-dialog h2 { margin:0; }.booking-dialog .dialog-header button { flex:none; }
+.booking-dialog input,.booking-dialog select { margin-bottom:16px; }.booking-dialog #bookingError,.booking-dialog #bookingActionError { margin:0;color:var(--l2e-error);line-height:1.5; }
+.booking-review { background:var(--l2e-subtle);padding:16px;border-radius:12px;margin-top:16px; }.booking-review dl { display:grid;grid-template-columns:minmax(80px,1fr) minmax(0,2fr);gap:10px; }.booking-review dt { font-weight:700; }.booking-review dd { margin:0;overflow-wrap:anywhere; }
+.session-status { display:inline-block;border:1px solid var(--l2e-border);border-radius:20px;padding:6px 12px;font-weight:750;margin:10px 0;background:var(--l2e-subtle);color:var(--l2e-text); }.status-pending { background:var(--l2e-warning-soft);color:var(--l2e-warning); }.status-confirmed,.status-completed { background:var(--l2e-accent-soft);color:var(--l2e-accent); }.status-no_show { background:var(--l2e-error-soft);color:var(--l2e-error); }
+.session-actions { display:flex;flex-wrap:wrap;gap:10px; }.booking-feedback { min-height:24px;line-height:1.5; }.booking-feedback.is-error { color:var(--l2e-error); }
+@media(max-width:700px) { .tutoring-filters,.tutor-grid { grid-template-columns:minmax(0,1fr); }.tutor-card,.session-card { padding:18px; }.booking-dialog .dialog-header,.booking-dialog .dialog-body,.booking-dialog .dialog-footer { padding-left:16px;padding-right:16px; } }
+.l2e-workspace .l2e-ui p a { text-decoration:underline;text-underline-offset:3px; }

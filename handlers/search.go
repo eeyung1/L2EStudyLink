@@ -39,7 +39,7 @@ func SearchTutorsWithAvailability(c *gin.Context) {
             a.end_time
         FROM users u
         LEFT JOIN availability a ON u.id = a.user_id
-        WHERE EXISTS (
+        WHERE COALESCE(u.is_suspended,FALSE)=FALSE AND EXISTS (
             SELECT 1 FROM skills s WHERE s.user_id = u.id AND s.skill_name ILIKE $1
         )
         ORDER BY u.id, a.day_of_week, a.start_time

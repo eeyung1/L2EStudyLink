@@ -114,6 +114,7 @@ func main() {
         api.GET("/ping", func(c *gin.Context) {
             c.JSON(200, gin.H{"message": "pong"})
         })
+        api.GET("/booking-clock", handlers.GetBookingClock)
         api.GET("/search", handlers.SearchTutors)
         api.GET("/search-with-availability", handlers.SearchTutorsWithAvailability)
         api.GET("/tutors/:id", handlers.GetTutorProfile)

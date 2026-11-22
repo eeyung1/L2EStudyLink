@@ -11,5 +11,5 @@ services:
         generateValue: true
       - key: DISCORD_WEBHOOK_URL
         sync: false
-    buildCommand: go build -o L2EStudyLink
-    startCommand: ./L2EStudyLink
+    buildCommand: sh scripts/build.sh
+    startCommand: sh ./start.sh

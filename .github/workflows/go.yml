@@ -66,12 +66,48 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - name: Real-server reflection browser journey
+      - name: Real-server reflection and booking journeys
         if: always()
-        run: L2E_BROWSER_E2E=1 go test ./handlers -run '^TestReflectionBrowserJourney$' -count=1 -v
+        run: L2E_BROWSER_E2E=1 go test ./handlers -run '^(TestReflectionBrowserJourney|TestBookingBrowserJourney)$' -count=1 -v
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: redesign-foundation-evidence
           path: test-results/ui/
           if-no-files-found: ignore
+
+  container:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: l2e_container
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U test -d l2e_container"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the deployment image
+        run: docker build --tag l2e-studylink:ci .
+      - name: Initialize isolated container database
+        run: docker exec -i "${{ job.services.postgres.id }}" psql -v ON_ERROR_STOP=1 -U test -d l2e_container < schema.sql
+      - name: Start compiled container
+        run: >-
+          docker run -d --name l2e-container-check --network host
+          -e PORT=18080 -e JWT_SECRET=container-test-fixture-secret
+          -e DATABASE_URL='postgres://test:test@127.0.0.1:5432/l2e_container?sslmode=disable'
+          l2e-studylink:ci
+      - name: Verify boot and packaged runtime assets
+        run: python3 scripts/check-container.py http://127.0.0.1:18080
+      - name: Show container startup logs on failure
+        if: failure()
+        run: docker logs l2e-container-check
+      - name: Remove test container
+        if: always()
+        run: docker rm --force l2e-container-check || true

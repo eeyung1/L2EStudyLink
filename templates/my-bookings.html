@@ -51,169 +51,30 @@
             </div>
         </aside>
 
-        <main class="main-content workspace-page">
+        <main class="main-content workspace-page l2e-ui">
 <header class="workspace-header"><div><p class="workspace-eyebrow">YOUR SESSIONS</p><h1 class="workspace-title">My study sessions</h1><p class="workspace-subtitle">Everything you have booked and every session you are hosting, in one place.</p></div><a class="workspace-header-link" href="/search-page">Find a study partner <span aria-hidden="true">↗</span></a></header>
 
-    <div class="max-w-4xl mx-auto px-4 py-8">
-        <div class="bg-white rounded-lg shadow p-6">
-
-            <div id="bookingNotice" role="status" aria-live="polite" hidden></div>
-            <div id="bookingsList">Loading...</div>
-        </div>
-    </div>
+    <section class="l2e-card">
+        <p class="l2e-muted">Booked tutoring sessions appear here. Your <a href="/timetable">personal study timetable</a> and <a href="/availability">tutoring availability</a> are managed separately.</p>
+        <form id="sessionFilters" class="tutoring-filters" aria-label="Filter study sessions">
+            <div><label for="sessionStatus">Session status</label><select id="sessionStatus"><option value="all">All statuses</option><option value="pending">Pending confirmation</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option><option value="no_show">No-show</option></select></div>
+            <div><label for="sessionRole">My role</label><select id="sessionRole"><option value="all">Learning and tutoring</option><option value="student">Learning</option><option value="tutor">Tutoring</option></select></div>
+        </form>
+        <p id="bookingNotice" class="booking-feedback" role="status" aria-live="polite"></p>
+        <div id="bookingsList" aria-busy="true"><p class="l2e-loading">Loading study sessions…</p></div>
+    </section>
         </main>
     </div>
 
     <script>
         const token = sessionToken();
-        function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
-        if (!token) window.location.href = '/page/login';
-
-        fetch('/api/v1/me', { headers: { 'Authorization': 'Bearer ' + token } })
-            .then(r => r.json())
-            .then(user => { if (user.is_admin) document.getElementById('adminNavLink').classList.remove('hidden'); });
-
-        async function logout() {
-            await endSession(token);
-        }
-
-        async function loadBookings() {
-            try {
-                const res = await fetch('/api/v1/bookings', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                const bookings = await res.json();
-                if (!res.ok || !Array.isArray(bookings)) throw new Error('Bookings unavailable');
-
-                if (!bookings || bookings.length === 0) {
-                    document.getElementById('bookingsList').innerHTML = '<div class="workspace-empty"><span aria-hidden="true">✦</span><h3>Your first session is waiting</h3><p>Find a fellow, pick a time, and start learning together.</p><a href="/search-page">Find a study partner →</a></div>';
-                    return;
-                }
-
-                let html = '';
-                for (let i = 0; i < bookings.length; i++) {
-                    const b = bookings[i];
-                    const statusColor = b.status === 'confirmed' ? 'text-green-600' : (b.status === 'pending' ? 'text-yellow-600' : 'text-red-600');
-
-                    html += `
-                        <div class="booking-list-card border rounded-lg p-4 mb-3">
-                            <p><strong>${b.role === 'tutor' ? 'Teaching' : 'Learning with'} ${escapeHtml(b.role === 'tutor' ? b.student_name : b.tutor_name)}</strong></p>
-                            <p>📅 ${escapeHtml(b.date)} at ${escapeHtml(b.start_time)} - ${escapeHtml(b.end_time)}</p>
-                            <p>📚 ${escapeHtml(b.topic)}</p>
-                            <p class="${statusColor}">Status: ${escapeHtml(b.status)}</p>
-                    `;
-
-                    if (b.status === 'pending' && b.role !== 'tutor') {
-                        html += `<div class="booking-list-actions"><button onclick="cancelBooking(${b.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Cancel</button></div>`;
-                    }
-
-                    if (b.status === 'pending' && b.role === 'tutor') {
-                        html += `
-                            <div class="booking-list-actions">
-                                <button onclick="updateStatus(${b.id}, 'confirmed')" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Accept</button>
-                                <button onclick="updateStatus(${b.id}, 'cancelled')" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Decline</button>
-                            </div>
-                        `;
-                    }
-                    if (b.status === 'confirmed' && b.role === 'tutor') {
-                        html += `<div class="booking-list-actions"><button type="button" onclick="recordOutcome(${b.id},'completed')" class="workspace-primary">Mark completed</button><button type="button" onclick="recordOutcome(${b.id},'no_show')" class="workspace-primary">Report no-show</button></div>`;
-                    }
-                    if (b.status === 'completed' && b.role === 'student' && !b.reviewed_by_me) {
-                        html += `<form class="booking-review-form" onsubmit="submitReview(event,${b.id})"><label>Rating <select name="rating" required><option value="">Choose stars</option><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select></label><label>Your review <textarea name="comment" minlength="10" maxlength="1000" required placeholder="What helped you learn?"></textarea></label><button type="submit" class="workspace-primary">Publish review</button></form>`;
-                    }
-
-                    html += `</div>`;
-                }
-                document.getElementById('bookingsList').innerHTML = html;
-            } catch(e) {
-                document.getElementById('bookingsList').innerHTML = '<div class="text-center text-red-600">Could not load bookings. <button type="button" onclick="loadBookings()" class="underline">Try again</button></div>';
-            }
-        }
-
-        function showBookingNotice(message, isError) {
-            const notice = document.getElementById('bookingNotice');
-            notice.textContent = message;
-            notice.className = 'booking-notice ' + (isError ? 'booking-notice-error' : 'booking-notice-success');
-            notice.hidden = false;
-            notice.scrollIntoView({block: 'nearest', behavior: 'smooth'});
-        }
-
-        async function cancelBooking(bookingId) {
-            if (!confirm('Cancel this booking?')) return;
-
-            try {
-                const res = await fetch(`/api/v1/bookings/${bookingId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-
-                if (res.ok) {
-                    showBookingNotice('Booking cancelled. Both participants will be notified.', false);
-                    loadBookings();
-                } else {
-                    const data = await res.json();
-                    showBookingNotice(data.error || 'Could not update booking', true);
-                }
-            } catch(e) {
-                showBookingNotice('Could not reach the server. Try again.', true);
-            }
-        }
-
-        async function updateStatus(bookingId, status) {
-            try {
-                const res = await fetch(`/api/v1/bookings/${bookingId}/status`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify({ status: status })
-                });
-
-                if (res.ok) {
-                    alert(status === 'confirmed' ? 'Booking accepted!' : 'Booking declined');
-                    loadBookings();
-                } else {
-                    const data = await res.json();
-                    showBookingNotice(data.error || 'Could not update booking', true);
-                }
-            } catch(e) {
-                showBookingNotice('Could not reach the server. Try again.', true);
-            }
-        }
-
-        async function recordOutcome(id, status) {
-            if (!confirm(status === 'no_show' ? 'Confirm the student did not attend?' : 'Confirm this session was completed?')) return;
-            try {
-                const res = await fetch(`/api/v1/bookings/${id}/outcome`, {method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({status})});
-                if (!res.ok) throw Error((await res.json()).error || 'Could not save outcome');
-                await loadBookings();
-            } catch(e) { alert(e.message); }
-        }
-        async function submitReview(event,id) {
-            event.preventDefault();
-            const form=event.currentTarget, button=form.querySelector('button');
-            button.disabled=true;
-            try {
-                const res=await fetch(`/api/v1/bookings/${id}/reviews`,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({rating:Number(form.elements.rating.value),comment:form.elements.comment.value.trim()})});
-                if (!res.ok) throw Error((await res.json()).error || 'Could not save review');
-                await loadBookings();
-            } catch(e) { alert(e.message);button.disabled=false; }
-        }
-
-        loadBookings();
-
-        function toggleDark() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('darkMode', isDark);
-            document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
-        }
-        // Sync icon on load
-        if (localStorage.getItem('darkMode') === 'true') {
-            const btn = document.getElementById('darkToggle');
-            if (btn) btn.textContent = '☀️';
-        }
-
+        async function logout() { await endSession(token); }
+        function toggleDark() { const dark=document.documentElement.classList.toggle('dark');localStorage.setItem('darkMode',String(dark)); }
+        fetch('/api/v1/me',{headers:{Authorization:'Bearer '+token}}).then(r=>r.ok?r.json():{}).then(me=>{window.bookingUser=me;if(me.is_admin)document.getElementById('adminNavLink').classList.remove('hidden');}).catch(()=>{});
     </script>
+    <script src="/static/js/booking-common.js"></script>
+<dialog id="bookingActionDialog" class="l2e-ui booking-dialog" aria-labelledby="bookingActionTitle" data-viewport-dialog><header class="dialog-header"><h2 id="bookingActionTitle">Update session?</h2></header><div class="dialog-body"><p id="bookingActionDescription"></p><p id="bookingActionError" role="alert" hidden></p></div><footer class="dialog-footer"><button type="button" id="bookingActionConfirm">Confirm</button><button type="button" id="bookingActionCancel">Keep session</button></footer></dialog>
+<script src="/static/js/booking-sessions.js"></script>
+<script src="/static/js/dialog-viewport.js"></script>
 </body>
 </html>

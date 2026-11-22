@@ -153,6 +153,11 @@
     },
     {
       "method": "GET",
+      "path": "/booking-clock",
+      "scope": "api"
+    },
+    {
+      "method": "GET",
       "path": "/search",
       "scope": "api"
     },
@@ -645,7 +650,8 @@
         "/learn",
         "/skills",
         "/availability",
-        "/admin"
+        "/admin",
+        "/timetable"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
@@ -659,7 +665,8 @@
         "/static/js/pwa.js",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
-        "/static/js/settings.js"
+        "/static/js/settings.js",
+        "/static/js/booking-common.js"
       ],
       "forms": 1,
       "dialogs": [],
@@ -950,7 +957,9 @@
         "/skills",
         "/availability",
         "/admin",
-        "/search-page"
+        "/search-page",
+        "/timetable",
+        "/availability"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
@@ -964,11 +973,16 @@
         "/static/js/pwa.js",
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
-        "/static/js/session.js"
+        "/static/js/session.js",
+        "/static/js/booking-common.js",
+        "/static/js/booking-sessions.js",
+        "/static/js/dialog-viewport.js"
       ],
-      "forms": 0,
-      "dialogs": [],
-      "controls": 3,
+      "forms": 1,
+      "dialogs": [
+        "bookingActionDialog"
+      ],
+      "controls": 7,
       "inline_styles": 0
     },
     "templates/planner.html": {
@@ -1146,7 +1160,8 @@
         "/skills",
         "/availability",
         "/admin",
-        "/masterclass"
+        "/masterclass",
+        "/timetable"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
@@ -1160,15 +1175,18 @@
         "/static/js/pwa.js",
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
-        "/static/js/session.js"
+        "/static/js/session.js",
+        "/static/js/booking-common.js",
+        "/static/js/tutor-search.js",
+        "/static/js/dialog-viewport.js"
       ],
-      "forms": 0,
+      "forms": 2,
       "dialogs": [
         "tutorModal",
         "modalTitle",
         "modalContent"
       ],
-      "controls": 12,
+      "controls": 14,
       "inline_styles": 0
     },
     "templates/signup.html": {
