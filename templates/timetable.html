@@ -131,11 +131,37 @@
             <p id="reflectionDate" class="reflection-modal-date"></p>
 
             <div class="reflection-mode-switch" role="tablist" aria-label="Reflection mode">
-                <button type="button" id="modeWriteTab" role="tab" aria-selected="true" aria-controls="reflectionWritePanel" onclick="setReflectionMode('write')">✍️ Write Reflection</button>
-                <button type="button" id="modeSpeakTab" role="tab" aria-selected="false" aria-controls="reflectionVoicePanel" onclick="setReflectionMode('voice')">🎙️ Speak Reflection</button>
+                <button type="button" id="modeWriteTab" role="tab" tabindex="0" aria-selected="true" aria-controls="reflectionWritePanel" onclick="setReflectionMode('write')">Write</button>
+                <button type="button" id="modeSpeakTab" role="tab" tabindex="-1" aria-selected="false" aria-controls="reflectionVoicePanel" onclick="setReflectionMode('voice')">Speak</button>
             </div>
 
-            <div id="reflectionWritePanel" class="reflection-write-panel" role="tabpanel" aria-labelledby="modeWriteTab">
+            <div id="reflectionWritePanel" role="tabpanel" aria-labelledby="modeWriteTab"><p class="reflection-entry-hint">Write what happened below. You can add a voice note in Speak mode without losing your text.</p></div>
+            <div id="reflectionVoicePanel" class="reflection-voice-panel" role="tabpanel" aria-labelledby="modeSpeakTab" hidden>
+                <p class="reflection-voice-intro">Record up to 3 minutes. Your written fields stay available below. Audio is attached only after upload succeeds; transcription is not available.</p>
+                <div class="reflection-recorder">
+                    <button type="button" id="voiceRecordBtn" class="reflection-record-btn" aria-label="Start recording" onclick="toggleVoiceRecording()">Start recording</button>
+                    <div id="voiceWaveform" class="reflection-waveform" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                    <p id="voiceTimer" class="reflection-timer">00:00 <span>/ 03:00</span></p>
+                    <p id="voiceStatus" class="reflection-voice-status" role="status" aria-live="polite"></p>
+                </div>
+                <div id="voicePreview" class="reflection-voice-preview" hidden>
+                    <audio id="voicePreviewAudio" preload="metadata"></audio>
+                    <div class="reflection-scrubber">
+                        <button type="button" id="voicePlayBtn" class="reflection-play-btn" aria-label="Play recording" onclick="toggleVoicePlayback()">▶</button>
+                        <input type="range" id="voiceScrubber" min="0" max="100" step="0.1" value="0" aria-label="Recording position">
+                        <span class="reflection-scrub-time"><span id="voiceCurrentTime">0:00</span> / <span id="voiceDuration">0:00</span></span>
+                    </div>
+                    <div class="reflection-voice-actions">
+                        <button type="button" id="voiceRerecord" class="reflection-voice-action" onclick="rerecordVoiceTake()">🔄 Re-record</button>
+                        <button type="button" id="voiceDelete" class="reflection-voice-action reflection-voice-action-danger" onclick="deleteVoiceTake()">🗑 Delete</button>
+                        <button type="button" id="voiceRetryUpload" class="reflection-voice-action" hidden>Retry upload</button>
+                        <span id="voiceAttachedLabel" class="reflection-voice-attached" hidden>✓ Attached to reflection</span>
+                    </div>
+                </div>
+            </div>
+
+            <p id="reflectionAttachmentStatus" role="status" aria-live="polite"></p>
+            <div id="reflectionFields" class="reflection-write-panel">
                 <label for="reflectionSummary">What did you actually do?</label>
                 <textarea id="reflectionSummary" rows="3" maxlength="2000" placeholder="What did you actually do?"></textarea>
                 <div class="reflection-field-meta">
@@ -158,33 +184,11 @@
                 </div>
             </div>
 
-            <div id="reflectionVoicePanel" class="reflection-voice-panel" role="tabpanel" aria-labelledby="modeSpeakTab" hidden>
-                <p class="reflection-voice-intro">Record up to 3 minutes. Listen back, re-record or delete before saving.</p>
-                <div class="reflection-recorder">
-                    <button type="button" id="voiceRecordBtn" class="reflection-record-btn" aria-label="Start recording" onclick="toggleVoiceRecording()">🎤</button>
-                    <div id="voiceWaveform" class="reflection-waveform" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-                    <p id="voiceTimer" class="reflection-timer">00:00 <span>/ 03:00</span></p>
-                    <p id="voiceStatus" class="reflection-voice-status" role="status" aria-live="polite"></p>
-                </div>
-                <div id="voicePreview" class="reflection-voice-preview" hidden>
-                    <audio id="voicePreviewAudio" preload="metadata"></audio>
-                    <div class="reflection-scrubber">
-                        <button type="button" id="voicePlayBtn" class="reflection-play-btn" aria-label="Play recording" onclick="toggleVoicePlayback()">▶</button>
-                        <input type="range" id="voiceScrubber" min="0" max="100" step="0.1" value="0" aria-label="Recording position">
-                        <span class="reflection-scrub-time"><span id="voiceCurrentTime">0:00</span> / <span id="voiceDuration">0:00</span></span>
-                    </div>
-                    <div class="reflection-voice-actions">
-                        <button type="button" class="reflection-voice-action" onclick="rerecordVoiceTake()">🔄 Re-record</button>
-                        <button type="button" class="reflection-voice-action reflection-voice-action-danger" onclick="deleteVoiceTake()">🗑 Delete</button>
-                        <span id="voiceAttachedLabel" class="reflection-voice-attached" hidden>✓ Attached to reflection</span>
-                    </div>
-                </div>
-            </div>
-
+            <p class="reflection-entry-hint">Drafts stay on this page while you switch activities. Refreshing or leaving the page clears unsaved drafts. Closing cancels an active recording and keeps the previous take.</p>
             <input type="hidden" id="url-summary" value="">
             <div id="reflectionFormError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
             <button id="saveReflectionButton" onclick="saveReflection()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save reflection</button>
-            <button onclick="closeReflectionModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
+            <button id="cancelReflectionButton" onclick="closeReflectionModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
         </div>
     </div>
 
@@ -490,24 +494,26 @@
         });
 
         window.openReflection = function(blockId, activity, date) {
+            if (document.getElementById('reflectionModal').getAttribute('aria-busy') === 'true') return;
             currentBlockId = blockId;
             currentBlockDate = date;
             document.getElementById('reflectionTitle').textContent = `Reflection: ${activity}`;
             document.getElementById('reflectionDate').textContent = `For: ${date}`;
-            resetReflectionModal();
+            openReflectionDraft(`${blockId}|${date}`);
             document.getElementById('reflectionModal').classList.remove('hidden');
             document.getElementById('reflectionModal').classList.add('flex');
             onReflectionModalOpened();
         };
 
         window.closeReflectionModal = function() {
-            abortVoiceRecording();
+            if (!abortVoiceRecording()) return;
             document.getElementById('reflectionModal').classList.add('hidden');
             document.getElementById('reflectionModal').classList.remove('flex');
             onReflectionModalClosed();
         };
 
         window.saveReflection = async function() {
+            if (!reflectionCanSave()) return;
             const summary = document.getElementById('reflectionSummary').value.trim();
             const challenges = document.getElementById('reflectionChallenges').value;
             const learnings = document.getElementById('reflectionLearnings').value;
@@ -522,12 +528,14 @@
             }
             const button = document.getElementById('saveReflectionButton');
             if (button.disabled) return;
-            button.disabled = true;
-            button.textContent = 'Saving…';
+            setReflectionSaving(true);
+            const saveAbort = new AbortController();
+            const saveTimeout = setTimeout(() => saveAbort.abort(), 30000);
             try {
                 const res = await fetch('/api/v1/reflections', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    signal: saveAbort.signal,
                     body: JSON.stringify({ timetable_id: currentBlockId, log_date: currentBlockDate, summary, challenges, learnings, audio_url: audioUrl })
                 });
                 if (!res.ok) {
@@ -535,15 +543,17 @@
                     throw new Error(data.error || 'Could not save your reflection. Please try again.');
                 }
                 await invalidateReadCache(['/api/v1/reflections'], token);
+                markReflectionSaved();
+                setReflectionSaving(false);
                 closeReflectionModal();
                 document.getElementById('reflectionSavedNotice').hidden = false;
                 await loadTimetable();
             } catch (failure) {
-                error.textContent = failure.message;
+                error.textContent = (failure.name === 'AbortError' ? 'Could not confirm the save in time.' : failure.message) + ' Your text and attached voice note are kept here. Try saving again.';
                 error.hidden = false;
             } finally {
-                button.disabled = false;
-                button.textContent = 'Save reflection';
+                clearTimeout(saveTimeout);
+                setReflectionSaving(false);
             }
         };
 

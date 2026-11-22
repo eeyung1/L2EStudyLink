@@ -5,6 +5,7 @@ import { resolve, extname } from 'node:path';
 import { chromium } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { verifyApp } from './workspace.mjs';
+import { verifyReflections } from './reflections.mjs';
 
 const root = process.cwd(), output = 'test-results/ui';
 await mkdir(output,{recursive:true});
@@ -59,6 +60,7 @@ try {
     await context.close();
   }
   await verifyApp(browser,origin,output,evidence);
+  await verifyReflections(browser,origin,output,evidence);
   for(const theme of ['light','dark']) {
     const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
     const page=await context.newPage();
