@@ -1,6 +1,6 @@
 # Redesign foundation audit and review guide
 
-Baseline: `5e2309e14a98ed7f03aca5c8620b599cbdb1c581`. Scope: the first five unchecked tasks in Batch 1. This is an audit and an interactive layout preview, not a production dashboard replacement.
+Historical foundation baseline: `5e2309e14a98ed7f03aca5c8620b599cbdb1c581`. Scope: the first five unchecked tasks in Batch 1. This is an audit and an interactive layout preview, not a production dashboard replacement.
 
 ## Deliverables and evidence
 
@@ -79,3 +79,7 @@ Existing Go tests/build, JavaScript tests and SQLite schema validation stay in C
 ## Next tasks and acceptance
 
 The next unchecked task is shared components, followed by navigation integration and actual Dashboard/Timetable redesign. Approve the visual direction through review of this preview as implementation progresses. Physical Android/laptop acceptance, Safari testing, the remaining screens, real authenticated end-to-end flows and production integration are not completed by this foundation batch.
+
+## Integration follow-up
+
+Tasks 6–10 now consume the token file in production workspace templates; it is scoped to `.l2e-preview` and `.l2e-workspace`. Navigation is rendered from `app-navigation.html`. The generated inventory expands that partial for each consumer and now includes 23 template files. F01, F02 and F04 are addressed by the workspace integration. The original foundation baseline screenshots are preserved in [run 109](https://github.com/eeyung1/L2EStudyLink/actions/runs/45029237196); subsequent CI artifacts name current-template captures `app-*` and `integrated-*`, so they are not represented as unchanged baseline screenshots. See `workspace-integration.md` for the current scope and limitations.

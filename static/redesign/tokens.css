@@ -1,5 +1,5 @@
-/* Opt-in semantic tokens. Production templates do not consume this file yet. */
-.l2e-preview {
+/* Shared semantic tokens for the preview and signed-in workspace. */
+.l2e-preview, .l2e-workspace {
   --l2e-canvas: #f4f7f6; --l2e-surface: #ffffff; --l2e-subtle: #edf3f0;
   --l2e-text: #142d26; --l2e-secondary: #4f655d; --l2e-muted: #5a6e65;
   --l2e-border: #dbe5df; --l2e-accent: #08734d; --l2e-accent-hover: #055537;
@@ -15,7 +15,7 @@
   --l2e-icon: 20px; --l2e-stroke: 1.7; --l2e-touch: 44px; --l2e-duration: 160ms;
   color-scheme: light;
 }
-.l2e-preview[data-l2e-theme="dark"] {
+.l2e-preview[data-l2e-theme="dark"], html.dark .l2e-workspace {
   --l2e-canvas: #101c20; --l2e-surface: #19292c; --l2e-subtle: #213639;
   --l2e-text: #edf7f1; --l2e-secondary: #bdcfc7; --l2e-muted: #a7beb4;
   --l2e-border: #38504b; --l2e-accent: #8de2ba; --l2e-accent-hover: #b7f2d4;

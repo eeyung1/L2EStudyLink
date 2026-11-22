@@ -4,7 +4,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 
 ## Redesign roadmap — November 2026
 
-**Stage: first five foundation tasks implemented as an isolated design preview; production UI integration remains pending.** This roadmap follows the owner-supplied `frontend-engineer.md` guidance and the agreed redesign plan. Checkboxes below describe the new redesign, not whether an older version of a screen exists.
+**Stage: foundation complete; shared navigation and the daily Dashboard/Timetable design are integrated in the application templates. Deployment and physical-device acceptance remain pending.** This roadmap follows the owner-supplied `frontend-engineer.md` guidance and the agreed redesign plan. Checkboxes below describe the new redesign, not whether an older version of a screen exists.
 
 ### Product outcome
 
@@ -55,11 +55,11 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [x] Record existing behavior and defects separately from proposed design improvements.
 - [x] Prepare phone and desktop dashboard/timetable previews using the agreed design direction.
 - [x] Define theme, typography, spacing, elevation, icon and component tokens.
-- [ ] Establish shared buttons, inputs, cards, tabs, dialogs, feedback and loading patterns within the existing template stack.
-- [ ] Apply consistent grouped navigation, active-page labels and keyboard-accessible mobile menus.
-- [ ] Reorganize the dashboard around today's blocks, next booked session, Add reflection, focus access and weekly coverage.
-- [ ] Put setup tasks and collaboration recommendations below primary daily actions.
-- [ ] Present a day agenda on phones and an accessible weekly overview on larger screens.
+- [x] Establish shared buttons, inputs, cards, tabs, dialogs, feedback and loading patterns within the existing template stack.
+- [x] Apply consistent grouped navigation, active-page labels and keyboard-accessible mobile menus.
+- [x] Reorganize the dashboard around today's blocks, next booked session, Add reflection, focus access and weekly coverage.
+- [x] Put setup tasks and collaboration recommendations below primary daily actions.
+- [x] Present a day agenda on phones and an accessible weekly overview on larger screens.
 - [ ] Preserve selected timetable day after existing create/delete/reflection actions.
 - [ ] Add browser checks for shared navigation, dashboard and timetable before merging this batch.
 
@@ -498,3 +498,7 @@ On Render, add the Brevo variables to the web service and confirm transactional 
 go mod download
 go mod get <package_url>
 ```
+
+### Daily workspace integration (tasks 6–10)
+
+The first five integration tasks now use the real Dashboard/Timetable templates: shared semantic controls and tokens, one grouped navigation partial across 13 workspace screens, read-only daily cards from existing account APIs, setup/collaboration below daily actions, and responsive phone agenda/desktop week views. See [implementation and verification notes](docs/redesign/workspace-integration.md). The standalone sample preview remains available. No database, permission, booking, or reflection API contract is changed. Production deployment and physical-device acceptance remain unchecked.

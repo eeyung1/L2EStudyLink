@@ -1,5 +1,5 @@
 {
-  "baseline_commit": "5e2309e14a98ed7f03aca5c8620b599cbdb1c581",
+  "foundation_baseline_commit": "5e2309e14a98ed7f03aca5c8620b599cbdb1c581",
   "notes": [
     "Paths retain the route-group spelling in source; api/protected groups use /api/v1 and admin uses /api/v1/admin.",
     "Source inventory is not a production authorization or device audit.",
@@ -529,15 +529,18 @@
       "links": [
         "/dashboard",
         "/dashboard",
-        "/search-page",
-        "/my-bookings",
-        "/skills",
-        "/availability",
-        "/learn",
-        "/projects",
-        "/masterclass",
         "/timetable",
         "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
         "/admin",
         "/learn",
         "/api/v1/admin/product-email-audience.csv"
@@ -546,7 +549,9 @@
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -557,6 +562,30 @@
       "forms": 2,
       "dialogs": [],
       "controls": 11,
+      "inline_styles": 0
+    },
+    "templates/app-navigation.html": {
+      "links": [
+        "/dashboard",
+        "/timetable",
+        "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
+        "/admin"
+      ],
+      "styles": [],
+      "scripts": [],
+      "forms": 0,
+      "dialogs": [],
+      "controls": 0,
       "inline_styles": 0
     },
     "templates/article.html": {
@@ -589,22 +618,27 @@
       "links": [
         "/dashboard",
         "/dashboard",
-        "/search-page",
-        "/my-bookings",
-        "/skills",
-        "/availability",
-        "/learn",
-        "/projects",
-        "/masterclass",
         "/timetable",
         "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
         "/admin"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -621,19 +655,27 @@
       "links": [
         "/dashboard",
         "/dashboard",
+        "/timetable",
+        "/reflections",
+        "/planner",
+        "/focus",
         "/search-page",
         "/my-bookings",
         "/buddies",
-        "/planner",
         "/projects",
-        "/focus",
-        "/reflections"
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
+        "/admin"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "https://cdn.tailwindcss.com",
@@ -649,16 +691,24 @@
       "links": [
         "/dashboard",
         "/dashboard",
-        "/search-page",
-        "/my-bookings",
-        "/skills",
-        "/availability",
-        "/learn",
-        "/projects",
-        "/masterclass",
         "/timetable",
         "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
         "/admin",
+        "/timetable?reflect=today",
+        "/timetable",
+        "/my-bookings",
+        "/planner",
+        "/focus",
         "/skills",
         "/availability",
         "/projects",
@@ -671,14 +721,17 @@
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/read-api.js",
-        "/static/js/heatmap.js"
+        "/static/js/heatmap.js",
+        "/static/js/dashboard-daily.js"
       ],
       "forms": 0,
       "dialogs": [],
@@ -693,13 +746,23 @@
         "/reflections",
         "/planner",
         "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
         "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
+        "/admin",
         "/timetable"
       ],
       "styles": [
         "/static/css/dashboard.css",
         "/static/css/dark-mode.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/session.js",
@@ -822,22 +885,27 @@
       "links": [
         "/dashboard",
         "/dashboard",
-        "/search-page",
-        "/my-bookings",
-        "/skills",
-        "/availability",
-        "/learn",
-        "/projects",
-        "/masterclass",
         "/timetable",
         "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
         "/admin"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -854,15 +922,18 @@
       "links": [
         "/dashboard",
         "/dashboard",
-        "/search-page",
-        "/my-bookings",
-        "/skills",
-        "/availability",
-        "/learn",
-        "/projects",
-        "/masterclass",
         "/timetable",
         "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
         "/admin",
         "/search-page"
       ],
@@ -870,7 +941,9 @@
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -890,12 +963,23 @@
         "/timetable",
         "/reflections",
         "/planner",
-        "/projects"
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
+        "/admin"
       ],
       "styles": [
         "/static/css/dashboard.css",
         "/static/css/dark-mode.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/session.js",
@@ -935,15 +1019,18 @@
       "links": [
         "/dashboard",
         "/dashboard",
-        "/search-page",
-        "/my-bookings",
-        "/skills",
-        "/availability",
-        "/learn",
-        "/projects",
-        "/masterclass",
         "/timetable",
         "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
         "/admin",
         "#projectList"
       ],
@@ -951,7 +1038,9 @@
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -968,15 +1057,18 @@
       "links": [
         "/dashboard",
         "/dashboard",
-        "/search-page",
-        "/my-bookings",
-        "/skills",
-        "/availability",
-        "/learn",
-        "/projects",
-        "/masterclass",
         "/timetable",
         "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
         "/admin",
         "/timetable"
       ],
@@ -984,7 +1076,9 @@
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1023,15 +1117,18 @@
       "links": [
         "/dashboard",
         "/dashboard",
-        "/search-page",
-        "/my-bookings",
-        "/skills",
-        "/availability",
-        "/learn",
-        "/projects",
-        "/masterclass",
         "/timetable",
         "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
         "/admin",
         "/masterclass"
       ],
@@ -1039,7 +1136,9 @@
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1080,22 +1179,27 @@
       "links": [
         "/dashboard",
         "/dashboard",
-        "/search-page",
-        "/my-bookings",
-        "/skills",
-        "/availability",
-        "/learn",
-        "/projects",
-        "/masterclass",
         "/timetable",
         "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
         "/admin"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1112,15 +1216,18 @@
       "links": [
         "/dashboard",
         "/dashboard",
-        "/search-page",
-        "/my-bookings",
-        "/skills",
-        "/availability",
-        "/learn",
-        "/projects",
-        "/masterclass",
         "/timetable",
         "/reflections",
+        "/planner",
+        "/focus",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/projects",
+        "/masterclass",
+        "/learn",
+        "/skills",
+        "/availability",
         "/admin",
         "/reflections"
       ],
@@ -1128,7 +1235,9 @@
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
         "/static/css/dark-mode.css",
         "/static/css/dashboard.css",
-        "/static/css/ui-polish.css"
+        "/static/css/ui-polish.css",
+        "/static/redesign/tokens.css",
+        "/static/css/workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1136,7 +1245,8 @@
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/read-api.js",
-        "/static/js/voice-reflection.js"
+        "/static/js/voice-reflection.js",
+        "/static/js/workspace-controls.js"
       ],
       "forms": 0,
       "dialogs": [

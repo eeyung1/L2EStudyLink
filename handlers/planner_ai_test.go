@@ -217,11 +217,11 @@ func TestPlannerAIInputAndTemplate(t *testing.T) {
 			t.Fatalf("invalid body: %d", w.Code)
 		}
 	}
-	page, err := template.ParseFiles("../templates/planner.html")
+	page, err := template.ParseFiles("../templates/planner.html", "../templates/app-navigation.html")
 	if err != nil {
 		t.Fatal(err)
 	}
-	router.LoadHTMLFiles("../templates/planner.html")
+	router.LoadHTMLFiles("../templates/planner.html", "../templates/app-navigation.html")
 	router.GET("/planner", PlannerPage)
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, httptest.NewRequest("GET", "/planner", nil))

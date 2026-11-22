@@ -4,6 +4,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import { chromium } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { verifyApp } from './workspace.mjs';
 
 const root = process.cwd(), output = 'test-results/ui';
 await mkdir(output,{recursive:true});
@@ -17,15 +18,16 @@ const server = createServer(async (req,res) => {
   else if(path === '/page/login') file=resolve(root,'templates/login.html');
   else {res.writeHead(404);res.end();return;}
   if(!file.startsWith(root+'/static/')&&!file.startsWith(root+'/templates/')) {res.writeHead(403);res.end();return;}
-  try {const body=await readFile(file);res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','Cache-Control':'no-store'});res.end(body);}
+  try {let body=await readFile(file);
+    if(extname(file)==='.html')body=Buffer.from(body.toString().replace('{{template "app-navigation" .}}',(await readFile(resolve(root,'templates/app-navigation.html'),'utf8')).replace('{{define "app-navigation"}}','').replace('{{end}}','')));res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','Cache-Control':'no-store'});res.end(body);}
   catch {res.writeHead(404);res.end();}
 });
 await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch();
-const evidence={fixtureOnly:true,baselineCommit:'5e2309e14a98ed7f03aca5c8620b599cbdb1c581',screenshots:[],baselineObservations:[],previewChecks:[],accessibility:[],externalAssetFailures:[]};
+const evidence={fixtureOnly:true,sourceCommit:process.env.GITHUB_SHA || 'local',screenshots:[],appObservations:[],previewChecks:[],accessibility:[],externalAssetFailures:[]};
 try {
-  // Baseline: existing template HTML and JS, unchanged. APIs use fictional fixtures.
+  // Current integrated app templates and shared navigation, with fictional API fixtures.
   for(const width of [390,1440]) for(const view of ['dashboard','timetable']) for(const state of ['populated','empty','loading','error','expired']) {
     const context=await browser.newContext({viewport:{width,height:950},timezoneId:'Africa/Lagos'});
     const page=await context.newPage();
@@ -39,6 +41,7 @@ try {
       if(state==='error' && path!=='/api/v1/me') return route.fulfill({status:503,json:{error:'Fixture unavailable'}});
       let body=[];
       if(path==='/api/v1/me') body={id:9001,name:'Demo Fellow',email:'demo@example.invalid',rating:0,total_reviews:0,skills:state==='empty'?[]:[{name:'Go',level:'intermediate'}],bio:'Fictional UI fixture',is_admin:false,product_emails:false};
+      if(path==='/api/v1/planner/week') body={metrics:{due_blocks:state==='empty'?0:5,reflected_blocks:state==='empty'?0:3}};
       if(path==='/api/v1/me/streaks') body={current_streak:1,longest_streak:3,total_active_days:3,today:'2026-11-23',daily_counts:{'2026-11-23':1}};
       if(path==='/api/v1/timetable' && state!=='empty')body=[{id:101,day_of_week:0,start_time:'09:00',end_time:'11:00',activity:'Build a Go API',goal:'Test validation'}];
       if(path==='/api/v1/reflections' && state!=='empty')body=[{id:201,timetable_id:101,log_date:'2026-11-23',activity_name:'Build a Go API',completed:true,summary:'Fictional reflection fixture'}];
@@ -46,15 +49,16 @@ try {
     });
     await page.goto(origin+'/'+view,{waitUntil:'domcontentloaded'});
     if(state==='expired') await page.waitForURL('**/page/login',{waitUntil:'domcontentloaded'});
-    else if(state==='populated'||state==='empty') {if(view==='dashboard')await page.locator('#greeting').filter({hasText:'Demo Fellow'}).waitFor();else await page.locator('#day-0').waitFor();}
+    else if(state==='populated'||state==='empty') {if(view==='dashboard')await page.locator('#greeting').filter({hasText:'Demo Fellow'}).waitFor();else await page.locator('#day-0').waitFor({state:'attached'});}
     else if(state==='error') {if(view==='dashboard')await page.getByText('Projects are unavailable right now').scrollIntoViewIfNeeded();else await page.getByText(/Could not load timetable/).scrollIntoViewIfNeeded();}
     else await page.waitForTimeout(200);
-    const file=`baseline-${view}-${state}-${width}.png`;
+    const file=`app-${view}-${state}-${width}.png`;
     await page.screenshot({path:output+'/'+file,fullPage:false});
     evidence.screenshots.push(file);
-    evidence.baselineObservations.push({view,state,width,url:new URL(page.url()).pathname,overflow:await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),pageErrors:'Not asserted for baseline; existing failures must be triaged separately.'});
+    evidence.appObservations.push({view,state,width,url:new URL(page.url()).pathname,overflow:await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),pageErrors:'Read-only state capture; authenticated server integration remains separate.'});
     await context.close();
   }
+  await verifyApp(browser,origin,output,evidence);
   for(const theme of ['light','dark']) {
     const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
     const page=await context.newPage();
