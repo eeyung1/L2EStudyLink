@@ -12,6 +12,8 @@ import (
     "testing"
 
     "github.com/gin-gonic/gin"
+    "github.com/jackc/pgx/v5"
+    "github.com/jackc/pgx/v5/stdlib"
     "L2EStudyLink/middleware"
 )
 
@@ -20,7 +22,15 @@ func TestLearningCoachBrowserJourney(t *testing.T) {
     t.Setenv("JWT_SECRET","learning-coach-browser-fixture-secret")
     t.Setenv("GROQ_API_KEY","fixture-only-no-network")
     t.Setenv("DISCORD_WEBHOOK_URL","");t.Setenv("RESEND_API_KEY","")
-    database:=timetableTestDB(t,false)
+    fixture:=timetableTestDB(t,false)
+    var schema string
+    if err:=fixture.QueryRow(`SELECT current_schema()`).Scan(&schema);err!=nil {t.Fatal(err)}
+    config,err:=pgx.ParseConfig(os.Getenv("TEST_DATABASE_URL"));if err!=nil {t.Fatal(err)}
+    config.RuntimeParams["search_path"]=schema
+    // Production uses pgx. In particular, rate-limit uniqueness must be
+    // exercised with its PgError rather than the legacy lib/pq test driver.
+    database:=stdlib.OpenDB(*config);database.SetMaxOpenConns(1);database.SetMaxIdleConns(1)
+    t.Cleanup(func(){database.Close()})
     var admin,member,article,root,booking int64
     for i,target:=range []*int64{&admin,&member} {
         if err:=database.QueryRow(`INSERT INTO users(name,email,password_hash,is_admin) VALUES($1,$2,'fixture',$3) RETURNING id`,[]string{"Guide moderator","Guide learner"}[i],fmt.Sprintf("reading-%d@example.invalid",i),i==0).Scan(target);err!=nil {t.Fatal(err)}
