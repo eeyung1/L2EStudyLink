@@ -2,7 +2,7 @@
     const {node,time,api,configureDialog}=L2EBooking,list=document.getElementById('bookingsList'),notice=document.getElementById('bookingNotice');
     const names={pending:'Pending confirmation',confirmed:'Confirmed',cancelled:'Cancelled',completed:'Completed',no_show:'No-show'};
     const dialog=document.getElementById('bookingActionDialog');let rows=[],pending=null,busy=false;
-    const drafts=new Map();let reviewBusy=false;
+    const drafts=new Map();let reviewBusy=false,targetHandled=false;
     const open=configureDialog(dialog,()=>!busy);
     function tell(message,error=false){notice.textContent=message;notice.classList.toggle('is-error',error);}
     function describe(b){return `${String(b.date).slice(0,10)} · ${time(b.start_time)}–${time(b.end_time)} · ${b.timezone||'shared booking clock'}`;}
@@ -42,7 +42,8 @@
             list.append(card);
         });
     }
-    async function load(){list.setAttribute('aria-busy','true');if(!rows.length)list.replaceChildren(node('p','Loading your sessions…','l2e-feedback'));try{const value=await api('/bookings');if(!Array.isArray(value))throw Error('Unexpected session response');rows=value;render();}catch(e){list.replaceChildren(node('p','Sessions could not be loaded. Your filters are kept.','l2e-feedback'));const retry=node('button','Retry sessions');retry.type='button';retry.addEventListener('click',load);list.append(retry);tell(e.message,true);}finally{list.setAttribute('aria-busy','false');}}
+    async function load(){list.setAttribute('aria-busy','true');if(!rows.length)list.replaceChildren(node('p','Loading your sessions…','l2e-feedback'));try{const value=await api('/bookings');if(!Array.isArray(value))throw Error('Unexpected session response');rows=value;render();
+        if(!targetHandled){targetHandled=true;const id=Number(new URLSearchParams(location.search).get('session'));if(Number.isSafeInteger(id)&&id>0){const card=Array.from(list.querySelectorAll('[data-session]')).find(c=>Number(c.dataset.session)===id);if(card){card.tabIndex=-1;card.classList.add('session-selected');card.scrollIntoView({block:'start'});card.focus({preventScroll:true});}else tell('This session is no longer available in your account.');}}}catch(e){list.replaceChildren(node('p','Sessions could not be loaded. Your filters are kept.','l2e-feedback'));const retry=node('button','Retry sessions');retry.type='button';retry.addEventListener('click',load);list.append(retry);tell(e.message,true);}finally{list.setAttribute('aria-busy','false');}}
     for(const id of ['sessionStatus','sessionRole'])document.getElementById(id).addEventListener('change',render);
     document.getElementById('sessionFilters').addEventListener('submit',e=>e.preventDefault());
     document.getElementById('bookingActionCancel').addEventListener('click',()=>{if(!busy)dialog.close();});

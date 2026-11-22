@@ -122,7 +122,8 @@ func CalculateWeeklyPlannerMetrics(userID int64, week, asOf time.Time, location 
 		if overnight {
 			minutes += 24 * 60
 		}
-		day := (block.DayOfWeek + 6) % 7
+		// Timetable API and UI store Monday=0 through Sunday=6.
+        day := block.DayOfWeek
 		date := start.AddDate(0, 0, day)
 		if overnight {
 			date = date.AddDate(0, 0, 1)

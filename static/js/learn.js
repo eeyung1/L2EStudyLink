@@ -1,130 +1,45 @@
 (() => {
-  const list = document.getElementById('article-list');
-  const article = document.getElementById('article-title');
-  const getJSON = async path => {
-    const response = await fetch(path, {credentials:'same-origin'});
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Could not load this page');
-    return data;
-  };
-  const addText = (parent, tag, value, className) => {
-    const element = document.createElement(tag);
-    element.textContent = value;
-    if (className) element.className = className;
-    parent.append(element);
-    return element;
-  };
-  if (list) {
-    getJSON('/api/v1/articles').then(({articles}) => {
-      const readingList=articles.length>1 ? articles.filter(item=>item.slug!=='start-an-agentic-workflow') : articles;
-      document.getElementById('articles-status').textContent = readingList.length ? '' : 'New guides are on the way.';
-      for (const item of readingList) {
-        const card = document.createElement('a'); card.className = 'article-tile'; card.href = '/learn/' + encodeURIComponent(item.slug);
-        addText(card,'span',item.category,'tile-category');
-        addText(card,'h2',item.title);
-        addText(card,'p',item.summary);
-        addText(card,'strong','Read guide →');
-        list.append(card);
-      }
-    }).catch(error => { document.getElementById('articles-status').textContent = error.message; });
+  'use strict';
+  const el=id=>document.getElementById(id);
+  const node=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
+  const scope=()=>document.cookie.match(/(?:^|; )l2e_scope=([a-f0-9]+)/)?.[1]||'';
+  const initialScope=scope();
+  const account=()=>{if(scope()!==initialScope){location.reload();throw Error('Your account changed. Reload this page.');}};
+  const tell=(id,text,error=false)=>{el(id).textContent=text;el(id).classList.toggle('is-error',error);};
+  async function request(path,options={}){
+    account();const response=await fetch('/api/v1'+path,{credentials:'same-origin',cache:'no-store',...options});account();
+    const data=await response.json().catch(()=>({}));account();if(!response.ok){const e=Error(data.error||'This service is unavailable. Please try again.');e.status=response.status;throw e;}return data;
   }
-  if (!article) return;
-  const slug = decodeURIComponent(location.pathname.split('/').pop());
-  const articleReturn = encodeURIComponent(location.pathname);
-  for (const link of document.querySelectorAll('.article-signup, #join-prompt a[href="/page/signup"]')) link.href='/page/signup?next='+articleReturn;
-  const signInLink = document.querySelector('#join-prompt a[href="/page/login"]');
-  if (signInLink) signInLink.href='/page/login?next='+articleReturn;
-  const comments = document.getElementById('comments');
-  const status = document.getElementById('comments-status');
-  let canReply = false;
-  const postComment = async (body,parentID) => {
-    const response=await fetch('/api/v1/articles/' + encodeURIComponent(slug) + '/comments',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({body,parent_id:parentID})});
-    const data=await response.json();
-    if (response.status===401) {
-      document.getElementById('join-prompt').hidden=false;
-      document.getElementById('comment-form').hidden=true;
-      canReply=false;
+  const date=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?'':d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});};
+  function button(label,run){const b=node('button',label);b.type='button';b.addEventListener('click',run);return b;}
+  if(el('article-list')){
+    let articles=[];
+    function render(){const list=el('article-list'),q=el('guideSearch').value.trim().toLowerCase(),category=el('guideCategory').value;list.replaceChildren();const visible=articles.filter(a=>(!category||a.category===category)&&(a.title+' '+a.summary+' '+a.category).toLowerCase().includes(q));
+      tell('articles-status',visible.length?`${visible.length} guide${visible.length===1?'':'s'} available.`:articles.length?'No guides match your filters. Try another topic.':'No guides have been published yet.');
+      for(const a of visible){const card=node('article',undefined,'reading-card'),h=node('h2'),link=node('a',a.title);link.href='/learn/'+encodeURIComponent(a.slug);h.append(link);const time=node('time',date(a.published_at),'reading-date');time.dateTime=a.published_at;card.append(node('p',a.category,'reading-eyebrow'),h,node('p',a.summary),time);list.append(card);}
     }
-    if (!response.ok) throw new Error(data.error || 'Could not post comment');
-    return data;
-  };
-  const commentCard = (item, rootID) => {
-    const card=document.createElement('article');card.className='comment-card';
-    addText(card,'strong',item.name);
-    addText(card,'time','#' + item.id + ' · ' + new Date(item.created_at).toLocaleDateString());
-    addText(card,'p',item.body);
-    const reply=document.createElement('button');reply.type='button';reply.className='reply-action';reply.dataset.replyTo=rootID;reply.dataset.replyName=item.name;reply.textContent='↳ Reply';card.append(reply);
-    return card;
-  };
-  const renderComments = async () => {
-    const data = await getJSON('/api/v1/articles/' + encodeURIComponent(slug) + '/comments');
-    comments.replaceChildren();
-    status.textContent = data.comments.length ? '' : 'No comments yet. Start the conversation.';
-    const byID=new Map(data.comments.map(item=>[item.id,item]));
-    const roots=[],replies=new Map();
-    for (const item of data.comments) {
-      if (item.parent_id && byID.has(item.parent_id)) {
-        if (!replies.has(item.parent_id)) replies.set(item.parent_id,[]);
-        replies.get(item.parent_id).push(item);
-      } else roots.push(item);
-    }
-    for (const item of roots) {
-      const thread=document.createElement('section');thread.className='thread';thread.id='comment-'+item.id;
-      thread.append(commentCard(item,item.id));
-      const children=replies.get(item.id)||[];
-      if (children.length) {
-        const nested=document.createElement('div');nested.className='thread-replies';
-        for (const child of children.reverse()) nested.append(commentCard(child,item.id));
-        thread.append(nested);
-      }
-      comments.append(thread);
-    }
-  };
-  comments.addEventListener('click',event => {
-    const button=event.target.closest('.reply-action');
-    if (!button) return;
-    if (!canReply) {
-      document.getElementById('join-prompt').scrollIntoView({behavior:'smooth'});
-      return;
-    }
-    document.querySelectorAll('.reply-form').forEach(form=>form.remove());
-    const rootID=Number(button.dataset.replyTo);
-    const form=document.createElement('form');form.className='reply-form';
-    const label=addText(form,'label','Reply to '+button.dataset.replyName);
-    const input=document.createElement('textarea');input.required=true;input.minLength=3;input.maxLength=1200;input.placeholder='Share an answer or ask a follow-up question';input.id='reply-'+rootID;label.htmlFor=input.id;form.append(input);
-    const actions=document.createElement('div');actions.className='comment-actions';
-    const cancel=addText(actions,'button','Cancel','cancel-reply');cancel.type='button';cancel.addEventListener('click',()=>form.remove());
-    const submit=addText(actions,'button','Post reply','button button-gold');submit.type='submit';actions.append(submit);form.append(actions);
-    const message=addText(form,'p','');message.setAttribute('role','status');
-    form.addEventListener('submit',async e=>{
-      e.preventDefault();submit.disabled=true;message.textContent='Posting…';
-      try {await postComment(input.value,rootID);await renderComments();document.getElementById('comment-'+rootID)?.scrollIntoView({behavior:'smooth',block:'center'});}
-      catch(error){message.textContent=error.message;submit.disabled=false;}
-    });
-    button.closest('.thread').append(form);input.focus();
-  });
-  getJSON('/api/v1/articles/' + encodeURIComponent(slug)).then(data => {
-    document.title = data.title + ' · L2EStudyLink';
-    document.getElementById('article-status').textContent = '';
-    document.getElementById('article-category').textContent = data.category;
-    article.textContent = data.title;
-    document.getElementById('article-summary').textContent = data.summary;
-    const body = document.getElementById('article-body');
-    for (const paragraph of data.body.split(/\n\s*\n/)) addText(body,'p',paragraph);
-    return renderComments();
-  }).catch(error => { document.getElementById('article-status').textContent = error.message; status.textContent = ''; });
-  // A public reader stays on this page: only a successful /me opens the form.
-  fetch('/api/v1/me',{credentials:'same-origin'}).then(response => {
-    canReply=response.ok;
-    document.getElementById(response.ok ? 'comment-form' : 'join-prompt').hidden = false;
-  }).catch(() => { document.getElementById('join-prompt').hidden = false; });
-  document.getElementById('comment-form').addEventListener('submit',async event => {
-    event.preventDefault();
-    const form=event.currentTarget, button=form.querySelector('button'), message=document.getElementById('post-status');
-    button.disabled=true; message.textContent='Posting…';
-    try {
-      await postComment(document.getElementById('comment-body').value,null);
-      form.reset(); message.textContent='Your comment is live.'; await renderComments();
-    } catch(error) { message.textContent=error.message; } finally {button.disabled=false;}
-  });
+    async function load(){el('article-list').setAttribute('aria-busy','true');el('retryArticles').hidden=true;tell('articles-status','Loading guides…');try{articles=(await request('/articles')).articles;const selected=el('guideCategory').value;el('guideCategory').replaceChildren();const all=node('option','All categories');all.value='';el('guideCategory').append(all);for(const c of [...new Set(articles.map(a=>a.category))].sort()){const o=node('option',c);o.value=c;el('guideCategory').append(o);}el('guideCategory').value=selected;render();}catch(e){tell('articles-status',e.message,true);el('retryArticles').hidden=false;}finally{el('article-list').setAttribute('aria-busy','false');}}
+    el('guideFilters').addEventListener('submit',e=>e.preventDefault());el('guideSearch').addEventListener('input',render);el('guideCategory').addEventListener('change',render);el('retryArticles').addEventListener('click',load);load();return;
+  }
+  if(!el('article-title'))return;
+  let slug;try{slug=decodeURIComponent(location.pathname.split('/').pop());}catch{tell('article-status','This guide address is invalid.',true);return;}
+  const encoded=encodeURIComponent(slug),articleReturn=encodeURIComponent(location.pathname);
+  for(const a of document.querySelectorAll('.article-signup, a[href^="/page/login"], a[href^="/page/signup"]'))a.href=(a.getAttribute('href').startsWith('/page/signup')?'/page/signup':'/page/login')+'?next='+articleReturn;
+  let canReply=false,isAdmin=false,comments=[],commentsBusy=false,postBusy=false,activeReply=null,moderating=null,moderationBusy=false;
+  const drafts=new Map();
+  function authState(){el('comment-form').hidden=!canReply;el('join-prompt').hidden=canReply;}
+  async function post(body,parentID){try{return await request('/articles/'+encoded+'/comments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({body,parent_id:parentID})});}catch(e){if(e.status===401){canReply=false;isAdmin=false;authState();}throw e;}}
+  function commentCard(item,rootID){const c=node('article',undefined,'reading-comment');c.dataset.comment=item.id;const time=node('time',date(item.created_at));time.dateTime=item.created_at;c.append(node('strong',item.name),time,node('p',item.body));const actions=node('div',undefined,'reading-actions');if(item.parent_id&&rootID===item.id)c.append(node('p','The earlier top-level comment is outside this view. Reply to a visible top-level discussion.','reading-muted'));else actions.append(button(canReply?'Reply':'Sign in to reply',()=>{if(!canReply){el('join-prompt').scrollIntoView({block:'center'});el('join-prompt a').focus();return;}activeReply=rootID;renderComments();el('reply-'+rootID)?.focus();}));
+    if(isAdmin)actions.append(button('Remove comment',()=>{moderationOpener=document.activeElement;moderating=item.id;el('moderationError').textContent='';el('moderationDialog').showModal();el('moderationCancel').focus();}));c.append(actions);return c;}
+  function replyForm(root){const draft=drafts.get(root.id)||'';const form=node('form',undefined,'reading-form reply-form'),label=node('label','Reply to '+root.name+' (3–1200 characters)'),input=node('textarea');input.id='reply-'+root.id;label.htmlFor=input.id;input.minLength=3;input.maxLength=1200;input.required=true;input.rows=3;input.value=draft;input.addEventListener('input',()=>drafts.set(root.id,input.value));const message=node('p',undefined,'reading-status');message.setAttribute('role','status');const actions=node('div',undefined,'reading-actions'),cancel=button('Cancel reply',()=>{drafts.delete(root.id);activeReply=null;renderComments();el('comment-'+root.id)?.querySelector('button')?.focus();}),submit=node('button','Post reply publicly');submit.type='submit';submit.disabled=postBusy;actions.append(cancel,submit);form.append(label,input,message,actions);
+    form.addEventListener('submit',async e=>{e.preventDefault();if(postBusy)return;postBusy=true;submit.disabled=cancel.disabled=input.disabled=true;message.textContent='Posting…';let saved=false;try{await post(input.value.trim(),root.id);saved=true;drafts.delete(root.id);activeReply=null;renderComments();tell('post-status','Your reply was posted publicly.');await loadComments();}catch(error){message.textContent=error.message+' Your text is kept in this page.';message.classList.add('is-error');}finally{postBusy=false;document.querySelectorAll('.reply-form button[type=submit]').forEach(b=>b.disabled=false);if(!saved)submit.disabled=cancel.disabled=input.disabled=false;}});return form;}
+  function renderComments(){const box=el('comments');box.replaceChildren();const ids=new Set(comments.map(c=>c.id));const roots=comments.filter(c=>!c.parent_id||!ids.has(c.parent_id));for(const root of roots){const thread=node('section',undefined,'reading-thread');thread.id='comment-'+root.id;thread.setAttribute('aria-label','Discussion started by '+root.name);thread.append(commentCard(root,root.id));const children=comments.filter(c=>c.parent_id===root.id).reverse();if(children.length){const nested=node('div',undefined,'reading-replies');children.forEach(c=>nested.append(commentCard(c,root.id)));thread.append(nested);}if(activeReply===root.id&&canReply)thread.append(replyForm(root));box.append(thread);}}
+  async function loadComments(){if(commentsBusy)return;commentsBusy=true;el('comments').setAttribute('aria-busy','true');el('retryComments').hidden=true;tell('comments-status','Loading discussion…');try{comments=(await request('/articles/'+encoded+'/comments')).comments;renderComments();tell('comments-status',comments.length?`${comments.length} public comment${comments.length===1?'':'s'} shown (up to 200).`:'No comments yet. Start the conversation.');}catch(e){tell('comments-status',e.message+' The guide is still available above.',true);el('retryComments').hidden=false;}finally{commentsBusy=false;el('comments').setAttribute('aria-busy','false');}}
+  async function loadArticle(){el('article-body').setAttribute('aria-busy','true');el('retryArticle').hidden=true;tell('article-status','Loading guide…');try{const data=await request('/articles/'+encoded);document.title=data.title+' · L2EStudyLink';el('article-title').textContent=data.title;el('article-summary').textContent=data.summary;el('article-category').textContent=data.category;el('article-meta').textContent='Published '+date(data.published_at);el('article-body').replaceChildren();for(const paragraph of data.body.split(/\n\s*\n/))el('article-body').append(node('p',paragraph));tell('article-status','');}catch(e){tell('article-status',e.message,true);el('retryArticle').hidden=false;}finally{el('article-body').setAttribute('aria-busy','false');}}
+  el('retryArticle').addEventListener('click',loadArticle);el('retryComments').addEventListener('click',loadComments);
+  el('comment-form').addEventListener('submit',async e=>{e.preventDefault();if(postBusy)return;postBusy=true;const input=el('comment-body'),b=e.currentTarget.querySelector('button');input.disabled=b.disabled=true;tell('post-status','Posting…');try{await post(input.value.trim(),null);input.value='';tell('post-status','Your comment was posted publicly.');await loadComments();}catch(error){tell('post-status',error.message+' Your text is kept in this page.',true);}finally{postBusy=false;input.disabled=b.disabled=false;document.querySelectorAll('.reply-form button[type=submit]').forEach(n=>n.disabled=false);}});
+  const dialog=el('moderationDialog');let moderationOpener=null;dialog.addEventListener('cancel',e=>{if(moderationBusy)e.preventDefault();});dialog.addEventListener('close',()=>{if(moderationOpener?.isConnected)moderationOpener.focus();else el('discussion-heading').focus();});dialog.addEventListener('beforetoggle',e=>{if(e.newState==='open')moderationOpener=document.activeElement;});
+  el('moderationCancel').addEventListener('click',()=>{if(!moderationBusy)dialog.close();});el('moderationConfirm').addEventListener('click',async()=>{if(moderationBusy||!moderating)return;moderationBusy=true;el('moderationConfirm').disabled=el('moderationCancel').disabled=true;try{await request('/admin/articles/comments/'+moderating,{method:'DELETE'});dialog.close();tell('post-status','Comment removed. Replies to a removed top-level comment are removed too.');await loadComments();}catch(e){tell('moderationError',e.message,true);}finally{moderationBusy=false;el('moderationConfirm').disabled=el('moderationCancel').disabled=false;}});
+  fetch('/api/v1/me',{credentials:'same-origin',cache:'no-store'}).then(async r=>{account();if(r.ok){const me=await r.json();canReply=true;isAdmin=!!me.is_admin&&!me.is_suspended;}authState();renderComments();}).catch(()=>{authState();});
+  loadArticle();loadComments();
 })();

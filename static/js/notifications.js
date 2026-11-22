@@ -18,7 +18,7 @@ function notificationReadFrames(buffer, receive) {
 }
 if (typeof module !== 'undefined' && module.exports) module.exports = { notificationSafeLink, notificationBadge, notificationReadFrames };
 if (typeof document !== 'undefined') {
-    (async () => {
+    (async function mountNotifications() {
         if (document.getElementById('notification-widget')) return;
         const host = document.querySelector('.sidebar-heading'); if (!host) return;
         const token = sessionToken(), initialScope = sessionScope();
@@ -33,36 +33,38 @@ if (typeof document !== 'undefined') {
             if (accountChanged()) throw new Error('Account changed');
             if (response.status === 204) return null;
             let data; try { data = await response.json(); } catch (_) { throw new Error('Unable to load notifications. Please try again.'); }
+            if(accountChanged())throw new Error('Account changed');
             if (!response.ok) throw new Error(data.error || 'Notifications are temporarily unavailable.'); return data;
         };
         let fragment;
         try {
             const response = await fetch('/api/v1/notifications/widget', { headers: headers(), credentials: 'same-origin', cache: 'no-store' });
-            if (!response.ok || accountChanged()) return;
+            if (accountChanged())return;if(!response.ok)throw Error('Widget unavailable');
             // This fragment is static application markup, never notification text.
             fragment = new DOMParser().parseFromString(await response.text(), 'text/html');
-        } catch (_) { return; }
+        } catch (_) { const retry=document.createElement('button');retry.type='button';retry.className='icon-btn';retry.textContent='↻';retry.setAttribute('aria-label','Retry notifications');retry.title='Notifications unavailable';retry.addEventListener('click',()=>{retry.remove();mountNotifications();});host.append(retry);return; }
         for (const style of fragment.querySelectorAll('style')) document.head.append(document.importNode(style, true));
         const widget = fragment.getElementById('notification-widget'); if (!widget || document.getElementById('notification-widget')) return;
         host.append(document.importNode(widget, true));
         const el = id => document.getElementById(id), panel = el('notification-panel');
-        const status = text => { el('notification-status').textContent = text; };
-        function position() { const rect = el('notification-toggle').getBoundingClientRect(); const width = Math.min(370, window.innerWidth - 32); panel.style.left = Math.max(16, Math.min(rect.left, window.innerWidth - width - 16)) + 'px'; panel.style.top = Math.max(12, Math.min(rect.bottom + 8, window.innerHeight - 180)) + 'px'; }
-        function close(restoreFocus = false) { panel.hidden = true; el('notification-toggle').setAttribute('aria-expanded', 'false'); if (restoreFocus) el('notification-toggle').focus(); }
+        const status = (text,error=false) => { el('notification-status').textContent = text;el('notification-status').classList.toggle('is-error',error); };
+        function close(restoreFocus = false) { if(panel.open)panel.close(); panel.hidden = true; el('notification-toggle').setAttribute('aria-expanded', 'false'); if (restoreFocus) el('notification-toggle').focus(); }
+        panel.addEventListener('close',()=>{panel.hidden=true;el('notification-toggle').setAttribute('aria-expanded','false');el('notification-toggle').focus();});
         function render() {
             const badge = el('notification-badge'); badge.hidden = unread === 0; badge.textContent = notificationBadge(unread);
             el('notification-toggle').setAttribute('aria-label', unread ? `Notifications: ${unread} unread` : 'Notifications: all read');
             el('notification-read-all').disabled = busy || unread === 0;
-            const list = el('notification-items'); list.replaceChildren();
+            const list = el('notification-items'),focused=document.activeElement,focusRow=focused?.closest('[data-notification]'),focusID=focusRow?.dataset.notification,focusIsButton=focused?.tagName==='BUTTON'; list.replaceChildren();list.setAttribute('aria-busy',String(busy));
             for (const item of items) {
-                const row = document.createElement('li'); row.className = 'notification-item' + (item.is_read ? '' : ' unread');
+                const row = document.createElement('li'); row.className = 'notification-item' + (item.is_read ? '' : ' unread');row.dataset.notification=String(item.id);
                 const link = document.createElement('a'), title = document.createElement('strong'), message = document.createElement('p'), time = document.createElement('time');
-                link.href = notificationSafeLink(item.link_url); title.textContent = item.title; message.textContent = item.message; time.dateTime = item.created_at;
+                const state=document.createElement('span');state.className='notification-state';state.textContent=item.is_read?'Read':'Unread';link.append(state);link.href = notificationSafeLink(item.link_url); title.textContent = item.title; message.textContent = item.message; time.dateTime = item.created_at;
                 const date = new Date(item.created_at); time.textContent = Number.isNaN(date.getTime()) ? '' : date.toLocaleString(); link.append(title, message, time);
                 link.addEventListener('click', () => { if (!item.is_read) request('/' + item.id + '/read', 'PUT', undefined, true).catch(() => {}); }); row.append(link);
                 if (!item.is_read) { const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Mark read'; button.disabled = busy; button.addEventListener('click', () => mark(item.id)); row.append(button); }
                 list.append(row);
             }
+            if(focusID&&panel.open){const row=Array.from(list.children).find(n=>n.dataset.notification===focusID);(focusIsButton?row?.querySelector('button:not([disabled])')||row?.querySelector('a'):row?.querySelector('a'))?.focus({preventScroll:true});}
             el('notification-older').hidden = !hasMore; el('notification-older').disabled = busy;
         }
         function receive(data) {
@@ -73,19 +75,18 @@ if (typeof document !== 'undefined') {
             else { const latest = new Map(data.items.map(item => [item.id, item])); items = items.map(item => latest.get(item.id) || item); for (const item of data.items) if (!items.some(existing => existing.id === item.id)) items.unshift(item); items.sort((a, b) => b.id - a.id); }
             render(); status(items.length ? 'Your latest updates.' : 'You are all caught up. New updates will appear here.');
         }
-        async function refresh() { try { showingOlder = false; receive(await request('')); } catch (error) { status(error.message); } }
-        async function mark(id) { if (busy) return; busy = true; render(); try { await request('/' + id + '/read', 'PUT'); const item = items.find(item => item.id === id); if (item) item.is_read = true; await refresh(); } catch (error) { status(error.message); } finally { busy = false; render(); } }
-        el('notification-toggle').addEventListener('click', () => { if (panel.hidden) { panel.hidden = false; position(); el('notification-toggle').setAttribute('aria-expanded', 'true'); panel.focus(); refresh(); } else close(); });
+        let refreshing=false;
+        async function refresh() { if(refreshing)return;refreshing=true;el('notification-items').setAttribute('aria-busy','true');try { const data=await request('');showingOlder=false;receive(data); } catch (error) { status(error.message+' Existing updates may be out of date. Use Refresh to retry.',true); } finally{refreshing=false;el('notification-items').setAttribute('aria-busy','false');} }
+        async function mark(id) { if (busy) return; busy = true; render(); try { await request('/' + id + '/read', 'PUT'); const item = items.find(item => item.id === id); if (item&&!item.is_read){item.is_read = true;unread=Math.max(0,unread-1);} await refresh(); } catch (error) { status(error.message,true); } finally { busy = false; render(); } }
+        el('notification-toggle').addEventListener('click', () => { if (!panel.open) {panel.hidden=false;panel.showModal();el('notification-toggle').setAttribute('aria-expanded','true');el('notification-close').focus();refresh();}else close(true); });
         el('notification-close').addEventListener('click', () => close(true));
-        document.addEventListener('click', event => { if (!panel.hidden && !el('notification-widget').contains(event.target)) close(); });
-        document.addEventListener('keydown', event => { if (event.key === 'Escape' && !panel.hidden) close(true); });
-        window.addEventListener('resize', () => { if (!panel.hidden) position(); });
+        panel.addEventListener('click',event=>{if(event.target===panel){const rect=panel.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)close(true);}});
         el('notification-refresh').addEventListener('click', refresh);
-        el('notification-read-all').addEventListener('click', async () => { if (busy) return; busy = true; render(); try { await request('/read', 'PUT', { through_id: lastID }); await refresh(); } catch (error) { status(error.message); } finally { busy = false; render(); } });
+        el('notification-read-all').addEventListener('click', async () => { if (busy) return; busy = true; render(); try { await request('/read', 'PUT', { through_id: lastID }); await refresh(); } catch (error) { status(error.message,true); } finally { busy = false; render(); } });
         el('notification-older').addEventListener('click', async () => {
             if (busy || !items.length) return; busy = true; render();
             try { const data = await request('?before_id=' + items[items.length - 1].id); showingOlder = true; for (const item of data.items) if (!items.some(old => old.id === item.id)) items.push(item); hasMore = data.has_more; unread = data.unread_count; lastID = data.last_event_id; }
-            catch (error) { status(error.message); } finally { busy = false; render(); }
+            catch (error) { status(error.message,true); } finally { busy = false; render(); }
         });
         const sleep = ms => new Promise(resolve => { if (controller.signal.aborted) return resolve(); const done = () => { clearTimeout(timer); controller.signal.removeEventListener('abort', done); resolve(); }; const timer = setTimeout(done, ms); controller.signal.addEventListener('abort', done, { once: true }); });
         async function stream() {

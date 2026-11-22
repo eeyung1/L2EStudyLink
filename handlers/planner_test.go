@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+    "fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -37,7 +38,7 @@ func calculatePlanner(t *testing.T, week, asOf string, blocks []PlannerBlock, lo
 }
 
 func TestPlannerWeeklyCoverage(t *testing.T) {
-	blocks := []PlannerBlock{plannerBlock(1, 1, "09:00", "10:00"), plannerBlock(2, 2, "09:00", "10:30"), plannerBlock(3, 3, "14:00", "15:00")}
+	blocks := []PlannerBlock{plannerBlock(1, 0, "09:00", "10:00"), plannerBlock(2, 1, "09:00", "10:30"), plannerBlock(3, 2, "14:00", "15:00")}
 	logs := []PlannerReflection{plannerLog(1, 1, "2026-10-26"), plannerLog(1, 1, "2026-10-26"), plannerLog(2, 1, "2026-10-26"), plannerLog(3, 0, "2026-10-27"), plannerLog(4, 2, "2026-10-26"), plannerLog(5, 3, "2026-10-28")}
 	logs[5].Completed = false
 	m := calculatePlanner(t, "2026-10-28T12:00:00Z", "2026-11-02T12:00:00Z", blocks, logs)
@@ -70,7 +71,7 @@ func TestPlannerWeeklyCoverage(t *testing.T) {
 }
 
 func TestPlannerPartialAndFutureWeeks(t *testing.T) {
-	blocks := []PlannerBlock{plannerBlock(1, 1, "09:00", "10:00"), plannerBlock(2, 2, "09:00", "10:00"), plannerBlock(3, 3, "09:00", "10:00"), plannerBlock(4, 4, "09:00", "10:00")}
+	blocks := []PlannerBlock{plannerBlock(1, 0, "09:00", "10:00"), plannerBlock(2, 1, "09:00", "10:00"), plannerBlock(3, 2, "09:00", "10:00"), plannerBlock(4, 3, "09:00", "10:00")}
 	logs := []PlannerReflection{plannerLog(1, 1, "2026-10-26"), plannerLog(2, 4, "2026-10-29")}
 	cases := []struct {
 		asOf                             string
@@ -115,7 +116,7 @@ func TestPlannerStreakChangesAndBoundaries(t *testing.T) {
 		}
 	})
 	t.Run("new year", func(t *testing.T) {
-		m := calculatePlanner(t, "2027-01-01T12:00:00Z", "2027-01-04T00:00:00Z", []PlannerBlock{plannerBlock(1, 0, "09:00", "10:00")}, []PlannerReflection{plannerLog(1, 1, "2027-01-03")})
+		m := calculatePlanner(t, "2027-01-01T12:00:00Z", "2027-01-04T00:00:00Z", []PlannerBlock{plannerBlock(1, 6, "09:00", "10:00")}, []PlannerReflection{plannerLog(1, 1, "2027-01-03")})
 		if m.WeekStart != "2026-12-28" || m.WeekEnd != "2027-01-04" || m.ReflectedBlocks != 1 || m.Days[6].Date != "2027-01-03" {
 			t.Fatalf("year boundary: %+v", m)
 		}
@@ -131,7 +132,7 @@ func TestPlannerStreakChangesAndBoundaries(t *testing.T) {
 func TestPlannerTimezonesAndOvernight(t *testing.T) {
 	t.Run("explicit local dates", func(t *testing.T) {
 		zone := time.FixedZone("UTC+14", 14*60*60)
-		m, err := CalculateWeeklyPlannerMetrics(1, plannerInstant("2026-10-25T11:30:00Z"), plannerInstant("2026-10-26T10:00:00Z"), zone, []PlannerBlock{plannerBlock(1, 1, "00:00", "01:00")}, []PlannerReflection{plannerLog(1, 1, "2026-10-26")})
+		m, err := CalculateWeeklyPlannerMetrics(1, plannerInstant("2026-10-25T11:30:00Z"), plannerInstant("2026-10-26T10:00:00Z"), zone, []PlannerBlock{plannerBlock(1, 0, "00:00", "01:00")}, []PlannerReflection{plannerLog(1, 1, "2026-10-26")})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -144,7 +145,7 @@ func TestPlannerTimezonesAndOvernight(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		m, err := CalculateWeeklyPlannerMetrics(1, plannerInstant("2026-03-08T15:00:00Z"), plannerInstant("2026-03-09T15:00:00Z"), zone, []PlannerBlock{plannerBlock(1, 0, "01:30", "03:30")}, []PlannerReflection{plannerLog(1, 1, "2026-03-08")})
+		m, err := CalculateWeeklyPlannerMetrics(1, plannerInstant("2026-03-08T15:00:00Z"), plannerInstant("2026-03-09T15:00:00Z"), zone, []PlannerBlock{plannerBlock(1, 6, "01:30", "03:30")}, []PlannerReflection{plannerLog(1, 1, "2026-03-08")})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -153,7 +154,7 @@ func TestPlannerTimezonesAndOvernight(t *testing.T) {
 		}
 	})
 	t.Run("overnight due after midnight", func(t *testing.T) {
-		blocks := []PlannerBlock{plannerBlock(1, 1, "23:30", "01:00")}
+		blocks := []PlannerBlock{plannerBlock(1, 0, "23:30", "01:00")}
 		m := calculatePlanner(t, "2026-10-26T00:00:00Z", "2026-10-27T00:59:59Z", blocks, nil)
 		if m.ScheduledMinutes != 90 || m.PendingReflections != 1 || m.MissingReflections != 0 {
 			t.Fatalf("overnight pending: %+v", m)
@@ -190,9 +191,9 @@ func TestPlannerEmptyIsolationAndValidation(t *testing.T) {
 		{"missing week", 1, time.Time{}, now, time.UTC, nil, nil},
 		{"missing asof", 1, week, time.Time{}, time.UTC, nil, nil},
 		{"bad weekday", 1, week, now, time.UTC, []PlannerBlock{plannerBlock(1, 7, "09:00", "10:00")}, nil},
-		{"bad time", 1, week, now, time.UTC, []PlannerBlock{plannerBlock(1, 1, "25:00", "10:00")}, nil},
-		{"zero duration", 1, week, now, time.UTC, []PlannerBlock{plannerBlock(1, 1, "09:00", "09:00")}, nil},
-		{"duplicate block", 1, week, now, time.UTC, []PlannerBlock{plannerBlock(1, 1, "09:00", "10:00"), plannerBlock(1, 2, "09:00", "10:00")}, nil},
+		{"bad time", 1, week, now, time.UTC, []PlannerBlock{plannerBlock(1, 0, "25:00", "10:00")}, nil},
+		{"zero duration", 1, week, now, time.UTC, []PlannerBlock{plannerBlock(1, 0, "09:00", "09:00")}, nil},
+		{"duplicate block", 1, week, now, time.UTC, []PlannerBlock{plannerBlock(1, 0, "09:00", "10:00"), plannerBlock(1, 1, "09:00", "10:00")}, nil},
 		{"bad reflection date", 1, week, now, time.UTC, nil, []PlannerReflection{plannerLog(1, 0, "invalid")}},
 	}
 	for _, tc := range tests {
@@ -217,7 +218,7 @@ func TestPlannerLoadWeeklyMetrics(t *testing.T) {
 	if _, err := database.Exec(`INSERT INTO timetable(user_id,day_of_week,start_time,end_time,activity) VALUES($1,1,'00:00','23:59','Other user secret')`, other); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := database.Exec(`INSERT INTO activity_logs(user_id,timetable_id,log_date,completed,activity_name) VALUES($1,$2,'2026-10-27',true,'Learn Go'),($1,NULL,'2026-10-28',true,'Deleted block'),($3,NULL,'2026-10-26',true,'Other user secret')`, owner, block, other); err != nil {
+	if _, err := database.Exec(`INSERT INTO activity_logs(user_id,timetable_id,log_date,completed,activity_name) VALUES($1,$2,'2026-10-28',true,'Learn Go'),($1,NULL,'2026-10-29',true,'Deleted block'),($3,NULL,'2026-10-26',true,'Other user secret')`, owner, block, other); err != nil {
 		t.Fatal(err)
 	}
 	week, asOf := plannerInstant("2026-10-26T00:00:00Z"), plannerInstant("2026-11-02T00:00:00Z")
@@ -254,4 +255,19 @@ func TestPlannerLoadWeeklyMetrics(t *testing.T) {
 	if _, err := LoadWeeklyPlannerMetrics(context.Background(), database, owner, week, asOf, time.UTC); err == nil || err == sql.ErrNoRows {
 		t.Fatalf("query failure hidden: %v", err)
 	}
+}
+
+// The same stored weekday values must label the timetable and coach alike.
+func TestPlannerUsesTimetableWeekdays(t *testing.T) {
+    blocks:=make([]PlannerBlock,7)
+    for day:=0;day<7;day++ {
+        minutes:=30*(day+1)
+        blocks[day]=PlannerBlock{ID:int64(day+1),UserID:1,DayOfWeek:day,StartTime:"09:00",EndTime:fmt.Sprintf("%02d:%02d",9+minutes/60,minutes%60)}
+    }
+    logs:=[]PlannerReflection{plannerLog(1,1,"2026-10-26"),plannerLog(2,7,"2026-11-01")}
+    m:=calculatePlanner(t,"2026-10-26T00:00:00Z","2026-11-02T00:00:00Z",blocks,logs)
+    for day:=0;day<7;day++ {
+        if m.Days[day].ScheduledMinutes!=30*(day+1) {t.Fatalf("stored weekday %d placed incorrectly: %+v",day,m.Days)}
+    }
+    if m.Days[0].Date!="2026-10-26"||m.Days[0].ReflectedMinutes!=30||m.Days[6].Date!="2026-11-01"||m.Days[6].ReflectedMinutes!=210||m.UnmatchedReflections!=0 {t.Fatalf("Monday/Sunday reflection coverage: %+v",m)}
 }

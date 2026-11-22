@@ -225,7 +225,7 @@ func TestPlannerAIInputAndTemplate(t *testing.T) {
 	router.GET("/planner", PlannerPage)
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, httptest.NewRequest("GET", "/planner", nil))
-	if w.Code != 200 || !strings.Contains(w.Body.String(), "Groq") || !strings.Contains(w.Body.String(), "textContent") || w.Header().Get("Cache-Control") != "no-store" {
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "Groq") || !strings.Contains(w.Body.String(), "weekly-coach.js") || w.Header().Get("Cache-Control") != "no-store" {
 		t.Fatalf("page render: %d", w.Code)
 	}
 	_ = page
@@ -233,6 +233,10 @@ func TestPlannerAIInputAndTemplate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+    client, err := os.ReadFile("../static/js/weekly-coach.js")
+    if err != nil {t.Fatal(err)}
+    if !strings.Contains(string(client), "textContent") {t.Fatal("Missing safe text rendering")}
+    source = append(source, client...)
 	if strings.Contains(string(source), "innerHTML") {
 		t.Fatal("model output must render as text")
 	}
@@ -257,7 +261,7 @@ func TestPlannerAIUserScopedFlow(t *testing.T) {
 	if err := database.QueryRow(`INSERT INTO users(name,email,password_hash) VALUES('Other','coaching-other@example.com','test') RETURNING id`).Scan(&other); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := database.Exec(`INSERT INTO activity_logs(user_id,timetable_id,log_date,summary,activity_name,completed) VALUES($1,$2,'2020-10-27','My reflection','Learn Go',true),($3,NULL,'2020-10-27','OTHER_USER_SECRET','Private',true)`, owner, block, other); err != nil {
+	if _, err := database.Exec(`INSERT INTO activity_logs(user_id,timetable_id,log_date,summary,activity_name,completed) VALUES($1,$2,'2020-10-28','My reflection','Learn Go',true),($3,NULL,'2020-10-28','OTHER_USER_SECRET','Private',true)`, owner, block, other); err != nil {
 		t.Fatal(err)
 	}
 	valid, _ := json.Marshal(plannerTestCoaching())
