@@ -1,0 +1,13 @@
+.git
+.env*
+env
+env*
+node_modules
+test-results
+.agent-worktrees
+.agent-coordination-lock
+uploads/*
+L2EStudyLink
+*.backup*
+
+**/__pycache__

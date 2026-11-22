@@ -35,3 +35,9 @@ This verifies the connected database's retention and access policy, not which Gi
 - The standalone fixtures and real-server evidence are uploaded with the existing UI artifact. Tests do not create production bookings or send messages to real people.
 
 Post-session review redesign and broader empty/loading/error refinements remain the next unchecked task; existing reviews are preserved. Production UI smoke and physical phone/laptop acceptance remain unchecked.
+
+## Deployment entrypoint correction
+
+The reported hosting failure had no available build/startup log, so its exact cause is unconfirmed. Repository inspection found a Go 1.21 Docker base while go.mod/CI require Go 1.26.1, plus separate source-compiling start commands. Docker now pins Go 1.26.1 on Alpine 3.23 and includes CA certificates/timezone data. Native Blueprint, Procfile and Docker use a shared package build and compiled-server startup path. Docker context excludes environment files, recordings, repository metadata and test artifacts.
+
+A separate CI job builds the actual Dockerfile, initializes an isolated PostgreSQL schema, starts the compiled image, and checks health, a rendered template and a packaged stylesheet. This checks repository build/startup behavior; it does not establish the hosting account's current settings or confirm a production redeploy. The owner will restart/redeploy hosting manually. For a native build, use `sh scripts/build.sh` followed by `sh start.sh`; Docker uses the same scripts internally. A restart of an old image alone does not incorporate newly merged code.
