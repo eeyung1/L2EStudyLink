@@ -11,6 +11,7 @@ function mediaFixture() {
         return stream();
     }}});
     function audio() {
+        if(window.__oversize)return new Blob([new Uint8Array(6*1024*1024)],{type:'audio/wav'});
         const samples=8000,data=new ArrayBuffer(44+samples*2),v=new DataView(data);
         const text=(at,value)=>{for(let i=0;i<value.length;i++)v.setUint8(at+i,value.charCodeAt(i));};
         text(0,'RIFF');v.setUint32(4,36+samples*2,true);text(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,8000,true);v.setUint32(28,16000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);text(36,'data');v.setUint32(40,samples*2,true);
@@ -116,6 +117,12 @@ export async function verifyReflections(browser,origin,output,evidence) {
         await speak();await page.evaluate(()=>window.__mic='deny');
         await page.locator('#voiceRerecord').click();await page.locator('#voiceStatus').getByText(/permission was denied/).waitFor();
         assert.equal(await page.locator('#url-summary').inputValue(),'/uploads/fixture-note.webm','failed re-record keeps old attachment');
+        await page.evaluate(()=>{window.__mic='allow';window.__emptyAudio=true;});
+        await page.locator('#voiceRerecord').click();await page.getByRole('button',{name:'Stop recording',exact:true}).waitFor();await stop();
+        await page.locator('#voiceStatus').getByText(/Nothing was recorded/).waitFor();
+        assert.equal(await page.locator('#url-summary').inputValue(),'/uploads/fixture-note.webm','empty replacement keeps previous attachment');
+        await page.evaluate(()=>window.__emptyAudio=false);
+        evidence.reflectionChecks.push({theme,check:'empty re-record keeps previous audio and text'});
         for(const width of [320,390,768,1440])for(const entry of ['write','voice']){
             await page.setViewportSize({width,height:900});await page.locator(entry==='write'?'#modeWriteTab':'#modeSpeakTab').click();
             const result=await new AxeBuilder({page}).include('#reflectionModal').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
@@ -180,7 +187,12 @@ export async function verifyReflections(browser,origin,output,evidence) {
         assert.equal(saved.at(-1).audio_url,'/uploads/fixture-note.webm');
         evidence.reflectionChecks.push({theme,check:'3-minute auto-stop, save lock, correct payload and day retained'});
         // No MediaRecorder support must still leave a working text-only form.
-        await open(102);await speak();await page.evaluate(()=>window.MediaRecorder=undefined);
+        await open(102);await speak();await page.evaluate(()=>window.__oversize=true);
+        const beforeLarge=uploads;await record();await stop();await page.locator('#voiceStatus').getByText(/exceeds the 5 MB/).waitFor();
+        assert.equal(uploads,beforeLarge);assert.equal(await page.locator('#voiceRetryUpload').isVisible(),false);
+        assert.equal(await page.locator('#saveReflectionButton').isDisabled(),true);
+        await page.locator('#voiceDelete').click();await page.evaluate(()=>{window.__oversize=false;window.MediaRecorder=undefined;});
+        evidence.reflectionChecks.push({theme,check:'oversized take is retained locally without futile upload; delete preserves text'});
         await page.locator('#voiceRecordBtn').click();await page.locator('#voiceStatus').getByText(/not supported/).waitFor();
         await page.locator('#reflectionSummary').fill('Text-only fixture reflection');saveMode='success';
         await page.locator('#saveReflectionButton').click();await page.locator('#reflectionModal').waitFor({state:'hidden'});await page.locator('#reflectionSavedNotice').waitFor();

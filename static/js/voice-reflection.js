@@ -8,6 +8,7 @@
     let recorder=null,stream=null,timer=null,startedAt=0,seconds=0,blobSeconds=0;
     let blob=null,blobURL='',audioURL='',upload=null,requesting=false;
     let opener=null;
+    const takeState=()=>audioURL?'attached':blob?(blob.size>MAX_BYTES?'too-large':'upload-error'):'ready';
     const busy=()=>['requesting','recording','stopping','uploading'].includes(state);
     const clock=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
     function status(text,tone='') {
@@ -38,7 +39,7 @@
         el('cancelReflectionButton').disabled=saving;
         el('voicePlayBtn').disabled=saving||['recording','requesting','stopping'].includes(state);
         ['reflectionSummary','reflectionChallenges','reflectionLearnings','modeWriteTab','modeSpeakTab','voiceScrubber'].forEach(id=>el(id).disabled=saving);
-        el('reflectionAttachmentStatus').textContent=state==='uploading'?'Voice note uploading. Saving becomes available after attachment.':state==='recording'?'Recording is active. Stop it before saving.':state==='requesting'?'Waiting for microphone permission.':blob&&!audioURL?'Voice note is not attached. Retry its upload in Speak mode or delete the take before saving.':audioURL?'Voice note attached. Your written fields and audio will be saved together.':'No voice note attached. You can save a written reflection.';
+        el('reflectionAttachmentStatus').textContent=state==='uploading'?'Voice note uploading. Saving becomes available after attachment.':state==='recording'?'Recording is active. Stop it before saving.':state==='requesting'?'Waiting for microphone permission.':state==='too-large'?'Voice note exceeds the 5 MB limit. Re-record or delete it before saving.':blob&&!audioURL?'Voice note is not attached. Retry its upload in Speak mode or delete the take before saving.':audioURL?'Voice note attached. Your written fields and audio will be saved together.':'No voice note attached. You can save a written reflection.';
         el('reflectionModal').setAttribute('aria-busy',String(saving));
         el('reflectionVoicePanel').setAttribute('aria-busy',String(state==='uploading'||state==='requesting'));
     }
@@ -74,7 +75,8 @@
         }
         // Switching to Write finishes the take instead of silently discarding it.
         if(mode==='write'&&state==='recording')stopRecording();
-        if(mode==='write'&&state==='requesting'){cancelAsync();state=audioURL?'attached':blob?'upload-error':'ready';render();}
+        if(mode==='write'&&state==='requesting'){cancelAsync();state=takeState();render();}
+        const panel=document.querySelector('#reflectionModal .reflection-modal');if(panel)panel.scrollTop=0;
         if(focus)el(mode==='write'?'modeWriteTab':'modeSpeakTab').focus();
     }
     function openDraft(nextKey) {
@@ -82,14 +84,15 @@
         const draft=drafts.get(key)||{};
         blob=draft.blob||null;audioURL=draft.audioURL||'';seconds=draft.seconds||0;blobSeconds=seconds;
         for(const [id,name] of [['reflectionSummary','summary'],['reflectionChallenges','challenges'],['reflectionLearnings','learnings']])el(id).value=draft[name]||'';
-        state=audioURL?'attached':blob?'upload-error':'ready';
+        state=takeState();
         setMode(draft.mode||'write');preview();counters();
         el('reflectionFormError').hidden=true;el('reflectionFormError').textContent='';
-        status(blob?(audioURL?'Voice note attached. Add a written summary before saving.':'Recording kept on this page. Retry its upload or delete the take.'):'Record a voice note or write your reflection below.',blob&&!audioURL?'error':'');
+        status(state==='too-large'?'Recording exceeds the 5 MB limit. Re-record a shorter take or delete it.':blob?(audioURL?'Voice note attached. Add a written summary before saving.':'Recording kept on this page. Retry its upload or delete the take.'):'Record a voice note or write your reflection below.',blob&&!audioURL?'error':'');
         render();
     }
     async function uploadTake() {
         if(!blob||saving||state==='uploading')return;
+        if(blob.size>MAX_BYTES){state='too-large';status('This recording exceeds the 5 MB upload limit. Re-record a shorter take or delete it to save text only.','error');render();return;}
         const take=blob,id=version;
         upload=new AbortController();const controller=upload;
         state='uploading';status('Uploading your voice note… Keep this page open.');render();
@@ -132,9 +135,9 @@
                 if(id!==version)return;
                 stopTimer();stopTracks();recorder=null;
                 const take=new Blob(chunks,{type:next.mimeType||'audio/webm'});
-                if(!take.size){seconds=blobSeconds;state=audioURL?'attached':blob?'upload-error':'ready';status('Nothing was recorded. Your text is unchanged; try recording again.','error');render();return;}
+                if(!take.size){seconds=blobSeconds;state=takeState();status('Nothing was recorded. Your text is unchanged; try recording again.','error');render();return;}
                 blob=take;blobSeconds=seconds;audioURL='';preview();stash();
-                if(take.size>MAX_BYTES){state='upload-error';status('This recording exceeds the 5 MB upload limit. Re-record a shorter take or delete it to save text only.','error');render();return;}
+                if(take.size>MAX_BYTES){state='too-large';status('This recording exceeds the 5 MB upload limit. Re-record a shorter take or delete it to save text only.','error');render();return;}
                 state='ready';
                 if(interrupted)status('Recording was interrupted. Uploading the available audio…');
                 uploadTake();
@@ -147,14 +150,14 @@
         } catch(error) {
             if(acquired)stopTracks(acquired);
             if(id!==version)return;
-            recorder=null;state=audioURL?'attached':blob?'upload-error':'ready';
+            recorder=null;state=takeState();
             status(error.name==='NotAllowedError'?'Microphone permission was denied. Allow it in browser settings and try again, or write below.':'The microphone could not start. Check that it is connected and available, or write below.','error');
         } finally {if(id===version){requesting=false;render();}}
     }
     function stopRecording() {
         if(state!=='recording'||!recorder)return;
         seconds=elapsed();stopTimer();state='stopping';status('Finishing your recording…');render();
-        try {recorder.stop();}catch {stopTracks();recorder=null;state=audioURL?'attached':blob?'upload-error':'ready';status('Recording stopped unexpectedly. Your existing text and take are unchanged.','error');render();}
+        try {recorder.stop();}catch {stopTracks();recorder=null;state=takeState();status('Recording stopped unexpectedly. Your existing text and take are unchanged.','error');render();}
     }
     function deleteTake() {
         if(saving||['recording','stopping','requesting'].includes(state))return;
@@ -172,7 +175,7 @@
     function closeDraft() {
         if(saving)return false;
         if(state==='recording')status('Recording cancelled on close. Your previous take and written text were kept.');
-        stash();cancelAsync();seconds=blobSeconds;state=audioURL?'attached':blob?'upload-error':'ready';
+        stash();cancelAsync();seconds=blobSeconds;state=takeState();
         el('voicePreviewAudio').pause();
         return true;
     }
