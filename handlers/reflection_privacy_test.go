@@ -26,7 +26,7 @@ func privateReflectionRouter(database *sql.DB) *gin.Engine {
     router:=gin.New();router.Use(func(c *gin.Context){c.Set("db",database);c.Next()})
     RegisterVoiceRoutes(router)
     group:=router.Group("/api/v1",middleware.AuthRequired)
-    group.GET("/reflections",GetReflections);group.POST("/reflections",AddReflection)
+    group.GET("/reflections",RequireReflectionAccount,GetReflections);group.POST("/reflections",RequireReflectionAccount,AddReflection)
     group.GET("/timetable",GetTimetable);group.POST("/timetable",AddTimeBlock);group.DELETE("/timetable/:id",DeleteTimeBlock)
     group.GET("/reflections/retention",GetReflectionRetention)
     return router
@@ -78,7 +78,11 @@ func TestReflectionMediaPrivacy(t *testing.T) {
     if got:=request("GET","/uploads/00000000-0000-4000-8000-000000000003.wav","",owner);got.Code!=404 {t.Fatalf("unowned orphan audio: %d",got.Code)}
     if got:=request("DELETE",fmt.Sprintf("/api/v1/timetable/%d",block),"",owner);got.Code!=200 {t.Fatalf("safe delete: %d %s",got.Code,got.Body.String())}
     if got:=request("GET","/uploads/"+legacy,"",owner);got.Code!=200 {t.Fatalf("detached history audio lost: %d",got.Code)}
-    // Files belong to the uploader; assigning a foreign user_id in JSON cannot bypass this.
+    if _,err:=database.Exec(`UPDATE users SET is_suspended=TRUE WHERE id=$1`,owner);err!=nil {t.Fatal(err)}
+    if got:=request("GET",attachment.AudioURL,"",owner);got.Code!=401 {t.Fatalf("suspended owner kept media access: %d",got.Code)}
+    if got:=request("GET","/api/v1/reflections","",owner);got.Code!=401 {t.Fatalf("suspended owner kept history access: %d",got.Code)}
+    if _,err:=database.Exec(`DELETE FROM users WHERE id=$1`,owner);err!=nil {t.Fatal(err)}
+    if got:=request("GET",attachment.AudioURL,"",owner);got.Code!=401 {t.Fatalf("deleted owner kept media access: %d",got.Code)}
 }
 
 func TestUnsafeRetentionBlocksDeletion(t *testing.T) {

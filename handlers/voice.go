@@ -30,10 +30,21 @@ func voiceDirectory() string {
 
 // Both current and legacy URLs stay stable, but the public static mount is gone.
 func RegisterVoiceRoutes(router *gin.Engine) {
-    router.POST("/api/v1/voice/upload", middleware.AuthRequired, HandleVoiceUpload)
-    router.POST("/api/voice/upload", middleware.AuthRequired, HandleVoiceUpload)
-    router.GET("/uploads/:filename", middleware.AuthRequired, ServeVoiceUpload)
-    router.HEAD("/uploads/:filename", middleware.AuthRequired, ServeVoiceUpload)
+    router.POST("/api/v1/voice/upload", middleware.AuthRequired, RequireReflectionAccount, HandleVoiceUpload)
+    router.POST("/api/voice/upload", middleware.AuthRequired, RequireReflectionAccount, HandleVoiceUpload)
+    router.GET("/uploads/:filename", middleware.AuthRequired, RequireReflectionAccount, ServeVoiceUpload)
+    router.HEAD("/uploads/:filename", middleware.AuthRequired, RequireReflectionAccount, ServeVoiceUpload)
+}
+
+// A signed token alone must not keep recordings accessible after suspension/deletion.
+func RequireReflectionAccount(c *gin.Context) {
+    database:=c.MustGet("db").(*sql.DB)
+    var active bool
+    err:=database.QueryRowContext(c.Request.Context(),`SELECT EXISTS(SELECT 1 FROM users WHERE id=$1 AND COALESCE(is_suspended,FALSE)=FALSE)`,c.GetInt64("user_id")).Scan(&active)
+    c.Header("Cache-Control","private, no-store")
+    if err!=nil {c.AbortWithStatusJSON(503,gin.H{"error":"Unable to verify account"});return}
+    if !active {c.AbortWithStatusJSON(401,gin.H{"error":"Sign in with an active account"});return}
+    c.Next()
 }
 
 func HandleVoiceUpload(c *gin.Context) {
