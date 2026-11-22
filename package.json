@@ -1,0 +1,12 @@
+{
+  "name": "l2estudylink-ui-verification",
+  "private": true,
+  "scripts": {
+    "test:ui": "node tests/ui/verify.mjs",
+    "audit:ui": "python3 scripts/audit-ui.py --check"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
+    "@playwright/test": "1.56.1"
+  }
+}

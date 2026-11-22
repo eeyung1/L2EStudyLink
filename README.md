@@ -4,7 +4,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 
 ## Redesign roadmap — November 2026
 
-**Stage: planning documented; redesign execution has not started.** This roadmap follows the owner-supplied `frontend-engineer.md` guidance and the agreed redesign plan. Checkboxes below describe the new redesign, not whether an older version of a screen exists.
+**Stage: first five foundation tasks implemented as an isolated design preview; production UI integration remains pending.** This roadmap follows the owner-supplied `frontend-engineer.md` guidance and the agreed redesign plan. Checkboxes below describe the new redesign, not whether an older version of a screen exists.
 
 ### Product outcome
 
@@ -50,11 +50,11 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 
 #### Batch 1 — Audit, shared foundation, dashboard and timetable preview
 
-- [ ] Inventory public, signed-in and admin routes, navigation links, forms, dialogs and shared style consumers.
-- [ ] Record baseline screenshots and loading, empty, populated, error and expired-session states.
-- [ ] Record existing behavior and defects separately from proposed design improvements.
-- [ ] Prepare phone and desktop dashboard/timetable previews using the agreed design direction.
-- [ ] Define theme, typography, spacing, elevation, icon and component tokens.
+- [x] Inventory public, signed-in and admin routes, navigation links, forms, dialogs and shared style consumers.
+- [x] Record baseline screenshots and loading, empty, populated, error and expired-session states.
+- [x] Record existing behavior and defects separately from proposed design improvements.
+- [x] Prepare phone and desktop dashboard/timetable previews using the agreed design direction.
+- [x] Define theme, typography, spacing, elevation, icon and component tokens.
 - [ ] Establish shared buttons, inputs, cards, tabs, dialogs, feedback and loading patterns within the existing template stack.
 - [ ] Apply consistent grouped navigation, active-page labels and keyboard-accessible mobile menus.
 - [ ] Reorganize the dashboard around today's blocks, next booked session, Add reflection, focus access and weekly coverage.
@@ -62,6 +62,8 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [ ] Present a day agenda on phones and an accessible weekly overview on larger screens.
 - [ ] Preserve selected timetable day after existing create/delete/reflection actions.
 - [ ] Add browser checks for shared navigation, dashboard and timetable before merging this batch.
+
+**Foundation evidence:** [audit and preview guide](docs/redesign/foundation-audit.md), [generated source inventory](docs/redesign/source-inventory.json), and `/static/redesign/index.html`. The first five checked items cover source inventory, fictional-fixture baseline captures of Dashboard/Timetable, recorded findings, responsive previews and scoped tokens. CI artifact `redesign-foundation-evidence` contains screenshots and measurements. Production integration and physical-device acceptance remain unchecked.
 
 **Acceptance:** a fellow can identify the next action, reach existing learning tools and browse their timetable on phone and desktop. Placeholder previews are explicitly labelled; production cards use actual API data and honest empty states. Review preview screenshots before rollout; physical-device acceptance is tracked separately.
 
@@ -156,13 +158,13 @@ Automated browser checks must assert key element bounds, horizontal overflow and
 1. Start from current `main`; create a descriptive feature branch such as `agent/redesign-foundation`.
 2. Implement one coherent batch, preserving existing API behavior unless an explicit, tested change is necessary.
 3. Run `go test ./...`, `go build ./...`, `node --test static/js/*.test.cjs` and fresh SQLite schema validation. Use `TEST_DATABASE_URL` with a disposable PostgreSQL database for database-backed tests.
-4. During the first implementation batch, add the browser/accessibility harness and document its exact commands. There is currently no frontend npm/typecheck/Playwright script to assume already exists. Add `go vet ./...` and the new browser gates to CI as part of that tooling work.
+4. During the first implementation batch, add the browser/accessibility harness and document its exact commands. The verification-only `package.json` now provides `npm run test:ui` and `npm run audit:ui`; see the foundation guide for browser installation and evidence details. There is no production frontend build or TypeScript check to assume exists. Add `go vet ./...` and the new browser gates to CI as part of that tooling work.
 5. Review the diff and screenshots, commit clearly without `Co-authored-by:` trailers, push the branch and open a PR describing behavior, verification and limitations.
 6. Wait for all applicable checks on the current PR head to pass. Fix failures and rerun; never bypass checks to merge.
 7. Squash-merge through the PR. Update README completion boxes in the same change only for delivered work, linking the PR/verification record. Keep device acceptance unchecked until it actually occurs.
 8. Verify the resulting deployment, sync the local base branch when a checkout is used, and delete only the completed task branch after confirming merge. Preserve unrelated branches and uncommitted work.
 
-Related implementation, interface and meaningful tests can be delivered together. Keep database migrations and unrelated features out of a visual batch unless explicitly needed. The current documentation task creates this plan only; it does not start any implementation batch.
+Related implementation, interface and meaningful tests can be delivered together. Keep database migrations and unrelated features out of a visual batch unless explicitly needed. The first foundation implementation delivers the five items listed above. The remaining production integration tasks continue in order through the same workflow.
 
 ### Tracking rules and separate product work
 
@@ -180,7 +182,7 @@ Related implementation, interface and meaningful tests can be delivered together
 - **Pattern**: hybrid app — server-rendered HTML pages via `router.LoadHTMLGlob("templates/*.html")` for the UI shell, plus a JSON REST API under `/api/v1/*` that page-level JavaScript calls via `fetch()`. Pages are "dumb" wrappers; real logic lives behind the API.
 - **Auth**: JWT (`github.com/golang-jwt/jwt/v5`) issued on login and password reset in a 24-hour Secure, HttpOnly, SameSite=Strict cookie, verified by `middleware.AuthRequired`. Cookie-authenticated writes require a same-origin `Origin` header. Older Bearer tokens remain accepted until their existing 24-hour expiry; signed-in pages migrate them to cookies and clear browser token storage.
 - **Database**: PostgreSQL in production, SQLite schema is maintained for local use (`schema.sql` / `schema.sqlite`); `db/postgres.go` uses pgx's `database/sql` adapter in simple protocol mode to work through the production connection pooler.
-- **Frontend**: plain HTML, Tailwind CDN on signed-in pages, shared CSS for navigation and account pages, and vanilla JavaScript `fetch()` calls. No build step, no npm, no React/Vue. Dark mode uses a `localStorage` flag and manual style overrides.
+- **Frontend**: plain HTML, Tailwind CDN on signed-in pages, shared CSS for navigation and account pages, and vanilla JavaScript `fetch()` calls. No production frontend build step or React/Vue. npm dependencies are used only for the browser/accessibility verification harness. Dark mode uses a `localStorage` flag and manual style overrides.
 - **Hosting**: Render (`render.yaml`, `Procfile`, `start.sh`), also has a `Dockerfile`.
 - **Installable app**: web manifest and 192/512px icons enable installation from supported browsers. Dashboard shows an Install app control when the browser offers installation; iOS users can use Safari's Share → Add to Home Screen. The service worker caches only a public offline explanation and icons; account pages and API responses always use the network.
 - **Email**: Brevo transactional API (`email/brevo.go`) for account and booking messages. Opted-in product-update audiences can be exported by an admin for a separate Brevo marketing campaign. **Notifications**: Discord webhook (`notifications/discord.go`).
