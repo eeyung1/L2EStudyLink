@@ -57,8 +57,9 @@ export async function verifyApp(browser,origin,output,evidence) {
                 evidence.workspaceChecks.push({view,theme,width,overflow:false,touchTargets:true});
             }
             await page.setViewportSize({width:390,height:900});
+            if(view==='timetable')await page.waitForFunction(()=>document.querySelector('.timetable-day-nav [data-day="0"]').getAttribute('aria-pressed')==='true');
             const result=await new AxeBuilder({page}).include(view==='dashboard'?'.daily-workspace':'main').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
-            assert.deepEqual(result.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})),[],`${theme} ${view} integrated accessibility`);
+            assert.deepEqual(result.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),[],`${theme} ${view} integrated accessibility`);
         }
         await page.locator('.timetable-day-nav [data-day="2"]').click();
         await page.locator('#day-2 [data-reflect="102"]').click();
