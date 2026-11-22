@@ -80,3 +80,18 @@
 .l2e-workspace .l2e-ui .reflection-mode-switch button[aria-selected="true"] { background:var(--l2e-accent)!important;color:var(--l2e-on-accent)!important; }
 @media(min-width:1101px) { .l2e-workspace .l2e-ui .week-overview .block-time { font-size:.8rem; } }
 @media(min-width:1101px) { .l2e-workspace .l2e-ui .week-overview button { padding:8px 4px;font-size:.75rem;white-space:nowrap;word-break:normal;overflow-wrap:normal; } }
+/* The reflection editor shares fields across both entry modes. */
+.l2e-workspace #reflectionModal [hidden] { display:none!important; }
+.l2e-workspace #reflectionModal .reflection-modal { background:var(--l2e-surface)!important;color:var(--l2e-text)!important;border-color:var(--l2e-border); }
+.l2e-workspace #reflectionModal label { display:block;color:var(--l2e-text)!important;font-weight:700;margin:16px 0 8px; }
+.l2e-workspace #reflectionModal .reflection-entry-hint,.l2e-workspace #reflectionModal .reflection-voice-intro,.l2e-workspace #reflectionModal .reflection-field-meta,.l2e-workspace #reflectionModal .reflection-modal-date { color:var(--l2e-secondary)!important;line-height:1.5; }
+.l2e-workspace #reflectionModal .reflection-voice-status,.l2e-workspace #reflectionModal .reflection-voice-attached { color:var(--l2e-accent)!important; }
+.l2e-workspace #reflectionModal .reflection-voice-status.is-error { color:var(--l2e-error)!important; }
+.l2e-workspace #reflectionModal .reflection-voice-preview { background:var(--l2e-subtle)!important;border-color:var(--l2e-border); }
+.l2e-workspace #reflectionModal #voiceRecordBtn { width:auto;height:auto;min-height:60px;border-radius:var(--l2e-radius-sm);font-size:1rem;box-shadow:none; }
+.l2e-workspace #reflectionModal #voiceRecordBtn.is-recording { background:var(--l2e-error)!important;color:var(--l2e-surface)!important; }
+.l2e-workspace #reflectionModal #voiceRecordBtn::before,.l2e-workspace #reflectionModal #voiceRecordBtn::after { display:none; }
+.l2e-workspace #reflectionModal .reflection-scrubber { flex-wrap:wrap; }
+.l2e-workspace #reflectionModal #voiceScrubber { flex:1 1 130px;width:auto;min-width:0;padding:0; }
+.l2e-workspace #reflectionModal #cancelReflectionButton,.l2e-workspace #reflectionModal #voiceDelete { background:var(--l2e-subtle)!important;color:var(--l2e-text)!important; }
+.l2e-workspace #reflectionAttachmentStatus { color:var(--l2e-secondary);font-size:.9rem;line-height:1.5; }

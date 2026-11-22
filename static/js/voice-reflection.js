@@ -1,506 +1,214 @@
-/* OPay-standard reflection recorder controller.
- *
- * Drives the timetable reflection modal's segmented Write/Speak switch,
- * audio recording with a 3-minute cap, direct upload to
- * /api/v1/voice/upload (attaching the returned audio_url to the
- * reflection payload), and an in-modal preview with scrubber,
- * re-record and delete controls. Plain ES2017+, no build step. */
+/* Reflection draft/recorder lifecycle. Drafts stay in this page's memory only. */
 (function () {
     'use strict';
-
-    const MAX_RECORDING_SECONDS = 180; // 03:00 cap
-    const UPLOAD_ENDPOINT = '/api/v1/voice/upload';
-
-    let mediaRecorder = null;
-    let activeStream = null;
-    let audioChunks = [];
-    let timerHandle = null;
-    let recordingSeconds = 0;
-    let isRecording = false;
-    let discardOnStop = false;
-
-    let takeBlobUrl = '';        // local object URL used for preview playback
-    let takeAudioUrl = '';       // persisted URL returned by the upload API
-    let appendedTranscript = ''; // transcript auto-filled into the summary field
-
-    let modalOpener = null;      // element focused before the modal opened
-
-    function el(id) {
-        return document.getElementById(id);
+    const MAX_SECONDS=180, MAX_BYTES=5*1024*1024;
+    const el=id=>document.getElementById(id);
+    const drafts=new Map();
+    let key=null,version=0,mode='write',state='ready',saving=false;
+    let recorder=null,stream=null,timer=null,startedAt=0,seconds=0,blobSeconds=0;
+    let blob=null,blobURL='',audioURL='',upload=null,requesting=false;
+    let opener=null;
+    const busy=()=>['requesting','recording','stopping','uploading'].includes(state);
+    const clock=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+    function status(text,tone='') {
+        el('voiceStatus').textContent=text;
+        el('voiceStatus').classList.toggle('is-error',tone==='error');
+        el('voiceStatus').classList.toggle('is-success',tone==='success');
     }
-
-    function formatClock(totalSeconds) {
-        const seconds = Math.max(0, Math.floor(totalSeconds || 0));
-        const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
-        const ss = String(seconds % 60).padStart(2, '0');
-        return mm + ':' + ss;
+    function counters() {
+        [['reflectionSummary','summaryCount'],['reflectionChallenges','challengesCount'],['reflectionLearnings','learningsCount']].forEach(([field,count])=>el(count).textContent=String(el(field).value.length));
     }
-
-    function formatPlayerTime(totalSeconds) {
-        const seconds = Math.max(0, Math.floor(totalSeconds || 0));
-        return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+    function render() {
+        const record=el('voiceRecordBtn');
+        record.disabled=saving||['requesting','stopping','uploading'].includes(state);
+        record.textContent=state==='recording'?'Stop recording':state==='requesting'?'Waiting for microphone…':'Start recording';
+        record.setAttribute('aria-label',state==='recording'?'Stop recording':'Start recording');
+        record.classList.toggle('is-recording',state==='recording');
+        el('voiceWaveform').classList.toggle('is-active',state==='recording');
+        el('voiceTimer').textContent=clock(seconds)+' / 03:00';
+        el('voicePreview').hidden=!blob;
+        el('voiceAttachedLabel').hidden=!audioURL;
+        el('url-summary').value=audioURL;
+        el('voiceRetryUpload').hidden=state!=='upload-error';
+        el('voiceRetryUpload').disabled=saving||busy();
+        el('voiceRerecord').disabled=saving||busy();
+        el('voiceDelete').disabled=saving||['requesting','recording','stopping'].includes(state);
+        el('saveReflectionButton').disabled=saving||busy()||!!(blob&&!audioURL);
+        el('saveReflectionButton').textContent=saving?'Saving reflection…':'Save reflection';
+        el('cancelReflectionButton').disabled=saving;
+        el('voicePlayBtn').disabled=saving||['recording','requesting','stopping'].includes(state);
+        ['reflectionSummary','reflectionChallenges','reflectionLearnings','modeWriteTab','modeSpeakTab','voiceScrubber'].forEach(id=>el(id).disabled=saving);
+        el('reflectionAttachmentStatus').textContent=state==='uploading'?'Voice note uploading. Saving becomes available after attachment.':state==='recording'?'Recording is active. Stop it before saving.':state==='requesting'?'Waiting for microphone permission.':blob&&!audioURL?'Voice note is not attached. Retry its upload in Speak mode or delete the take before saving.':audioURL?'Voice note attached. Your written fields and audio will be saved together.':'No voice note attached. You can save a written reflection.';
+        el('reflectionModal').setAttribute('aria-busy',String(saving));
+        el('reflectionVoicePanel').setAttribute('aria-busy',String(state==='uploading'||state==='requesting'));
     }
-
-    function setStatus(message, tone) {
-        const status = el('voiceStatus');
-        if (!status) return;
-        status.textContent = message || '';
-        status.classList.toggle('is-error', tone === 'error');
-        status.classList.toggle('is-success', tone === 'success');
+    function stopTracks(s=stream) {if(s)s.getTracks().forEach(track=>track.stop());if(s===stream)stream=null;}
+    function stopTimer() {if(timer)clearInterval(timer);timer=null;}
+    function elapsed() {return Math.min(MAX_SECONDS,Math.floor((performance.now()-startedAt)/1000));}
+    function revokePreview() {
+        const audio=el('voicePreviewAudio');audio.pause();audio.removeAttribute('src');audio.load();
+        if(blobURL)URL.revokeObjectURL(blobURL);blobURL='';
+        el('voiceScrubber').value='0';el('voicePlayBtn').textContent='▶';el('voicePlayBtn').setAttribute('aria-label','Play recording');
     }
-
-    function setTimer() {
-        const timer = el('voiceTimer');
-        if (timer) timer.innerHTML = formatClock(recordingSeconds) + ' <span>/ 03:00</span>';
+    function preview() {
+        revokePreview();
+        if(blob){blobURL=URL.createObjectURL(blob);el('voicePreviewAudio').src=blobURL;el('voicePreviewAudio').load();}
+        el('voiceDuration').textContent=clock(blobSeconds);el('voiceCurrentTime').textContent='00:00';
     }
-
-    function stopTimer() {
-        if (timerHandle) {
-            clearInterval(timerHandle);
-            timerHandle = null;
-        }
+    function stash() {
+        if(!key)return;
+        drafts.set(key,{summary:el('reflectionSummary').value,challenges:el('reflectionChallenges').value,learnings:el('reflectionLearnings').value,blob,audioURL,seconds:blob?blobSeconds:0,mode});
     }
-
-    function startTimer() {
+    function cancelAsync() {
+        version++;requesting=false;
+        if(upload)upload.abort();upload=null;
         stopTimer();
-        recordingSeconds = 0;
-        setTimer();
-        timerHandle = setInterval(function () {
-            recordingSeconds += 1;
-            setTimer();
-            if (recordingSeconds >= MAX_RECORDING_SECONDS) {
-                stopVoiceRecording(); // auto-stop at 03:00
-            }
-        }, 1000);
+        if(recorder){recorder.onstop=null;recorder.ondataavailable=null;recorder.onerror=null;try{if(recorder.state!=='inactive')recorder.stop();}catch{}recorder=null;}
+        stopTracks();
     }
-
-    // States: ready | recording | uploading | preview
-    function setRecorderState(state) {
-        const btn = el('voiceRecordBtn');
-        const waveform = el('voiceWaveform');
-        const preview = el('voicePreview');
-        if (btn) {
-            btn.classList.toggle('is-recording', state === 'recording');
-            btn.textContent = state === 'recording' ? '⏹' : '🎤';
-            btn.setAttribute('aria-label', state === 'recording' ? 'Stop recording' : 'Start recording');
-            btn.disabled = state === 'uploading';
+    function setMode(next,focus=false) {
+        if(saving)return;
+        mode=next==='voice'?'voice':'write';
+        for(const [value,tab,panel] of [['write','modeWriteTab','reflectionWritePanel'],['voice','modeSpeakTab','reflectionVoicePanel']]){
+            el(tab).setAttribute('aria-selected',String(mode===value));el(tab).tabIndex=mode===value?0:-1;el(panel).hidden=mode!==value;
         }
-        if (waveform) waveform.classList.toggle('is-active', state === 'recording');
-        if (preview) preview.hidden = state !== 'preview';
-        if (state !== 'recording') stopTimer();
+        // Switching to Write finishes the take instead of silently discarding it.
+        if(mode==='write'&&state==='recording')stopRecording();
+        if(mode==='write'&&state==='requesting'){cancelAsync();state=audioURL?'attached':blob?'upload-error':'ready';render();}
+        if(focus)el(mode==='write'?'modeWriteTab':'modeSpeakTab').focus();
     }
-
-    function updateCounter(fieldId, counterId) {
-        const field = el(fieldId);
-        const counter = el(counterId);
-        if (!field || !counter) return;
-        counter.textContent = String(field.value.length);
-        const limit = Number(field.maxLength) || 0;
-        if (counter.parentElement) {
-            counter.parentElement.classList.toggle('near-limit', limit > 0 && field.value.length >= limit * 0.9);
+    function openDraft(nextKey) {
+        stash();cancelAsync();revokePreview();key=nextKey;saving=false;
+        const draft=drafts.get(key)||{};
+        blob=draft.blob||null;audioURL=draft.audioURL||'';seconds=draft.seconds||0;blobSeconds=seconds;
+        for(const [id,name] of [['reflectionSummary','summary'],['reflectionChallenges','challenges'],['reflectionLearnings','learnings']])el(id).value=draft[name]||'';
+        state=audioURL?'attached':blob?'upload-error':'ready';
+        setMode(draft.mode||'write');preview();counters();
+        el('reflectionFormError').hidden=true;el('reflectionFormError').textContent='';
+        status(blob?(audioURL?'Voice note attached. Add a written summary before saving.':'Recording kept on this page. Retry its upload or delete the take.'):'Record a voice note or write your reflection below.',blob&&!audioURL?'error':'');
+        render();
+    }
+    async function uploadTake() {
+        if(!blob||saving||state==='uploading')return;
+        const take=blob,id=version;
+        upload=new AbortController();const controller=upload;
+        state='uploading';status('Uploading your voice note… Keep this page open.');render();
+        const form=new FormData();form.append('audio',take,'voice-reflection.'+(take.type.includes('mp4')?'mp4':'webm'));
+        const timeout=setTimeout(()=>controller.abort(),30000);
+        try {
+            const token=typeof sessionToken==='function'?sessionToken():'';
+            const response=await fetch('/api/v1/voice/upload',{method:'POST',headers:token?{Authorization:'Bearer '+token}:{},body:form,signal:controller.signal});
+            if(!response.ok)throw Error('Upload unavailable');
+            const data=await response.json();
+            if(id!==version||take!==blob)return;
+            // The server does not transcribe audio. Never insert its placeholder text.
+            if(typeof data.audio_url!=='string'||!/^\/uploads\/[a-zA-Z0-9_-]+\.(webm|ogg|mp4|wav|m4a|mp3)$/.test(data.audio_url))throw Error('Upload returned no valid audio attachment');
+            audioURL=data.audio_url;state='attached';status('Voice note attached. Transcription is not available; add a written summary below.','success');
+        } catch(error) {
+            if(id!==version||take!==blob)return;
+            state='upload-error';status('Upload interrupted or unavailable. Your recording and text are kept on this page. Retry upload, or delete the take to save text only.','error');
+        } finally {
+            clearTimeout(timeout);
+            if(id===version){upload=null;stash();render();}
         }
     }
-
-    function updateCounters() {
-        updateCounter('reflectionSummary', 'summaryCount');
-        updateCounter('reflectionChallenges', 'challengesCount');
-        updateCounter('reflectionLearnings', 'learningsCount');
+    function mimeType() {
+        return ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(type=>typeof MediaRecorder.isTypeSupported==='function'&&MediaRecorder.isTypeSupported(type))||'';
     }
-
-    function releaseStream() {
-        if (activeStream) {
-            activeStream.getTracks().forEach(function (track) { track.stop(); });
-            activeStream = null;
-        }
-    }
-
-    function clearAppendedTranscript() {
-        const summary = el('reflectionSummary');
-        if (summary && appendedTranscript) {
-            const marker = appendedTranscript;
-            if (summary.value.endsWith(marker)) {
-                summary.value = summary.value.slice(0, -marker.length).replace(/[ \t]+$/, '');
-            } else if (summary.value.indexOf(marker) !== -1) {
-                summary.value = summary.value.replace(marker, '').replace(/[ \t]{2,}/g, ' ');
-            }
-            summary.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-        appendedTranscript = '';
-    }
-
-    // Drop the current take: clear the attached audio_url, the auto-filled
-    // transcript and the local preview, without touching typed text.
-    function releaseTake() {
-        clearAppendedTranscript();
-        if (takeBlobUrl) {
-            URL.revokeObjectURL(takeBlobUrl);
-            takeBlobUrl = '';
-        }
-        takeAudioUrl = '';
-        const urlInput = el('url-summary');
-        if (urlInput) urlInput.value = '';
-        const audio = el('voicePreviewAudio');
-        if (audio) {
-            audio.pause();
-            audio.removeAttribute('src');
-            audio.load();
-        }
-        const scrub = el('voiceScrubber');
-        if (scrub) scrub.value = '0';
-        const attached = el('voiceAttachedLabel');
-        if (attached) attached.hidden = true;
-        updatePlayerTime(0, 0);
-        updatePlayButton(false);
-    }
-
-    function pickMimeType() {
-        if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') return '';
-        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) return 'audio/webm;codecs=opus';
-        if (MediaRecorder.isTypeSupported('audio/webm')) return 'audio/webm';
-        if (MediaRecorder.isTypeSupported('audio/mp4')) return 'audio/mp4';
-        return '';
-    }
-
-    function updatePlayButton(playing) {
-        const btn = el('voicePlayBtn');
-        if (!btn) return;
-        btn.textContent = playing ? '⏸' : '▶';
-        btn.setAttribute('aria-label', playing ? 'Pause recording' : 'Play recording');
-    }
-
-    function updatePlayerTime(current, duration) {
-        const cur = el('voiceCurrentTime');
-        const dur = el('voiceDuration');
-        if (cur) cur.textContent = formatPlayerTime(current);
-        if (dur) dur.textContent = formatPlayerTime(duration);
-    }
-
-    function syncScrubber() {
-        const audio = el('voicePreviewAudio');
-        const scrub = el('voiceScrubber');
-        if (!audio || !scrub) return;
-        const duration = audio.duration || 0;
-        if (duration > 0 && !scrub.matches(':active')) {
-            scrub.value = String((audio.currentTime / duration) * 100);
-        }
-        updatePlayerTime(audio.currentTime, duration);
-    }
-
-    function openPreview(audioBlob) {
-        if (takeBlobUrl) URL.revokeObjectURL(takeBlobUrl);
-        takeBlobUrl = URL.createObjectURL(audioBlob);
-        const audio = el('voicePreviewAudio');
-        if (audio) {
-            audio.src = takeBlobUrl;
-            audio.load();
-        }
-        const scrub = el('voiceScrubber');
-        if (scrub) scrub.value = '0';
-        updatePlayerTime(0, 0);
-        updatePlayButton(false);
-    }
-
-    function startVoiceRecording() {
-        if (isRecording || mediaRecorder) return Promise.resolve();
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            setStatus('Audio recording is not supported in this browser.', 'error');
-            return Promise.resolve();
-        }
-        releaseTake(); // a new take replaces any previous one
-        return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
-            activeStream = stream;
-            const mimeType = pickMimeType();
-            try {
-                mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType: mimeType }) : new MediaRecorder(stream);
-            } catch (err) {
-                console.error('Could not start recorder:', err);
-                releaseStream();
-                setStatus('Could not start recording on this device.', 'error');
-                return;
-            }
-
-            audioChunks = [];
-            discardOnStop = false;
-            mediaRecorder.ondataavailable = function (event) {
-                if (event.data && event.data.size > 0) audioChunks.push(event.data);
+    async function startRecording() {
+        if(saving||busy()||requesting)return;
+        if(typeof MediaRecorder==='undefined'||!navigator.mediaDevices?.getUserMedia){status('Recording is not supported in this browser. You can still write and save your reflection.','error');return;}
+        el('voicePreviewAudio').pause();
+        const id=version;requesting=true;state='requesting';status('Allow microphone access to begin recording.');render();
+        let acquired;
+        try {
+            acquired=await navigator.mediaDevices.getUserMedia({audio:true});
+            if(id!==version){stopTracks(acquired);return;}
+            const type=mimeType(),next=type?new MediaRecorder(acquired,{mimeType:type}):new MediaRecorder(acquired);
+            const chunks=[];let interrupted=false;
+            next.ondataavailable=event=>{if(id===version&&event.data?.size)chunks.push(event.data);};
+            next.onerror=()=>{if(id!==version)return;interrupted=true;stopRecording();};
+            next.onstop=()=>{
+                if(id!==version)return;
+                stopTimer();stopTracks();recorder=null;
+                const take=new Blob(chunks,{type:next.mimeType||'audio/webm'});
+                if(!take.size){seconds=blobSeconds;state=audioURL?'attached':blob?'upload-error':'ready';status('Nothing was recorded. Your text is unchanged; try recording again.','error');render();return;}
+                blob=take;blobSeconds=seconds;audioURL='';preview();stash();
+                if(take.size>MAX_BYTES){state='upload-error';status('This recording exceeds the 5 MB upload limit. Re-record a shorter take or delete it to save text only.','error');render();return;}
+                state='ready';
+                if(interrupted)status('Recording was interrupted. Uploading the available audio…');
+                uploadTake();
             };
-            mediaRecorder.onstop = handleRecordingStop;
-
-            mediaRecorder.start();
-            isRecording = true;
-            setRecorderState('recording');
-            setStatus('Recording… tap stop when you are done.');
-            startTimer();
-        }).catch(function (err) {
-            console.error('Microphone access denied:', err);
-            setStatus('Microphone access denied. Allow the mic to record.', 'error');
+            next.start();
+            stream=acquired;recorder=next;seconds=0;startedAt=performance.now();state='recording';
+            // Retain any earlier take until the replacement has actually stopped.
+            timer=setInterval(()=>{seconds=elapsed();render();if(seconds>=MAX_SECONDS)stopRecording();},200);
+            status('Recording… Stop when you are done. Maximum duration: 3 minutes.');
+        } catch(error) {
+            if(acquired)stopTracks(acquired);
+            if(id!==version)return;
+            recorder=null;state=audioURL?'attached':blob?'upload-error':'ready';
+            status(error.name==='NotAllowedError'?'Microphone permission was denied. Allow it in browser settings and try again, or write below.':'The microphone could not start. Check that it is connected and available, or write below.','error');
+        } finally {if(id===version){requesting=false;render();}}
+    }
+    function stopRecording() {
+        if(state!=='recording'||!recorder)return;
+        seconds=elapsed();stopTimer();state='stopping';status('Finishing your recording…');render();
+        try {recorder.stop();}catch {stopTracks();recorder=null;state=audioURL?'attached':blob?'upload-error':'ready';status('Recording stopped unexpectedly. Your existing text and take are unchanged.','error');render();}
+    }
+    function deleteTake() {
+        if(saving||['recording','stopping','requesting'].includes(state))return;
+        cancelAsync();blob=null;audioURL='';seconds=0;blobSeconds=0;state='ready';preview();status('Voice take deleted. Your written reflection is unchanged.');stash();render();
+    }
+    function playback() {
+        const audio=el('voicePreviewAudio');if(!audio.src)return;
+        if(audio.paused)audio.play().catch(()=>status('Playback could not start. The take is still kept; try again or re-record.','error'));else audio.pause();
+    }
+    function syncPlayer() {
+        const audio=el('voicePreviewAudio'),duration=Number.isFinite(audio.duration)&&audio.duration>0?audio.duration:blobSeconds;
+        el('voiceCurrentTime').textContent=clock(audio.currentTime||0);el('voiceDuration').textContent=clock(duration);
+        if(duration>0&&!el('voiceScrubber').matches(':active'))el('voiceScrubber').value=String(Math.min(100,(audio.currentTime||0)/duration*100));
+    }
+    function closeDraft() {
+        if(saving)return false;
+        if(state==='recording')status('Recording cancelled on close. Your previous take and written text were kept.');
+        stash();cancelAsync();seconds=blobSeconds;state=audioURL?'attached':blob?'upload-error':'ready';
+        el('voicePreviewAudio').pause();
+        return true;
+    }
+    document.addEventListener('DOMContentLoaded',()=>{
+        for(const id of ['reflectionSummary','reflectionChallenges','reflectionLearnings'])el(id).addEventListener('input',()=>{counters();stash();});
+        el('voiceRetryUpload').addEventListener('click',uploadTake);
+        el('modeWriteTab').parentElement.addEventListener('keydown',event=>{
+            if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+            event.preventDefault();setMode(event.key==='Home'?'write':event.key==='End'?'voice':mode==='write'?'voice':'write',true);
         });
-    }
-
-    function stopVoiceRecording() {
-        if (!isRecording || !mediaRecorder) return;
-        isRecording = false;
-        stopTimer();
-        setTimer();
-        try {
-            mediaRecorder.stop();
-        } catch (err) {
-            console.error('Could not stop recorder:', err);
-            mediaRecorder = null;
-            releaseStream();
-            setRecorderState('ready');
-        }
-    }
-
-    // Discard-in-flight take (mode switch, modal close, reset).
-    function stopVoiceRecordingWithDiscard() {
-        discardOnStop = true;
-        stopVoiceRecording();
-    }
-
-    async function handleRecordingStop() {
-        const recorder = mediaRecorder;
-        mediaRecorder = null;
-        releaseStream();
-
-        if (discardOnStop) {
-            discardOnStop = false;
-            setRecorderState('ready');
-            setStatus('');
-            return;
-        }
-
-        const mimeType = (recorder && recorder.mimeType) || 'audio/webm';
-        const audioBlob = new Blob(audioChunks, { type: mimeType });
-        audioChunks = [];
-        if (!audioBlob.size) {
-            setRecorderState('ready');
-            setStatus('Nothing was recorded. Try again.', 'error');
-            return;
-        }
-
-        setRecorderState('uploading');
-        setStatus('Uploading your voice note…');
-
-        const ext = mimeType.indexOf('mp4') !== -1 ? 'mp4' : 'webm';
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'voice-reflection.' + ext);
-
-        let uploadedUrl = '';
-        try {
-            const headers = {};
-            const token = (typeof sessionToken === 'function' ? sessionToken() : '') || localStorage.getItem('token') || '';
-            if (token) headers['Authorization'] = 'Bearer ' + token;
-            const response = await fetch(UPLOAD_ENDPOINT, { method: 'POST', headers: headers, body: formData });
-            if (!response.ok) {
-                const errData = await response.json().catch(function () { return {}; });
-                throw new Error(errData.error || ('Upload failed with status ' + response.status));
-            }
-            const data = await response.json();
-            uploadedUrl = data.audio_url || '';
-            if (data.text) {
-                const summary = el('reflectionSummary');
-                if (summary) {
-                    appendedTranscript = data.text;
-                    const current = summary.value.trim();
-                    summary.value = current ? current + ' ' + data.text : data.text;
-                    summary.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-            }
-        } catch (err) {
-            console.error('Voice upload failed:', err);
-            setRecorderState('preview');
-            openPreview(audioBlob);
-            setStatus('Upload failed — listen back, re-record or delete.', 'error');
-            return;
-        }
-
-        takeAudioUrl = uploadedUrl;
-        const urlInput = el('url-summary');
-        if (urlInput) urlInput.value = uploadedUrl;
-        const attached = el('voiceAttachedLabel');
-        if (attached) attached.hidden = !uploadedUrl;
-        setRecorderState('preview');
-        openPreview(audioBlob);
-        setStatus(uploadedUrl ? 'Voice note attached to your reflection.' : 'Upload finished.', 'success');
-    }
-
-    function toggleVoicePlayback() {
-        const audio = el('voicePreviewAudio');
-        if (!audio || !audio.src) return;
-        if (audio.paused) {
-            audio.play().catch(function (err) { console.error('Playback failed:', err); });
-        } else {
-            audio.pause();
-        }
-    }
-
-    function rerecordVoiceTake() {
-        releaseTake();
-        startVoiceRecording();
-    }
-
-    function deleteVoiceTake() {
-        releaseTake();
-        setRecorderState('ready');
-        recordingSeconds = 0;
-        setTimer();
-        setStatus('Take deleted. Record a new one whenever you are ready.');
-    }
-
-    function setReflectionMode(mode) {
-        const write = mode !== 'voice';
-        const writeTab = el('modeWriteTab');
-        const speakTab = el('modeSpeakTab');
-        const writePanel = el('reflectionWritePanel');
-        const voicePanel = el('reflectionVoicePanel');
-        if (writeTab) writeTab.setAttribute('aria-selected', String(write));
-        if (speakTab) speakTab.setAttribute('aria-selected', String(!write));
-        if (writePanel) writePanel.hidden = !write;
-        if (voicePanel) voicePanel.hidden = write;
-        if (write) {
-            const audio = el('voicePreviewAudio');
-            if (audio) audio.pause();
-            if (isRecording) {
-                stopVoiceRecordingWithDiscard();
-                setStatus('');
-            }
-        }
-    }
-
-    function resetReflectionModal() {
-        stopVoiceRecordingWithDiscard();
-        releaseTake();
-        ['reflectionSummary', 'reflectionChallenges', 'reflectionLearnings'].forEach(function (id) {
-            const field = el(id);
-            if (field) field.value = '';
+        const audio=el('voicePreviewAudio');
+        for(const name of ['loadedmetadata','timeupdate','ended'])audio.addEventListener(name,syncPlayer);
+        for(const name of ['play','pause','ended'])audio.addEventListener(name,()=>{el('voicePlayBtn').textContent=audio.paused?'▶':'⏸';el('voicePlayBtn').setAttribute('aria-label',audio.paused?'Play recording':'Pause recording');});
+        el('voiceScrubber').addEventListener('input',()=>{const duration=Number.isFinite(audio.duration)?audio.duration:blobSeconds;if(duration>0){audio.currentTime=Number(el('voiceScrubber').value)/100*duration;syncPlayer();}});
+        el('reflectionModal').addEventListener('keydown',event=>{
+            if(event.key==='Escape'){event.preventDefault();if(!saving)window.closeReflectionModal();return;}
+            if(event.key!=='Tab')return;
+            const items=Array.from(el('reflectionModal').querySelectorAll('button:not([disabled]):not([tabindex="-1"]),textarea:not([disabled]),input:not([type="hidden"]):not([disabled])')).filter(n=>n.getClientRects().length);
+            const first=items[0],last=items[items.length-1];
+            if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+            else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
         });
-        updateCounters();
-        const urlInput = el('url-summary');
-        if (urlInput) urlInput.value = '';
-        const error = el('reflectionFormError');
-        if (error) {
-            error.hidden = true;
-            error.textContent = '';
-        }
-        recordingSeconds = 0;
-        setTimer();
-        setStatus('');
-        setRecorderState('ready');
-        setReflectionMode('write');
-    }
-
-    function onReflectionModalOpened() {
-        modalOpener = document.activeElement;
-        const firstField = el('reflectionSummary');
-        if (firstField) firstField.focus();
-    }
-
-    function onReflectionModalClosed() {
-        if (modalOpener && typeof modalOpener.focus === 'function' && modalOpener.isConnected) {
-            modalOpener.focus();
-        }
-        modalOpener = null;
-    }
-
-    function modalFocusables() {
-        const modal = document.querySelector('#reflectionModal .reflection-modal');
-        if (!modal) return [];
-        return Array.prototype.slice.call(
-            modal.querySelectorAll('button, [href], input:not([type="hidden"]), textarea, select, [tabindex]:not([tabindex="-1"])')
-        ).filter(function (node) {
-            return !node.disabled && node.offsetParent !== null;
-        });
-    }
-
-    function closeModalSafely() {
-        if (typeof window.closeReflectionModal === 'function') {
-            window.closeReflectionModal();
-        }
-    }
-
-    function wireModal() {
-        const modal = el('reflectionModal');
-        if (!modal) return;
-        modal.addEventListener('click', function (event) {
-            if (event.target === modal) closeModalSafely(); // backdrop tap
-        });
-        modal.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                closeModalSafely();
-                return;
-            }
-            if (event.key !== 'Tab') return;
-            const focusables = modalFocusables();
-            if (!focusables.length) return;
-            const first = focusables[0];
-            const last = focusables[focusables.length - 1];
-            if (event.shiftKey && document.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-            } else if (!event.shiftKey && document.activeElement === last) {
-                event.preventDefault();
-                first.focus();
-            }
-        });
-    }
-
-    function wireFields() {
-        [['reflectionSummary', 'summaryCount'], ['reflectionChallenges', 'challengesCount'], ['reflectionLearnings', 'learningsCount']]
-            .forEach(function (pair) {
-                const field = el(pair[0]);
-                if (field) {
-                    field.addEventListener('input', function () { updateCounter(pair[0], pair[1]); });
-                }
-            });
-        updateCounters();
-    }
-
-    function wirePreview() {
-        const audio = el('voicePreviewAudio');
-        const scrub = el('voiceScrubber');
-        if (audio) {
-            audio.addEventListener('timeupdate', syncScrubber);
-            audio.addEventListener('loadedmetadata', syncScrubber);
-            audio.addEventListener('play', function () { updatePlayButton(true); });
-            audio.addEventListener('pause', function () { updatePlayButton(false); });
-            audio.addEventListener('ended', function () {
-                updatePlayButton(false);
-                syncScrubber();
-            });
-        }
-        if (scrub && audio) {
-            scrub.addEventListener('input', function () {
-                if (!audio.duration) return;
-                audio.currentTime = (Number(scrub.value) / 100) * audio.duration;
-                updatePlayerTime(audio.currentTime, audio.duration);
-            });
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        wireModal();
-        wireFields();
-        wirePreview();
-        setTimer();
+        render();
     });
-
-    window.setReflectionMode = setReflectionMode;
-    window.toggleVoiceRecording = toggleVoiceRecordingWrapper;
-    window.toggleVoicePlayback = toggleVoicePlayback;
-    window.rerecordVoiceTake = rerecordVoiceTake;
-    window.deleteVoiceTake = deleteVoiceTake;
-    window.resetReflectionModal = resetReflectionModal;
-    window.abortVoiceRecording = stopVoiceRecordingWithDiscard;
-    window.onReflectionModalOpened = onReflectionModalOpened;
-    window.onReflectionModalClosed = onReflectionModalClosed;
-
-    function toggleVoiceRecordingWrapper() {
-        if (isRecording) {
-            stopVoiceRecording();
-        } else {
-            startVoiceRecording();
-        }
-    }
+    window.openReflectionDraft=openDraft;
+    window.setReflectionMode=setMode;
+    window.toggleVoiceRecording=()=>state==='recording'?stopRecording():startRecording();
+    window.toggleVoicePlayback=playback;
+    window.rerecordVoiceTake=startRecording;
+    window.deleteVoiceTake=deleteTake;
+    window.abortVoiceRecording=closeDraft;
+    window.resetReflectionModal=()=>{if(key)drafts.delete(key);key=null;openDraft(null);};
+    window.setReflectionSaving=value=>{saving=value;render();};
+    window.reflectionCanSave=()=>!saving&&!busy()&&!(blob&&!audioURL);
+    window.markReflectionSaved=()=>{drafts.delete(key);key=null;cancelAsync();blob=null;audioURL='';seconds=0;blobSeconds=0;state='ready';revokePreview();};
+    window.onReflectionModalOpened=()=>{opener=document.activeElement;document.querySelector('.app-shell').inert=true;el(mode==='voice'?'voiceRecordBtn':'reflectionSummary').focus();};
+    window.onReflectionModalClosed=()=>{document.querySelector('.app-shell').inert=false;if(opener?.isConnected)opener.focus();opener=null;};
+    window.addEventListener('pagehide',()=>{cancelAsync();revokePreview();drafts.clear();});
 })();

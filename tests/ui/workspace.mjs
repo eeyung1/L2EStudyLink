@@ -10,9 +10,11 @@ export async function verifyApp(browser,origin,output,evidence) {
         page.on('pageerror',e=>errors.push(e.message));
         await page.clock.setFixedTime(new Date('2026-11-23T10:00:00+01:00'));
         let blocks=[{id:101,day_of_week:0,start_time:'09:00',end_time:'11:00',activity:'Build a Go API',goal:'Test validation'},{id:102,day_of_week:2,start_time:'13:00',end_time:'14:00',activity:"Review O'Reilly <API> notes",goal:'Practice safely'}];
+        let reflections=[];
         let failCoverage=false,failBookings=false;
         await page.route('**/api/v1/**',async route=>{
             const path=new URL(route.request().url()).pathname,method=route.request().method();
+            if(method==='POST' && path==='/api/v1/reflections'){reflections.push({...route.request().postDataJSON(),id:501,completed:true});return route.fulfill({status:201,json:{id:501}});}
             if(method==='POST' && path==='/api/v1/timetable'){const b=route.request().postDataJSON();blocks.push({...b,id:103});return route.fulfill({status:201,json:{id:103}});}
             if(method==='DELETE' && path==='/api/v1/timetable/103'){blocks=blocks.filter(b=>b.id!==103);return route.fulfill({status:200,json:{message:'Deleted fixture'}});}
             assert.equal(method,'GET','Only explicit fixture writes are permitted');
@@ -21,6 +23,7 @@ export async function verifyApp(browser,origin,output,evidence) {
             let body=[];
             if(path==='/api/v1/me')body={id:9001,name:'Demo Fellow',email:'demo@example.invalid',skills:[],rating:0,total_reviews:0};
             if(path==='/api/v1/timetable')body=blocks;
+            if(path==='/api/v1/reflections')body=reflections;
             if(path==='/api/v1/me/streaks')body={current_streak:0,longest_streak:0,total_active_days:0,daily_counts:{}};
             if(path==='/api/v1/planner/week')body={metrics:{due_blocks:5,reflected_blocks:3}};
             if(path==='/api/v1/bookings')body=[{id:1,date:'2026-11-22',start_time:'12:00',end_time:'13:00',topic:'Past session',status:'confirmed'}, {id:2,date:'2026-11-24',start_time:'14:00',end_time:'15:00',topic:'Cancelled session',status:'cancelled'}, {id:3,date:'2026-11-24',start_time:'12:00',end_time:'13:00',topic:'Peer API review',status:'confirmed',role:'student',tutor_name:'Demo Tutor'}];
@@ -79,6 +82,11 @@ export async function verifyApp(browser,origin,output,evidence) {
         await page.locator('#confirmDeleteBlock').click();
         await page.getByText('Time block and its linked reflections deleted.',{exact:true}).waitFor();
         assert.equal(await page.locator('.timetable-day-nav [data-day="2"]').getAttribute('aria-pressed'),'true');
+        await page.locator('#day-2 [data-reflect="102"]').click();
+        await page.locator('#reflectionSummary').fill('Fictional Wednesday reflection');
+        await page.locator('#saveReflectionButton').click();
+        await page.locator('#day-2').getByText('Reflection added',{exact:false}).waitFor();
+        assert.equal(await page.locator('.timetable-day-nav [data-day="2"]').getAttribute('aria-pressed'),'true','reflection save retains selected day');
         await page.getByRole('button',{name:'+ Add time block',exact:true}).click();
         const modalScan=await new AxeBuilder({page}).include('#addModal').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
         evidence.workspaceAccessibility.push({theme,scope:'add-block-dialog',violations:modalScan.violations});

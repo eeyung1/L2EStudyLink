@@ -60,8 +60,8 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [x] Reorganize the dashboard around today's blocks, next booked session, Add reflection, focus access and weekly coverage.
 - [x] Put setup tasks and collaboration recommendations below primary daily actions.
 - [x] Present a day agenda on phones and an accessible weekly overview on larger screens.
-- [ ] Preserve selected timetable day after existing create/delete/reflection actions.
-- [ ] Add browser checks for shared navigation, dashboard and timetable before merging this batch.
+- [x] Preserve selected timetable day after existing create/delete/reflection actions.
+- [x] Add browser checks for shared navigation, dashboard and timetable before merging this batch.
 
 **Foundation evidence:** [audit and preview guide](docs/redesign/foundation-audit.md), [generated source inventory](docs/redesign/source-inventory.json), and `/static/redesign/index.html`. The first five checked items cover source inventory, fictional-fixture baseline captures of Dashboard/Timetable, recorded findings, responsive previews and scoped tokens. CI artifact `redesign-foundation-evidence` contains screenshots and measurements. Production integration and physical-device acceptance remain unchecked.
 
@@ -69,9 +69,9 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 
 #### Batch 2 — Reflection entry and history
 
-- [ ] Unify Write/Speak reflection modes with persistent field labels and clear focus states.
-- [ ] Show recording, duration, stop, audio preview, re-record, upload and save states accurately.
-- [ ] Handle microphone denial, unsupported recording, interrupted uploads and save failures without silently losing text.
+- [x] Unify Write/Speak reflection modes with persistent field labels and clear focus states.
+- [x] Show recording, duration, stop, audio preview, re-record, upload and save states accurately.
+- [x] Handle microphone denial, unsupported recording, interrupted uploads and save failures without silently losing text.
 - [ ] Make dialogs/sheets fit small screens and on-screen keyboards; support Escape and restore focus.
 - [ ] Improve history filtering, date/activity labels and audio playback.
 - [ ] Keep personal reflections private and account-scoped.
@@ -502,3 +502,7 @@ go mod get <package_url>
 ### Daily workspace integration (tasks 6–10)
 
 The first five integration tasks now use the real Dashboard/Timetable templates: shared semantic controls and tokens, one grouped navigation partial across 13 workspace screens, read-only daily cards from existing account APIs, setup/collaboration below daily actions, and responsive phone agenda/desktop week views. See [implementation and verification notes](docs/redesign/workspace-integration.md). The standalone sample preview remains available. No database, permission, booking, or reflection API contract is changed. Production deployment and physical-device acceptance remain unchecked.
+
+### Reflection reliability (tasks 11–15)
+
+Selected timetable day is retained across create/delete/reflection saves and verified by browser fixtures. The required shared-navigation, Dashboard and Timetable browser checks run in CI. Write/Speak now share persistent labelled text fields, keyboard tabs and accurate recorder/upload/save states. Failed uploads retain a retryable local take; failed saves retain text and attachment. Drafts are isolated by activity/date in current-page memory; late microphone/upload callbacks cannot attach to a reopened different reflection. No automatic transcription is claimed. See [reflection reliability notes](docs/redesign/reflection-reliability.md) for evidence and boundaries.
