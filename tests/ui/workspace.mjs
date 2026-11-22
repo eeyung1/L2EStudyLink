@@ -80,6 +80,11 @@ export async function verifyApp(browser,origin,output,evidence) {
         await page.getByText('Time block and its linked reflections deleted.',{exact:true}).waitFor();
         assert.equal(await page.locator('.timetable-day-nav [data-day="2"]').getAttribute('aria-pressed'),'true');
         await page.getByRole('button',{name:'+ Add time block',exact:true}).click();
+        const modalScan=await new AxeBuilder({page}).include('#addModal').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
+        evidence.workspaceAccessibility.push({theme,scope:'add-block-dialog',violations:modalScan.violations});
+        assert.deepEqual(modalScan.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})),[],`${theme} add-block accessibility`);
+        const dialogFile=`integrated-add-block-${theme}-390.png`;
+        await page.screenshot({path:output+'/'+dialogFile});evidence.screenshots.push(dialogFile);
         await page.keyboard.press('Escape');
         assert.equal(await page.locator('#addModal').isVisible(),false);
         assert.equal(await page.locator('main').getAttribute('inert'),null);

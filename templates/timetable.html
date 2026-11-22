@@ -55,7 +55,7 @@
 <header class="workspace-header"><div><p class="workspace-eyebrow">MAKE SPACE TO GROW</p><h1 class="workspace-title">Make room to learn.</h1><p class="workspace-subtitle">Shape a week that makes room for focused work, learning, and reflection.</p></div></header>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="l2e-card timetable-main-card">
 
 
 
@@ -272,7 +272,7 @@
 
                             let reflectionButton = '';
                             if (!hasReflection) {
-                                reflectionButton = `<button type="button" data-reflect="${block.id}" class="l2e-button">Add reflection</button>`;
+                                reflectionButton = `<button type="button" data-reflect="${block.id}" aria-label="Add reflection" class="l2e-button">Reflect</button>`;
                             } else {
                                 reflectionButton = `<span class="text-green-600 text-sm">✅ Reflection added</span>`;
                             }
