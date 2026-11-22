@@ -2,6 +2,178 @@
 
 A peer tutoring / study-session booking platform (part of the Learn2Earn ecosystem) where students and tutors list skills and availability, search each other, book sessions, and track personal study timetables and reflections.
 
+## Redesign roadmap — November 2026
+
+**Stage: planning documented; redesign execution has not started.** This roadmap follows the owner-supplied `frontend-engineer.md` guidance and the agreed redesign plan. Checkboxes below describe the new redesign, not whether an older version of a screen exists.
+
+### Product outcome
+
+Make L2EStudyLink a coherent learning workspace where a fellow can see today's commitments, study with others, record a reflection and understand their progress. Prioritize the dashboard, timetable and reflection journey while retaining peer tutoring, projects, learning content and administration.
+
+### Baseline and boundaries
+
+Source inspection at commit `2b92f6056e99f28ee8c5cfb9e377d91c5d17ab37` confirms Go/Gin routing, HTML templates, shared CSS, vanilla JavaScript and PostgreSQL. Preserve this stack and existing API contracts. A new frontend framework, database migration, hosting move or AI-provider change is not required by this redesign.
+
+| Area | Existing source | Redesign implication |
+| --- | --- | --- |
+| Dashboard | Profile/setup, heatmap and collaboration discovery | Give today's study actions priority; move community suggestions below them. |
+| Navigation | Sidebar markup repeated across templates; destinations differ | Establish one route inventory and consistent grouping on every signed-in page. |
+| Styling | Shared dashboard, theme and polish styles plus inline/page rules | Consolidate semantic tokens and components incrementally; remove obsolete rules only after verifying their consumers. |
+| Planner | Weekly metrics, Groq client, authenticated page and analysis endpoint exist | Redesign existing output; do not describe the whole feature as unimplemented. Saved analysis history remains separate work. |
+| Other learning tools | Focus, buddies, notifications, group masterclasses and portfolio handlers/routes exist | Expose and validate existing flows before proposing replacements. Source presence does not prove live acceptance or every backlog requirement is complete. |
+| Testing | Go tests/build, JavaScript tests and SQLite schema validation in CI | Retain these gates and add browser/layout/accessibility checks for redesigned flows. |
+
+Older implementation notes below retain useful history. Where an older section calls an existing module entirely “planned,” the source-backed baseline here takes precedence. Reconcile remaining stale documentation during the audit rather than treating all old checklists as current defects. `Agent.md` also contains historical architecture/security statements that require checking against current code.
+
+### Experience and navigation
+
+Desktop: a persistent, grouped sidebar and a compact page header with page title, notifications, theme and account controls. Mobile: a compact header, thumb-friendly primary navigation and a More menu for secondary destinations. Final mobile labels and geometry must be verified in the first preview.
+
+| Group | Destinations |
+| --- | --- |
+| My learning | Today/dashboard, timetable, reflections, weekly coach, focus rooms |
+| Learn together | Tutor search, bookings, buddies, masterclasses |
+| Explore | Learning Hub, projects, learner portfolio |
+| Account | Profile, skills, availability and preferences; admin only for permitted accounts |
+
+Keep existing URLs and browser back/forward behavior. Navigation visibility is not authorization; server-side access checks remain authoritative.
+
+### Visual direction and benchmarks
+
+Use a calm learning workspace with readable typography, clear hierarchy, restrained shadows, rounded cards and an emerald primary accent. Define shared canvas, surface, text, border, focus, status and spacing tokens for both light and dark themes. Status uses text/icons as well as colour.
+
+Benchmark the task/schedule relationship in [Notion Calendar](https://www.notion.com/help/guides/getting-started-with-notion-calendar), availability and booking clarity in [Calendly](https://calendly.com/help/how-to-set-your-availability), and entry into a focused session in [Focusmate](https://www.focusmate.com/how-it-works/). Adapt useful patterns to this product; do not copy their content or add unrelated features.
+
+Use short hover, focus, save and loading transitions with reduced-motion alternatives. Study and reading screens should remain visually quiet. Any decorative landing-page motion requires a demonstrated product purpose and a mobile performance check.
+
+### Delivery batches and acceptance criteria
+
+#### Batch 1 — Audit, shared foundation, dashboard and timetable preview
+
+- [ ] Inventory public, signed-in and admin routes, navigation links, forms, dialogs and shared style consumers.
+- [ ] Record baseline screenshots and loading, empty, populated, error and expired-session states.
+- [ ] Record existing behavior and defects separately from proposed design improvements.
+- [ ] Prepare phone and desktop dashboard/timetable previews using the agreed design direction.
+- [ ] Define theme, typography, spacing, elevation, icon and component tokens.
+- [ ] Establish shared buttons, inputs, cards, tabs, dialogs, feedback and loading patterns within the existing template stack.
+- [ ] Apply consistent grouped navigation, active-page labels and keyboard-accessible mobile menus.
+- [ ] Reorganize the dashboard around today's blocks, next booked session, Add reflection, focus access and weekly coverage.
+- [ ] Put setup tasks and collaboration recommendations below primary daily actions.
+- [ ] Present a day agenda on phones and an accessible weekly overview on larger screens.
+- [ ] Preserve selected timetable day after existing create/delete/reflection actions.
+- [ ] Add browser checks for shared navigation, dashboard and timetable before merging this batch.
+
+**Acceptance:** a fellow can identify the next action, reach existing learning tools and browse their timetable on phone and desktop. Placeholder previews are explicitly labelled; production cards use actual API data and honest empty states. Review preview screenshots before rollout; physical-device acceptance is tracked separately.
+
+#### Batch 2 — Reflection entry and history
+
+- [ ] Unify Write/Speak reflection modes with persistent field labels and clear focus states.
+- [ ] Show recording, duration, stop, audio preview, re-record, upload and save states accurately.
+- [ ] Handle microphone denial, unsupported recording, interrupted uploads and save failures without silently losing text.
+- [ ] Make dialogs/sheets fit small screens and on-screen keyboards; support Escape and restore focus.
+- [ ] Improve history filtering, date/activity labels and audio playback.
+- [ ] Keep personal reflections private and account-scoped.
+- [ ] Verify reflection retention against current schema and deployed migrations before changing deletion copy; any data-model fix must be a separately tested, explicit change.
+- [ ] Verify text and voice journeys, validation, retry and account separation.
+
+**Acceptance:** users can review what will be saved, recover from failure, and find previous entries. Do not imply transcription, offline persistence or permanent retention unless implemented and verified.
+
+#### Batch 3 — Tutor discovery, availability and booking
+
+- [ ] Make tutor cards and skill/availability filters easy to scan and operate.
+- [ ] Clearly separate tutoring availability from personal study timetable blocks.
+- [ ] Clarify selected tutor, date, time, timezone and meeting type before booking.
+- [ ] Preserve validation, conflict handling, self-booking protections and existing notifications.
+- [ ] Present pending, confirmed, cancelled, completed and no-show states with permitted actions.
+- [ ] Refine post-session reviews and empty/loading/error states.
+
+**Acceptance:** search → tutor → slot → booking → status/review works end to end, including unavailable slots, cancellation and role-specific controls.
+
+#### Batch 4 — Community, projects and learning content
+
+- [ ] Align project discovery, details, applications, invitations and team status.
+- [ ] Make collaboration opt-in and request decisions clear.
+- [ ] Expose and validate the existing buddy request/response journey.
+- [ ] Align masterclass listing, creation, RSVP, seat availability and cancellation.
+- [ ] Improve Learning Hub article hierarchy, discussion/reply layout and moderation feedback.
+- [ ] Unify notification tray, unread states and navigation to relevant records.
+- [ ] Test long content, empty lists, permissions and partial API failures.
+
+**Acceptance:** existing community actions are discoverable and retain their authorization and data-visibility rules. Do not advertise automated buddy matching, external nudges or notification coverage beyond verified implementation.
+
+#### Batch 5 — Weekly coach, focus and learner identity
+
+- [ ] Present weekly coverage, daily breakdown and coaching in readable layouts.
+- [ ] Clearly label scheduled/reflection-covered minutes as estimates, not verified hours worked.
+- [ ] Show provider-unavailable, rate-limit, empty-week and truncated-context states.
+- [ ] Keep the planner author's personal history out of other users' coaching.
+- [ ] Align focus-room join/leave, timer, participant and reflection handoff states.
+- [ ] Align learner portfolio visibility, handle selection and public/private presentation.
+- [ ] Verify these flows using each user's own records.
+
+**Acceptance:** observed activity is visually distinct from AI suggestions. Saved reviews, long-term trends and new coaching capabilities are separate product work until delivered.
+
+#### Batch 6 — Landing, account and administration
+
+- [ ] Refresh the landing page around the real plan → study → reflect journey and clear entry actions.
+- [ ] Align signup, login, reset-code and recovery screens.
+- [ ] Preserve safe return-to-article behavior and existing session handling.
+- [ ] Refine profile, skills, availability and product-email preference controls.
+- [ ] Make admin tables/cards, filters and consequential-action confirmations readable on phones.
+- [ ] Keep admin-only actions authorized on the server and public content free of private reflections.
+
+**Acceptance:** public/account/admin journeys share the design system, with correctly labelled forms, clear recovery paths and no unintended changes to consent.
+
+#### Batch 7 — Release audit and acceptance
+
+- [ ] Complete the viewport and accessibility matrix below.
+- [ ] Test loading, empty, error, retry, slow-network and expired-session states.
+- [ ] Verify browser back/forward, repeated saves and double-submit prevention.
+- [ ] Check 200% zoom, keyboard navigation, focus visibility and dialog focus restoration.
+- [ ] Record production smoke results after the deployment associated with the merged commit.
+- [ ] Obtain and record owner acceptance on a physical phone and laptop.
+- [ ] Update remaining limitations and checked/unchecked roadmap items honestly.
+
+### Required verification matrix
+
+| Area | Checks |
+| --- | --- |
+| Compact phones | 320, 360, 375, 390, 412 and 480 CSS pixels; no unintended page overflow or clipped primary controls. |
+| Tablet/desktop | 768, 820, 1024, 1280, 1440 and 1920 CSS pixels; spot-check 2560/3840 wide layouts. |
+| Geometry | Header does not obscure title/eyebrow/forms; fixed bars include safe-area insets; overlays fit the viewport. |
+| Touch/forms | Primary touch targets at least 44 × 44px; mobile inputs at least 16px; correct input types/input modes and persistent labels. |
+| Themes | Both light and dark themes; readable text/icons/badges, visible borders/focus and no theme flash where avoidable. |
+| Accessibility | Axe scans targeting WCAG 2.1 AA plus manual keyboard, reading order and screen-reader-label checks; fix or explicitly document residual issues. |
+| Motion | Reduced-motion preference respected; no essential information depends on animation. |
+| Data/security | Account isolation, admin restrictions, existing cookie/session handling and private/public content boundaries. |
+| Performance | Compare request counts, asset sizes, loading behavior and layout shift against baseline; report measurements rather than claiming zero shift without evidence. |
+| Devices | Physical Android and laptop review; iPhone/Safari review where available, with unavailable coverage explicitly recorded. |
+
+Automated browser checks must assert key element bounds, horizontal overflow and complete relevant user journeys. Mock fixtures may cover repeatable states, but do not count as proof that production APIs work. Use a dedicated test database and disposable fixtures for writes, emails, uploads and admin actions; do not exercise destructive actions on production accounts.
+
+### Workflow for every batch
+
+1. Start from current `main`; create a descriptive feature branch such as `agent/redesign-foundation`.
+2. Implement one coherent batch, preserving existing API behavior unless an explicit, tested change is necessary.
+3. Run `go test ./...`, `go build ./...`, `node --test static/js/*.test.cjs` and fresh SQLite schema validation. Use `TEST_DATABASE_URL` with a disposable PostgreSQL database for database-backed tests.
+4. During the first implementation batch, add the browser/accessibility harness and document its exact commands. There is currently no frontend npm/typecheck/Playwright script to assume already exists. Add `go vet ./...` and the new browser gates to CI as part of that tooling work.
+5. Review the diff and screenshots, commit clearly without `Co-authored-by:` trailers, push the branch and open a PR describing behavior, verification and limitations.
+6. Wait for all applicable checks on the current PR head to pass. Fix failures and rerun; never bypass checks to merge.
+7. Squash-merge through the PR. Update README completion boxes in the same change only for delivered work, linking the PR/verification record. Keep device acceptance unchecked until it actually occurs.
+8. Verify the resulting deployment, sync the local base branch when a checkout is used, and delete only the completed task branch after confirming merge. Preserve unrelated branches and uncommitted work.
+
+Related implementation, interface and meaningful tests can be delivered together. Keep database migrations and unrelated features out of a visual batch unless explicitly needed. The current documentation task creates this plan only; it does not start any implementation batch.
+
+### Tracking rules and separate product work
+
+- `[ ]` means pending; `[x]` means delivered with evidence, not merely planned or present in an old mockup.
+- PR descriptions should record changed screens, test commands, viewports/themes, screenshots, known limitations and deployment status.
+- Saved planner analyses/history, personalized coaching memory, automated buddy matching/nudges, new portfolio evidence claims and additional notification event coverage require their own scoped product tasks.
+- Never claim “verified learning hours” from timetable durations or “mastered skills” from an unverified self-report.
+- Confirm current hosting/deployment settings before release; repository hosting files alone do not establish the active production host.
+
+---
+
 ## Tech Stack
 
 - **Language**: Go, using the **Gin** web framework (`github.com/gin-gonic/gin`)
@@ -110,7 +282,7 @@ An admin can check the eligible count and download a CSV in Admin → **Product 
 
 ## AI Planner — Delivery Plan
 
-**Status:** planned; no planner routes, AI client, planner storage, or planner page exist yet. `L2E_PLANNER_PROMPT_v3.md` is the current reference prompt in this repository. It describes one person's history and must be adapted into a reusable, user-scoped planner before integration. The first release can use the existing timetable and reflections without waiting for automated scheduling.
+**Status correction (November 2026):** planner routes, deterministic metrics, a Groq client and a planner page now exist in source. Saved analysis storage/history remains a follow-up. The numbered delivery steps below are the earlier design proposal, not a current unimplemented-feature checklist. `L2E_PLANNER_PROMPT_v3.md` is the current reference prompt in this repository. It describes one person's history and must be adapted into a reusable, user-scoped planner before integration. The first release can use the existing timetable and reflections without waiting for automated scheduling.
 
 **First useful release:** an authenticated user chooses a past week and taps **Analyze my week**. The page shows a factual activity summary and concise coaching based only on that user's timetable and reflections, with a link to prior analyses. It distinguishes scheduled time, reflected activity, and missing reflections; a reflection's existence alone does not prove the full block was completed.
 
@@ -202,7 +374,7 @@ Project discovery and team membership live here; code, issues and day-to-day tea
 
 ## Product Roadmap & Features Yet to Be Implemented
 
-The following backlog defines the key architectural improvements and product features planned for L2EStudyLink. As governed by the multi-agent orchestrator, each feature will be decomposed into non-overlapping tasks in `agentmeeting.md` for parallel worker execution.
+**Historical product backlog:** several modules below now have handlers, routes and tests. Reconcile each requirement against current source before implementation; module existence does not prove every requirement is delivered. The redesign roadmap at the top is the current execution checklist. Parallel worker execution is not required for this documentation or redesign workflow.
 
 ### 1. Add Reflection: OPay-Standard UI (Seamless Text vs. Voice Switching)
 - **Context & Current Gap:** Currently, reflections support text entry and an initial audio upload pipeline, but the reflection modal lacks a unified, high-standard interaction flow. Voice recording appears as an unstyled button next to a text label without dedicated recording states, audio waveform visualization, or mode selection.
@@ -316,7 +488,7 @@ Required environment variables (see `.gitignore` — `.env` is not committed):
 
 On Render, add the Brevo variables to the web service and confirm transactional email sending is activated in your Brevo account. Brevo's free tier currently includes up to 300 sends per day. If you use a free sender address, Brevo may replace the displayed sender with one of its own technical domains (transactional mail commonly uses `t-sender-sib.com`); `brevosend.com` is a Brevo-managed replacement domain, not an address you can choose yourself. Check delivery in Brevo's transactional logs and in the recipient's inbox or spam folder. A 201 API response means Brevo accepted the request, not that the recipient has received it. Existing reset codes issued before switching providers remain usable until they expire.
 - `DISCORD_WEBHOOK_URL` — optional; notifications are skipped (logged, not sent) if unset.
-- `LLM_API_KEY` *(planned — not yet used in code)* — server-side only for the optional AI planner once a provider is chosen.
+- `LLM_API_KEY` — server-side key for the optional Groq planner; `GROQ_API_KEY` is the fallback. `GROQ_MODEL` optionally selects the model. Metrics remain available without a provider key.
 
 ### Useful commands
 
