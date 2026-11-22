@@ -107,7 +107,7 @@ assert not c.execute('PRAGMA foreign_key_check').fetchall()
 	}
 }
 func TestMasterclassBrowserScript(t *testing.T) {
-	script := `const fs=require('node:fs');const html=fs.readFileSync('../templates/masterclass.html','utf8');const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(x=>x[1]).filter(Boolean);for(const script of scripts)new Function(script);const group=html.split('<script id="masterclass-client">')[1].split('</script>')[0];if(group.includes('innerHTML'))throw Error('Unsafe group class rendering');if(!html.includes('id="bookingPanel"'))throw Error('Existing individual booking flow removed');`
+	script := `const fs=require('node:fs');const html=fs.readFileSync('../templates/masterclass.html','utf8');const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(x=>x[1]).filter(Boolean);for(const script of scripts)new Function(script);const group=fs.readFileSync('../static/js/community-masterclasses.js','utf8');new Function(group);if(group.includes('innerHTML'))throw Error('Unsafe group class rendering');if(!html.includes('href="/search-page"'))throw Error('Missing individual tutoring entry');`
 	if out, err := exec.Command("node", "-e", script).CombinedOutput(); err != nil {
 		t.Fatalf("browser syntax: %v %s", err, out)
 	}
