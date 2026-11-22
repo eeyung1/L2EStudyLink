@@ -87,21 +87,23 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [x] Clarify selected tutor, date, time, timezone and meeting type before booking.
 - [x] Preserve validation, conflict handling, self-booking protections and existing notifications.
 - [x] Present pending, confirmed, cancelled, completed and no-show states with permitted actions.
-- [ ] Refine post-session reviews and empty/loading/error states.
+- [x] Refine post-session reviews and empty/loading/error states.
 
 **Acceptance:** search → tutor → slot → booking → status/review works end to end, including unavailable slots, cancellation and role-specific controls.
 
 #### Batch 4 — Community, projects and learning content
 
-- [ ] Align project discovery, details, applications, invitations and team status.
-- [ ] Make collaboration opt-in and request decisions clear.
-- [ ] Expose and validate the existing buddy request/response journey.
-- [ ] Align masterclass listing, creation, RSVP, seat availability and cancellation.
+- [x] Align project discovery, details, applications, invitations and team status.
+- [x] Make collaboration opt-in and request decisions clear.
+- [x] Expose and validate the existing buddy request/response journey.
+- [x] Align masterclass listing, creation, RSVP, seat availability and cancellation.
 - [ ] Improve Learning Hub article hierarchy, discussion/reply layout and moderation feedback.
 - [ ] Unify notification tray, unread states and navigation to relevant records.
 - [ ] Test long content, empty lists, permissions and partial API failures.
 
 **Acceptance:** existing community actions are discoverable and retain their authorization and data-visibility rules. Do not advertise automated buddy matching, external nudges or notification coverage beyond verified implementation.
+
+**Community delivery evidence:** [PR #71](https://github.com/eeyung1/L2EStudyLink/pull/71) and the [community and post-session guide](docs/redesign/community.md) records the five-item scope, boundaries and CI/browser checks. Landing and login/account pages remain in Batch 6 below.
 
 #### Batch 5 — Weekly coach, focus and learner identity
 

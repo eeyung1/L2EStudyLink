@@ -27,6 +27,7 @@ func projectActive(c *gin.Context) bool {
 }
 
 func GetCollaborationPreference(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     var open bool
     err := projectDB(c).QueryRowContext(c.Request.Context(), `SELECT open_to_invites FROM collaboration_preferences WHERE user_id=$1`, c.GetInt64("user_id")).Scan(&open)
     if err != nil && !errors.Is(err, sql.ErrNoRows) { c.JSON(500, gin.H{"error":"Could not load preference"}); return }
@@ -41,6 +42,7 @@ func SetCollaborationPreference(c *gin.Context) {
     c.JSON(200, gin.H{"open_to_invites":input.Open})
 }
 func ListCollaborators(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     rows, err := projectDB(c).QueryContext(c.Request.Context(), `SELECT u.id,u.name,COALESCE(u.bio,''),COALESCE((SELECT string_agg(s.skill_name, ', ' ORDER BY s.skill_name) FROM skills s WHERE s.user_id=u.id),''),COALESCE((SELECT json_agg(json_build_object('day_of_week',a.day_of_week,'start_time',to_char(a.start_time,'HH24:MI'),'end_time',to_char(a.end_time,'HH24:MI')) ORDER BY a.day_of_week,a.start_time)::text FROM availability a WHERE a.user_id=u.id),'[]') FROM users u JOIN collaboration_preferences cp ON cp.user_id=u.id WHERE cp.open_to_invites=TRUE AND u.is_suspended=FALSE AND u.id<>$1 ORDER BY u.name LIMIT 100`, c.GetInt64("user_id"))
     if err != nil { log.Printf("list collaborators query: %v", err); c.JSON(500, gin.H{"error":"Could not load collaborators"}); return }
     defer rows.Close()
@@ -63,6 +65,7 @@ func CreateProject(c *gin.Context) {
     c.JSON(201,gin.H{"id":id})
 }
 func ListProjects(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     rows,err:=projectDB(c).QueryContext(c.Request.Context(),`SELECT p.id,p.owner_id,u.name,p.title,p.description,p.roles_needed,p.time_commitment,COALESCE(p.repo_url,''),p.status,p.created_at,(SELECT count(*) FROM project_members m WHERE m.project_id=p.id) FROM projects p JOIN users u ON u.id=p.owner_id WHERE p.status='open' OR p.owner_id=$1 OR EXISTS(SELECT 1 FROM project_members m WHERE m.project_id=p.id AND m.user_id=$1) ORDER BY p.created_at DESC LIMIT 100`,c.GetInt64("user_id"))
     if err!=nil { log.Printf("list projects query: %v",err); c.JSON(500,gin.H{"error":"Could not load projects"}); return }; defer rows.Close()
     items:=[]gin.H{}
@@ -70,6 +73,7 @@ func ListProjects(c *gin.Context) {
     if err:=rows.Err();err!=nil {log.Printf("list projects rows: %v",err);c.JSON(500,gin.H{"error":"Could not load projects"});return};c.JSON(200,items)
 }
 func GetProject(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     id,ok:=projectID(c);if !ok{return};db:=projectDB(c);var owner int64;var name,title,description,roles,commitment,repo,status string
     err:=db.QueryRowContext(c.Request.Context(),`SELECT p.owner_id,u.name,p.title,p.description,p.roles_needed,p.time_commitment,p.repo_url,p.status FROM projects p JOIN users u ON u.id=p.owner_id WHERE p.id=$1 AND (p.status='open' OR p.owner_id=$2 OR EXISTS(SELECT 1 FROM project_members m WHERE m.project_id=p.id AND m.user_id=$2))`,id,c.GetInt64("user_id")).Scan(&owner,&name,&title,&description,&roles,&commitment,&repo,&status)
     if errors.Is(err,sql.ErrNoRows){c.JSON(404,gin.H{"error":"Project not found"});return};if err!=nil {c.JSON(500,gin.H{"error":"Could not load project"});return}
@@ -116,6 +120,7 @@ func CreateProjectRequest(c *gin.Context) {
     c.JSON(201,gin.H{"id":requestID,"status":"pending"})
 }
 func ListProjectRequests(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     rows,err:=projectDB(c).QueryContext(c.Request.Context(),`SELECT r.id,r.project_id,p.title,r.user_id,u.name,r.kind,r.note,r.status,p.owner_id FROM project_requests r JOIN projects p ON p.id=r.project_id JOIN users u ON u.id=r.user_id WHERE (r.kind='invitation' AND (r.user_id=$1 OR p.owner_id=$1)) OR (r.kind='application' AND p.owner_id=$1) ORDER BY r.created_at DESC LIMIT 100`,c.GetInt64("user_id"))
     if err!=nil{c.JSON(500,gin.H{"error":"Could not load requests"});return};defer rows.Close();items:=[]gin.H{}
     for rows.Next(){var id,pid,uid,owner int64;var title,name,kind,note,status string;if rows.Scan(&id,&pid,&title,&uid,&name,&kind,&note,&status,&owner)!=nil{c.JSON(500,gin.H{"error":"Could not load requests"});return};items=append(items,gin.H{"id":id,"project_id":pid,"project_title":title,"user_id":uid,"user_name":name,"kind":kind,"note":note,"status":status,"owner_id":owner})}
