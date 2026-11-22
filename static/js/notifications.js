@@ -33,6 +33,7 @@ if (typeof document !== 'undefined') {
             if (accountChanged()) throw new Error('Account changed');
             if (response.status === 204) return null;
             let data; try { data = await response.json(); } catch (_) { throw new Error('Unable to load notifications. Please try again.'); }
+            if(accountChanged())throw new Error('Account changed');
             if (!response.ok) throw new Error(data.error || 'Notifications are temporarily unavailable.'); return data;
         };
         let fragment;
@@ -63,7 +64,7 @@ if (typeof document !== 'undefined') {
                 if (!item.is_read) { const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Mark read'; button.disabled = busy; button.addEventListener('click', () => mark(item.id)); row.append(button); }
                 list.append(row);
             }
-            if(focusID&&panel.open){const row=Array.from(list.children).find(n=>n.dataset.notification===focusID);(focusIsButton?row?.querySelector('button')||row?.querySelector('a'):row?.querySelector('a'))?.focus({preventScroll:true});}
+            if(focusID&&panel.open){const row=Array.from(list.children).find(n=>n.dataset.notification===focusID);(focusIsButton?row?.querySelector('button:not([disabled])')||row?.querySelector('a'):row?.querySelector('a'))?.focus({preventScroll:true});}
             el('notification-older').hidden = !hasMore; el('notification-older').disabled = busy;
         }
         function receive(data) {

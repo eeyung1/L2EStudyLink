@@ -117,7 +117,7 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 
 **Acceptance:** observed activity is visually distinct from AI suggestions. Saved reviews, long-term trends and new coaching capabilities are separate product work until delivered.
 
-**Learning/coverage evidence:** [Learning Hub, notification and coach guide](docs/redesign/learning-notifications-coach.md) records this five-item delivery, API boundaries and verification.
+**Learning/coverage evidence:** [PR #72](https://github.com/eeyung1/L2EStudyLink/pull/72) and the [Learning Hub, notification and coach guide](docs/redesign/learning-notifications-coach.md) records this five-item delivery, API boundaries and verification.
 
 #### Batch 6 — Landing, account and administration
 
