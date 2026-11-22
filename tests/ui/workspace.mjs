@@ -52,7 +52,7 @@ export async function verifyApp(browser,origin,output,evidence) {
                 assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${theme} ${view} ${width} app overflow`);
                 const controls=await page.locator('main button:visible').evaluateAll(nodes=>nodes.map(n=>({text:n.textContent,height:n.getBoundingClientRect().height,width:n.getBoundingClientRect().width})));
                 assert.ok(controls.every(n=>n.height>=43.9 && n.width>=43.9),JSON.stringify(controls));
-                if(view==='timetable' && width>=1440)assert.equal(await page.locator('.timetable-day-card:visible').count(),7);
+                if(view==='timetable' && width>=1440){await page.waitForFunction(()=>document.querySelector('.timetable-day-nav [data-day="all"]').getAttribute('aria-pressed')==='true');assert.equal(await page.locator('.timetable-day-card:visible').count(),7);}
                 if(width===390||width===1440){const file=`integrated-${view}-${theme}-${width}.png`;await page.screenshot({path:output+'/'+file,fullPage:width===1440});evidence.screenshots.push(file);}
                 evidence.workspaceChecks.push({view,theme,width,overflow:false,touchTargets:true});
             }

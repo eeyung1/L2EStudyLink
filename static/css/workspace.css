@@ -65,3 +65,12 @@
 .l2e-workspace .logout-link { color:var(--l2e-error)!important;min-height:44px; }
 .l2e-workspace .l2e-ui .timetable-day-card .text-gray-400 { color:var(--l2e-secondary)!important; }
 .l2e-workspace .l2e-ui .timetable-day-card .text-green-600 { color:var(--l2e-accent)!important; }
+
+/* Keep short daily plans compact instead of leaving a tall empty column. */
+.daily-grid { grid-template-areas:"agenda session" "coverage focus";grid-template-columns:repeat(2,minmax(0,1fr)); }
+.daily-grid > .l2e-card { grid-area:agenda; }
+.daily-secondary { display:contents; }
+.daily-secondary > :nth-child(1) { grid-area:session; }
+.daily-secondary > :nth-child(2) { grid-area:coverage; }
+.daily-secondary > :nth-child(3) { grid-area:focus; }
+@media(max-width:700px) { .daily-grid { grid-template-columns:minmax(0,1fr);grid-template-areas:"agenda" "session" "coverage" "focus"; } }
