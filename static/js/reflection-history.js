@@ -46,6 +46,6 @@
     }
     filter.addEventListener('submit',event=>event.preventDefault());
     for(const id of ['reflectionSearch','reflectionDateFilter','reflectionMediaFilter'])document.getElementById(id).addEventListener(id==='reflectionSearch'?'input':'change',render);
-    filter.addEventListener('reset',()=>queueMicrotask(render));
+    filter.addEventListener('reset',event=>{event.preventDefault();document.getElementById('reflectionSearch').value='';document.getElementById('reflectionDateFilter').value='';document.getElementById('reflectionMediaFilter').value='all';render();});
     load();
 })();

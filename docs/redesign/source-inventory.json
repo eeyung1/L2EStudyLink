@@ -532,6 +532,11 @@
       "source": "handlers/voice.go",
       "method": "GET",
       "path": "/uploads/:filename"
+    },
+    {
+      "source": "handlers/voice.go",
+      "method": "HEAD",
+      "path": "/uploads/:filename"
     }
   ],
   "screens": {
