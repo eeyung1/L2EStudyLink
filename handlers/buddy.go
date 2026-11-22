@@ -175,13 +175,6 @@ func ListBuddies(c *gin.Context) {
 		}
 		switch person.Status {
 		case "active":
-			streak, err := loadBuddyStreak(c.Request.Context(), database, person.UserID, today)
-			if err != nil {
-				log.Printf("buddy streak for %d: %v", person.UserID, err)
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load streak comparison"})
-				return
-			}
-			person.Streak = &streak
 			result.Active = append(result.Active, person)
 		case "pending":
 			if recipientID == actor {
@@ -195,6 +188,19 @@ func ListBuddies(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load buddies"})
 		return
 	}
+
+    // Release the connection before fetching per-buddy summaries. This also
+    // works with a single-connection pool and avoids holding a list cursor
+    // while nested queries wait for that same connection.
+    rows.Close()
+    for i := range result.Active {
+        streak, err := loadBuddyStreak(c.Request.Context(), database, result.Active[i].UserID, today)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load streak comparison"})
+            return
+        }
+        result.Active[i].Streak = &streak
+    }
 
 	suggestionRows, err := database.QueryContext(c.Request.Context(), `
 		SELECT u.id, u.name, COALESCE(u.public_handle,''), COALESCE(u.bio,'')

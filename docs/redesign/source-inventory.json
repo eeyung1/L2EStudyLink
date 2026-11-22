@@ -697,17 +697,22 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/community.css"
       ],
       "scripts": [
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
-        "/static/js/session.js"
+        "/static/js/session.js",
+        "/static/js/dialog-viewport.js",
+        "/static/js/booking-common.js",
+        "/static/js/community-common.js",
+        "/static/js/community-buddies.js"
       ],
       "forms": 0,
       "dialogs": [],
-      "controls": 4,
-      "inline_styles": 1
+      "controls": 5,
+      "inline_styles": 0
     },
     "templates/dashboard.html": {
       "links": [
@@ -919,7 +924,8 @@
         "/learn",
         "/skills",
         "/availability",
-        "/admin"
+        "/admin",
+        "/search-page"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
@@ -927,18 +933,23 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/community.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
-        "/static/js/session.js"
+        "/static/js/session.js",
+        "/static/js/dialog-viewport.js",
+        "/static/js/booking-common.js",
+        "/static/js/community-common.js",
+        "/static/js/community-masterclasses.js"
       ],
-      "forms": 4,
+      "forms": 2,
       "dialogs": [],
-      "controls": 21,
-      "inline_styles": 1
+      "controls": 15,
+      "inline_styles": 0
     },
     "templates/my-bookings.html": {
       "links": [
@@ -1061,7 +1072,7 @@
         "/skills",
         "/availability",
         "/admin",
-        "#projectList"
+        "#postProject"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
@@ -1069,17 +1080,22 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/community.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
-        "/static/js/session.js"
+        "/static/js/session.js",
+        "/static/js/dialog-viewport.js",
+        "/static/js/booking-common.js",
+        "/static/js/community-common.js",
+        "/static/js/community-projects.js"
       ],
-      "forms": 1,
+      "forms": 2,
       "dialogs": [],
-      "controls": 10,
+      "controls": 13,
       "inline_styles": 0
     },
     "templates/reflections.html": {

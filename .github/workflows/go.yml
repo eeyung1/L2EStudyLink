@@ -66,9 +66,9 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - name: Real-server reflection and booking journeys
+      - name: Real-server reflection, booking and community journeys
         if: always()
-        run: L2E_BROWSER_E2E=1 go test ./handlers -run '^(TestReflectionBrowserJourney|TestBookingBrowserJourney)$' -count=1 -v
+        run: L2E_BROWSER_E2E=1 go test ./handlers -run '^(TestReflectionBrowserJourney|TestBookingBrowserJourney|TestCommunityBrowserJourney)$' -count=1 -v
       - uses: actions/upload-artifact@v4
         if: always()
         with:

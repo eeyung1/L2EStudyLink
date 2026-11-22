@@ -2,6 +2,7 @@
     const {node,time,api,configureDialog}=L2EBooking,list=document.getElementById('bookingsList'),notice=document.getElementById('bookingNotice');
     const names={pending:'Pending confirmation',confirmed:'Confirmed',cancelled:'Cancelled',completed:'Completed',no_show:'No-show'};
     const dialog=document.getElementById('bookingActionDialog');let rows=[],pending=null,busy=false;
+    const drafts=new Map();let reviewBusy=false;
     const open=configureDialog(dialog,()=>!busy);
     function tell(message,error=false){notice.textContent=message;notice.classList.toggle('is-error',error);}
     function describe(b){return `${String(b.date).slice(0,10)} · ${time(b.start_time)}–${time(b.end_time)} · ${b.timezone||'shared booking clock'}`;}
@@ -24,12 +25,24 @@
             if(b.can_complete)actions.append(action(b,'Mark completed','completed'));
             if(b.can_no_show)actions.append(action(b,'Report no-show','no_show'));
             card.append(actions);
-            // Preserve the existing completed-session review workflow while its separate redesign stays pending.
-            if(b.can_review){const form=node('form',undefined,'booking-review-form');const ratingLabel=node('label','Rating');const rating=node('select');rating.name='rating';rating.required=true;for(const n of [0,5,4,3,2,1]){const option=node('option',n?n+' stars':'Choose stars');option.value=n?String(n):'';rating.append(option);}ratingLabel.append(rating);const commentLabel=node('label','Your review');const comment=node('textarea');comment.name='comment';comment.minLength=10;comment.maxLength=1000;comment.required=true;commentLabel.append(comment);const button=node('button','Publish review');button.type='submit';form.append(ratingLabel,commentLabel,button);form.addEventListener('submit',async event=>{event.preventDefault();button.disabled=true;try{await api(`/bookings/${b.id}/reviews`,{method:'POST',body:JSON.stringify({rating:Number(rating.value),comment:comment.value.trim()})});tell('Review published.');await load();}catch(e){tell(e.message,true);button.disabled=false;}});card.append(form);}
+            if(b.can_review){const draft=drafts.get(b.id)||{rating:'',comment:'',again:''};drafts.set(b.id,draft);
+                const form=node('form',undefined,'booking-review-form');const heading=node('h3','Review this completed session');form.append(heading,node('p','Your rating contributes to the tutor’s profile. Write about the session and avoid personal or sensitive information.'));
+                const ratingLabel=node('label','Rating (required)'),rating=node('select');rating.name='rating';rating.required=true;for(const n of [0,5,4,3,2,1]){const option=node('option',n?n+' '+(n===1?'star':'stars'):'Choose a rating');option.value=n?String(n):'';rating.append(option);}rating.value=draft.rating;ratingLabel.append(rating);
+                const commentLabel=node('label','Your review (10–1000 characters)'),comment=node('textarea');comment.name='comment';comment.minLength=10;comment.maxLength=1000;comment.required=true;comment.rows=4;comment.value=draft.comment;commentLabel.append(comment);
+                const againLabel=node('label','Would you book again? (optional)'),again=node('select');again.name='would_book_again';for(const [value,text] of [['','Prefer not to say'],['yes','Yes'],['no','No']]){const o=node('option',text);o.value=value;again.append(o);}again.value=draft.again;againLabel.append(again);
+                const feedback=node('p',undefined,'l2e-feedback');feedback.setAttribute('role','status');const button=node('button','Publish review');button.type='submit';button.disabled=reviewBusy;
+                for(const input of [rating,comment,again])input.addEventListener('input',()=>{draft.rating=rating.value;draft.comment=comment.value;draft.again=again.value;});
+                form.append(ratingLabel,commentLabel,againLabel,feedback,button);form.addEventListener('submit',async event=>{event.preventDefault();if(reviewBusy)return;const text=comment.value.trim();if(text.length<10){feedback.textContent='Write at least 10 characters about the session.';comment.focus();return;}reviewBusy=true;form.querySelectorAll('input,textarea,select,button').forEach(n=>n.disabled=true);button.textContent='Publishing…';feedback.textContent='';
+                    const body={rating:Number(rating.value),comment:text};if(again.value)body.would_book_again=again.value==='yes';
+                    try{await api(`/bookings/${b.id}/reviews`,{method:'POST',body:JSON.stringify(body)});drafts.delete(b.id);b.can_review=false;reviewBusy=false;tell('Review published. Thank you for sharing your experience.');render();}
+                    catch(e){feedback.textContent=e.message+' Your review is kept here. Try again or refresh sessions to check whether it was saved.';feedback.classList.add('is-error');form.querySelectorAll('input,textarea,select,button').forEach(n=>n.disabled=false);button.textContent='Publish review';}
+                    finally{reviewBusy=false;}
+                });card.append(form);
+            }else if(b.status==='completed'&&b.role==='student')card.append(node('p','This session is not awaiting a review.','l2e-muted'));
             list.append(card);
         });
     }
-    async function load(){list.setAttribute('aria-busy','true');try{const value=await api('/bookings');if(!Array.isArray(value))throw Error('Unexpected session response');rows=value;render();}catch(e){list.replaceChildren(node('p','Sessions could not be loaded. Your filters are kept.','l2e-feedback'));const retry=node('button','Retry sessions');retry.type='button';retry.addEventListener('click',load);list.append(retry);tell(e.message,true);}finally{list.setAttribute('aria-busy','false');}}
+    async function load(){list.setAttribute('aria-busy','true');if(!rows.length)list.replaceChildren(node('p','Loading your sessions…','l2e-feedback'));try{const value=await api('/bookings');if(!Array.isArray(value))throw Error('Unexpected session response');rows=value;render();}catch(e){list.replaceChildren(node('p','Sessions could not be loaded. Your filters are kept.','l2e-feedback'));const retry=node('button','Retry sessions');retry.type='button';retry.addEventListener('click',load);list.append(retry);tell(e.message,true);}finally{list.setAttribute('aria-busy','false');}}
     for(const id of ['sessionStatus','sessionRole'])document.getElementById(id).addEventListener('change',render);
     document.getElementById('sessionFilters').addEventListener('submit',e=>e.preventDefault());
     document.getElementById('bookingActionCancel').addEventListener('click',()=>{if(!busy)dialog.close();});
