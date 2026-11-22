@@ -79,3 +79,4 @@
 .l2e-workspace .l2e-ui .reflection-mode-switch button { background:var(--l2e-subtle)!important;color:var(--l2e-text)!important;transition:box-shadow var(--l2e-duration); }
 .l2e-workspace .l2e-ui .reflection-mode-switch button[aria-selected="true"] { background:var(--l2e-accent)!important;color:var(--l2e-on-accent)!important; }
 @media(min-width:1101px) { .l2e-workspace .l2e-ui .week-overview .block-time { font-size:.8rem; } }
+@media(min-width:1101px) { .l2e-workspace .l2e-ui .week-overview button { padding:8px 4px;font-size:.75rem;white-space:nowrap;word-break:normal;overflow-wrap:normal; } }
