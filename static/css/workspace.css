@@ -132,3 +132,4 @@
 .session-status { display:inline-block;border:1px solid var(--l2e-border);border-radius:20px;padding:6px 12px;font-weight:750;margin:10px 0;background:var(--l2e-subtle);color:var(--l2e-text); }.status-pending { background:var(--l2e-warning-soft);color:var(--l2e-warning); }.status-confirmed,.status-completed { background:var(--l2e-accent-soft);color:var(--l2e-accent); }.status-no_show { background:var(--l2e-error-soft);color:var(--l2e-error); }
 .session-actions { display:flex;flex-wrap:wrap;gap:10px; }.booking-feedback { min-height:24px;line-height:1.5; }.booking-feedback.is-error { color:var(--l2e-error); }
 @media(max-width:700px) { .tutoring-filters,.tutor-grid { grid-template-columns:minmax(0,1fr); }.tutor-card,.session-card { padding:18px; }.booking-dialog .dialog-header,.booking-dialog .dialog-body,.booking-dialog .dialog-footer { padding-left:16px;padding-right:16px; } }
+.l2e-workspace .l2e-ui p a { text-decoration:underline;text-underline-offset:3px; }

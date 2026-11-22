@@ -63,7 +63,7 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [x] Preserve selected timetable day after existing create/delete/reflection actions.
 - [x] Add browser checks for shared navigation, dashboard and timetable before merging this batch.
 
-**Foundation evidence:** [audit and preview guide](docs/redesign/foundation-audit.md), [generated source inventory](docs/redesign/source-inventory.json), and `/static/redesign/index.html`. The first five checked items cover source inventory, fictional-fixture baseline captures of Dashboard/Timetable, recorded findings, responsive previews and scoped tokens. CI artifact `redesign-foundation-evidence` contains screenshots and measurements. Production integration and physical-device acceptance remain unchecked.
+**Foundation evidence:** [audit and preview guide](docs/redesign/foundation-audit.md), [generated source inventory](docs/redesign/source-inventory.json), and `/static/redesign/index.html`. The first five checked items cover source inventory, fictional-fixture baseline captures of Dashboard/Timetable, recorded findings, responsive previews and scoped tokens. CI artifact `redesign-foundation-evidence` contains screenshots and measurements. The app integration is delivered below; production UI smoke and physical-device acceptance remain unchecked.
 
 **Acceptance:** a fellow can identify the next action, reach existing learning tools and browse their timetable on phone and desktop. Placeholder previews are explicitly labelled; production cards use actual API data and honest empty states. Review preview screenshots before rollout; physical-device acceptance is tracked separately.
 
@@ -511,7 +511,7 @@ Selected timetable day is retained across create/delete/reflection saves and ver
 
 Dialogs now use the visible viewport with fixed action areas, scrollable fields, Escape and focus restoration. History adds search/date/format filters, detached-block labels and private-audio retry. Upload and playback routes require sign-in and file ownership; saved recordings cannot be attached across accounts. Reflection rows have app-only PostgreSQL RLS/grants. CI includes a browser journey through real Gin handlers, isolated PostgreSQL, temporary audio storage and two authenticated accounts.
 
-The source retention rule and legacy migration are covered by tests. Deletion now verifies the connected database's retention constraints and refuses to proceed on an unsafe/unverified schema; copy is based on that response. **Independent production migration verification remains unchecked:** the currently connected Supabase project contains no StudyLink timetable/reflection tables, and the connected Render workspace is not identified as this deployment. No unrelated database was changed. See [evidence and remaining verification](docs/redesign/reflection-history-privacy.md).
+The source retention rule and legacy migration are covered by tests. Deletion verifies the connected database's retention constraints before enabling confirmation. Independent verification of the correctly connected `l2e-studylink` database is complete as of 22 November 2026; its SET NULL parent/snapshot checks passed and the reflection access policy was applied and verified. Production UI smoke and physical-device acceptance remain pending. See [evidence and verification](docs/redesign/reflection-history-privacy.md).
 
 ### Tutoring and bookings (next five tasks; retention carryover closed)
 
