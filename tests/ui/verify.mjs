@@ -34,7 +34,7 @@ try {
       const path=new URL(route.request().url()).pathname;
       if(route.request().method()!=='GET') throw Error('Baseline test attempted a write');
       if(state==='loading') {await new Promise(r=>setTimeout(r,4000)); try{await route.fulfill({status:503,json:{error:'Delayed fixture'}});}catch{} return;}
-      if(state==='expired') return route.fulfill({status:401,json:{error:'Fixture session expired'}});
+      if(state==='expired' && path==='/api/v1/me') return route.fulfill({status:401,json:{error:'Fixture session expired'}});
       if(state==='error' && path!=='/api/v1/me') return route.fulfill({status:503,json:{error:'Fixture unavailable'}});
       let body=[];
       if(path==='/api/v1/me') body={id:9001,name:'Demo Fellow',email:'demo@example.invalid',rating:0,total_reviews:0,skills:state==='empty'?[]:[{name:'Go',level:'intermediate'}],bio:'Fictional UI fixture',is_admin:false,product_emails:false};
@@ -44,7 +44,7 @@ try {
       return route.fulfill({status:200,json:body});
     });
     await page.goto(origin+'/'+view,{waitUntil:'domcontentloaded'});
-    if(state==='expired') await page.waitForURL('**/page/login');
+    if(state==='expired') await page.waitForURL('**/page/login',{waitUntil:'domcontentloaded'});
     else if(state==='populated'||state==='empty') {if(view==='dashboard')await page.locator('#greeting').filter({hasText:'Demo Fellow'}).waitFor();else await page.locator('#day-0').waitFor();}
     else if(state==='error') {if(view==='dashboard')await page.getByText('Projects are unavailable right now').waitFor();else await page.getByText(/Could not load timetable/).waitFor();}
     else await page.waitForTimeout(200);
