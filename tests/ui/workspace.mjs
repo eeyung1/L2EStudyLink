@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import AxeBuilder from '@axe-core/playwright';
 export async function verifyApp(browser,origin,output,evidence) {
     evidence.workspaceChecks=[];
+    evidence.workspaceAccessibility=[];
     for(const theme of ['light','dark']) {
         const context=await browser.newContext({viewport:{width:390,height:900},timezoneId:'Africa/Lagos'});
         await context.addInitScript(theme=>localStorage.setItem('darkMode',String(theme==='dark')),theme);
@@ -43,6 +44,7 @@ export async function verifyApp(browser,origin,output,evidence) {
             assert.equal(await page.locator('.sidebar-nav [aria-current="page"]').getAttribute('href'),'/'+view);
             assert.equal(await page.locator('.workspace-nav-group').count(),3);
             const navResult=await new AxeBuilder({page}).include('.sidebar').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
+            evidence.workspaceAccessibility.push({theme,view,scope:'navigation',violations:navResult.violations});
             assert.deepEqual(navResult.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})),[],`${theme} navigation accessibility`);
             await page.keyboard.press('Escape');
             assert.equal(await page.locator('.mobile-menu-toggle').getAttribute('aria-expanded'),'false');
@@ -59,6 +61,7 @@ export async function verifyApp(browser,origin,output,evidence) {
             await page.setViewportSize({width:390,height:900});
             if(view==='timetable')await page.waitForFunction(()=>document.querySelector('.timetable-day-nav [data-day="0"]').getAttribute('aria-pressed')==='true');
             const result=await new AxeBuilder({page}).include(view==='dashboard'?'.daily-workspace':'main').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
+            evidence.workspaceAccessibility.push({theme,view,scope:'daily/timetable',violations:result.violations});
             assert.deepEqual(result.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),[],`${theme} ${view} integrated accessibility`);
         }
         await page.locator('.timetable-day-nav [data-day="2"]').click();

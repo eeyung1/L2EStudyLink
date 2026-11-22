@@ -74,3 +74,5 @@
 .daily-secondary > :nth-child(2) { grid-area:coverage; }
 .daily-secondary > :nth-child(3) { grid-area:focus; }
 @media(max-width:700px) { .daily-grid { grid-template-columns:minmax(0,1fr);grid-template-areas:"agenda" "session" "coverage" "focus"; } }
+/* Selected controls switch foreground and background together, preserving contrast. */
+.l2e-workspace .l2e-ui .timetable-day-nav button,.l2e-workspace .l2e-ui .day-chip { transition:box-shadow var(--l2e-duration); }

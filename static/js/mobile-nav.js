@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggle = sidebar?.querySelector('.mobile-menu-toggle');
     if (!toggle) return;
     const main = document.querySelector('main');
+    if(location.pathname==='/admin')sidebar.querySelector('#adminNavLink')?.classList.remove('hidden');
     sidebar.querySelectorAll('.sidebar-nav a[href]').forEach(link => {
         const active = new URL(link.href).pathname === location.pathname;
         link.classList.toggle('active', active);
