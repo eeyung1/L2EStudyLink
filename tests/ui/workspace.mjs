@@ -23,6 +23,7 @@ export async function verifyApp(browser,origin,output,evidence) {
             let body=[];
             if(path==='/api/v1/me')body={id:9001,name:'Demo Fellow',email:'demo@example.invalid',skills:[],rating:0,total_reviews:0};
             if(path==='/api/v1/timetable')body=blocks;
+            if(path==='/api/v1/reflections/retention')body={verified:true,policy:'preserve_reflections'};
             if(path==='/api/v1/reflections')body=reflections;
             if(path==='/api/v1/me/streaks')body={current_streak:0,longest_streak:0,total_active_days:0,daily_counts:{}};
             if(path==='/api/v1/planner/week')body={metrics:{due_blocks:5,reflected_blocks:3}};
@@ -80,7 +81,7 @@ export async function verifyApp(browser,origin,output,evidence) {
         assert.equal(await page.locator('.timetable-day-nav [data-day="2"]').getAttribute('aria-pressed'),'true');
         await page.locator('#day-2 .bg-gray-50').filter({hasText:'New fixture block'}).getByRole('button',{name:'Delete',exact:true}).click();
         await page.locator('#confirmDeleteBlock').click();
-        await page.getByText('Time block and its linked reflections deleted.',{exact:true}).waitFor();
+        await page.getByText('Time block removed. Saved reflections remain in your history.',{exact:true}).waitFor();
         assert.equal(await page.locator('.timetable-day-nav [data-day="2"]').getAttribute('aria-pressed'),'true');
         await page.locator('#day-2 [data-reflect="102"]').click();
         await page.locator('#reflectionSummary').fill('Fictional Wednesday reflection');

@@ -31,7 +31,7 @@ func main() {
 
     // Static assets (CSS, JS, images)
     router.Static("/static", "./static")
-    router.Static("/uploads", "./uploads")
+    handlers.RegisterVoiceRoutes(router)
     router.StaticFile("/sw.js", "./static/sw.js")
 
     // Static HTML pages
@@ -121,8 +121,6 @@ func main() {
         api.GET("/articles/:slug", handlers.GetLearningArticle)
         api.GET("/articles/:slug/comments", handlers.ListLearningComments)
         api.GET("/portfolio/:handle", handlers.GetPublicPortfolio)
-        api.POST("/voice/upload", handlers.HandleVoiceUpload)
-        router.POST("/api/voice/upload", handlers.HandleVoiceUpload)
 
         protected := api.Group("/")
         protected.Use(middleware.AuthRequired)
@@ -137,6 +135,7 @@ func main() {
             protected.GET("/buddies", handlers.ListBuddies)
             protected.POST("/buddies/request", handlers.RequestBuddy)
             protected.POST("/buddies/respond", handlers.RespondBuddy)
+            protected.GET("/reflections/retention", handlers.GetReflectionRetention)
             protected.GET("/me", handlers.GetProfile)
             protected.GET("/me/streaks", handlers.GetUserStreaks)
             protected.GET("/planner/week", handlers.GetPlannerWeek)
@@ -175,8 +174,8 @@ func main() {
             protected.GET("/timetable", handlers.GetTimetable)
             protected.POST("/timetable", handlers.AddTimeBlock)
             protected.DELETE("/timetable/:id", handlers.DeleteTimeBlock)
-            protected.POST("/reflections", handlers.AddReflection)
-            protected.GET("/reflections", handlers.GetReflections)
+            protected.POST("/reflections", handlers.RequireReflectionAccount, handlers.AddReflection)
+            protected.GET("/reflections", handlers.RequireReflectionAccount, handlers.GetReflections)
             protected.GET("/collaboration/preferences", handlers.GetCollaborationPreference)
             protected.PUT("/collaboration/preferences", handlers.SetCollaborationPreference)
             protected.GET("/collaborators", handlers.ListCollaborators)

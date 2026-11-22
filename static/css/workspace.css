@@ -95,3 +95,25 @@
 .l2e-workspace #reflectionModal #voiceScrubber { flex:1 1 130px;width:auto;min-width:0;padding:0; }
 .l2e-workspace #reflectionModal #cancelReflectionButton,.l2e-workspace #reflectionModal #voiceDelete { background:var(--l2e-subtle)!important;color:var(--l2e-text)!important; }
 .l2e-workspace #reflectionAttachmentStatus { color:var(--l2e-secondary);font-size:.9rem;line-height:1.5; }
+.l2e-workspace .l2e-ui [hidden] { display:none!important; }
+.history-filters { display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;align-items:end;margin-bottom:20px; }
+.history-filters label { display:block;font-weight:700;margin:0 0 8px; }
+.l2e-workspace .history-filters select { min-height:44px;width:100%;border:1px solid var(--l2e-border);border-radius:var(--l2e-radius-sm);background:var(--l2e-surface);color:var(--l2e-text);padding:10px;font:inherit; }
+.history-card { border-top:1px solid var(--l2e-border);padding:24px 0;overflow-wrap:anywhere; }
+.l2e-workspace .l2e-ui .history-card h2 { font-size:1.3rem;margin:0 0 12px; }
+.history-card p { white-space:pre-wrap; }
+.history-card audio { display:block;width:100%;max-width:500px;min-height:54px; }
+.history-date { color:var(--l2e-secondary); }.history-detached { background:var(--l2e-accent-soft);padding:12px;border-radius:10px;color:var(--l2e-accent); }
+@media(max-width:700px) { .history-filters { grid-template-columns:minmax(0,1fr); } }
+.l2e-workspace.workspace-dialog-open { overflow:hidden; }
+.l2e-workspace #reflectionModal,.l2e-workspace #addModal { top:var(--l2e-visible-top,0px);bottom:auto;height:var(--l2e-visible-height,100dvh);padding:12px;overflow:hidden;align-items:center; }
+.l2e-workspace #reflectionModal .reflection-modal,.l2e-workspace #addModal > div { display:flex;flex-direction:column;min-height:0;max-height:calc(var(--l2e-visible-height,100dvh) - 24px);padding:0;overflow:hidden;width:min(540px,100%);margin:0;border-radius:16px; }
+.l2e-workspace .dialog-header { flex:none;padding:16px 20px 0; }
+.l2e-workspace .dialog-header .reflection-mode-switch { margin:12px 0; }
+.l2e-workspace .dialog-body { flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 20px 16px;scroll-padding:12px; }
+.l2e-workspace .dialog-footer { flex:none;padding:12px 20px;display:grid;gap:8px;border-top:1px solid var(--l2e-border);background:var(--l2e-surface); }
+.l2e-workspace .dialog-footer button { width:100%;margin:0!important; }
+.l2e-workspace .dialog-footer .reflection-feedback { max-height:80px;overflow:auto;margin:0; }
+.l2e-workspace #deleteBlockDialog { top:var(--l2e-visible-top,0px);bottom:auto;margin:12px auto;max-height:calc(var(--l2e-visible-height,100dvh) - 24px);overflow:auto; }
+.l2e-workspace .heatmap-footer span { color:var(--l2e-secondary)!important; }
+.l2e-workspace .l2e-ui #reflectionStreakSection p { color:var(--l2e-secondary)!important; }

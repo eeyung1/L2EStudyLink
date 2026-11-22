@@ -51,11 +51,11 @@
             </div>
         </aside>
 
-        <main class="main-content workspace-page">
+        <main class="main-content workspace-page l2e-ui">
 <header class="workspace-header"><div><p class="workspace-eyebrow">LOOK BACK. MOVE FORWARD.</p><h1 class="workspace-title">My reflections</h1><p class="workspace-subtitle">See what you learned, the challenges you met, and how far you have come.</p></div><a class="workspace-header-link" href="/timetable">View timetable <span aria-hidden="true">↗</span></a></header>
 
     <div class="max-w-4xl mx-auto px-4 py-8">
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="l2e-card">
 
             <div id="reflectionStreakSection" class="mb-6 pb-6 border-b border-gray-200">
                 <div class="heatmap-header">
@@ -78,12 +78,14 @@
                 <div id="activityHeatmap" class="heatmap-target">Loading activity habit…</div>
             </div>
 
-            <div id="reflectionFilters" class="reflection-filters hidden">
-                <label for="reflectionDateFilter">Show a date</label>
-                <input type="date" id="reflectionDateFilter" aria-controls="reflectionsList">
-                <button type="button" id="clearReflectionFilter">Show all</button>
-            </div>
-            <div id="reflectionsList">Loading...</div>
+            <form id="reflectionFilters" class="history-filters" aria-label="Filter reflection history">
+                <div><label for="reflectionSearch">Search activity or reflection</label><input type="search" id="reflectionSearch" placeholder="Search your reflections" aria-controls="reflectionsList"></div>
+                <div><label for="reflectionDateFilter">Reflection date</label><input type="date" id="reflectionDateFilter" aria-controls="reflectionsList"></div>
+                <div><label for="reflectionMediaFilter">Format</label><select id="reflectionMediaFilter" aria-controls="reflectionsList"><option value="all">All reflections</option><option value="voice">With voice note</option><option value="text">Text only</option></select></div>
+                <button type="reset" id="clearReflectionFilter">Clear filters</button>
+            </form>
+            <p id="historyCount" role="status" aria-live="polite"></p>
+            <div id="reflectionsList" aria-busy="true"><p class="l2e-loading">Loading reflection history…</p></div>
         </div>
     </div>
         </main>
@@ -99,84 +101,8 @@
             .then(r => r.json())
             .then(user => { if (user.is_admin) document.getElementById('adminNavLink').classList.remove('hidden'); });
 
-        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        let allReflections = [];
-
-        document.getElementById('reflectionDateFilter').addEventListener('change', renderReflections);
-        document.getElementById('clearReflectionFilter').addEventListener('click', () => {
-            document.getElementById('reflectionDateFilter').value = '';
-            renderReflections();
-        });
-
-        function renderReflections() {
-            const selectedDate = document.getElementById('reflectionDateFilter').value;
-            const reflections = selectedDate
-                ? allReflections.filter(reflection => reflection.log_date === selectedDate)
-                : allReflections;
-            const container = document.getElementById('reflectionsList');
-            if (!reflections.length) {
-                container.innerHTML = selectedDate ? '<div class="workspace-empty"><h3>Nothing for this date</h3><p>Try another day or show all reflections.</p></div>' : '<div class="workspace-empty"><h3>Begin your reflection habit</h3><p>Reflect on a timetable block to see your progress here.</p><a href="/timetable">Go to timetable →</a></div>';
-                return;
-            }
-            let html = '';
-            for (const r of reflections) {
-                html += `
-                    <div class="reflection-list-card border rounded-lg p-4 mb-4">
-                        <p class="font-bold">${days[r.day_of_week]} at ${r.start_time} - ${r.end_time}</p>
-                        <p><strong>Activity:</strong> ${escapeHtml(r.activity)}</p>
-                        <p><strong>Date:</strong> ${escapeHtml(r.log_date)}</p>
-                        <div class="bg-gray-50 p-3 rounded mt-2">
-                            <p><strong>What I did:</strong> ${escapeHtml(r.summary) || 'Not specified'}</p>
-                            ${r.challenges ? `<p><strong>Challenges:</strong> ${escapeHtml(r.challenges)}</p>` : ''}
-                            ${r.learnings ? `<p><strong>Learned:</strong> ${escapeHtml(r.learnings)}</p>` : ''}
-                            ${r.audio_url ? `
-                            <div class="reflection-voice-note mt-3 pt-2 border-t border-gray-200">
-                                <p class="reflection-voice-note-label">🎙️ Voice note</p>
-                                <audio controls class="w-full max-w-md h-8" preload="none">
-                                    <source src="${escapeHtml(r.audio_url)}">
-                                    Your browser does not support audio playback.
-                                </audio>
-                            </div>` : ''}
-                        </div>
-                    </div>`;
-            }
-            container.innerHTML = html;
-        }
-
-        async function logout() {
-            await endSession(token);
-        }
-
-        async function loadReflections() {
-            try {
-                const reflections = await readAPI('/api/v1/reflections', token);
-
-                if (!Array.isArray(reflections)) throw new Error('Invalid reflections response');
-                allReflections = reflections;
-                document.getElementById('reflectionFilters').classList.toggle('hidden', !reflections.length);
-                renderReflections();
-            } catch(e) {
-                console.error('Error loading reflections:', e);
-                if (e.message === 'Session expired') return;
-                document.getElementById('reflectionsList').innerHTML =
-                    `<div class="text-red-500">Could not load reflections (${escapeHtml(e.message)}). ` +
-                    '<button type="button" onclick="loadReflections()" class="underline">Try again</button></div>';
-            }
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-
-        loadReflections();
+        async function logout() { await endSession(token); }
         loadAndRenderStreaks('reflectionStreakSection');
-
         function toggleDark() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('darkMode', isDark);
@@ -189,5 +115,6 @@
         }
 
     </script>
+<script src="/static/js/reflection-history.js"></script>
 </body>
 </html>

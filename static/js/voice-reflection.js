@@ -76,7 +76,7 @@
         // Switching to Write finishes the take instead of silently discarding it.
         if(mode==='write'&&state==='recording')stopRecording();
         if(mode==='write'&&state==='requesting'){cancelAsync();state=takeState();render();}
-        const panel=document.querySelector('#reflectionModal .reflection-modal');if(panel)panel.scrollTop=0;
+        const panel=document.querySelector('#reflectionModal .dialog-body');if(panel)panel.scrollTop=0;
         if(focus)el(mode==='write'?'modeWriteTab':'modeSpeakTab').focus();
     }
     function openDraft(nextKey) {
@@ -96,7 +96,7 @@
         const take=blob,id=version;
         upload=new AbortController();const controller=upload;
         state='uploading';status('Uploading your voice note… Keep this page open.');render();
-        const form=new FormData();form.append('audio',take,'voice-reflection.'+(take.type.includes('mp4')?'mp4':'webm'));
+        const form=new FormData();form.append('audio',take,'voice-reflection.'+(take.type.includes('mp4')?'mp4':take.type.includes('wav')?'wav':take.type.includes('ogg')?'ogg':'webm'));
         const timeout=setTimeout(()=>controller.abort(),30000);
         try {
             const token=typeof sessionToken==='function'?sessionToken():'';

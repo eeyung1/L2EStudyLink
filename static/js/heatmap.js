@@ -37,14 +37,14 @@ function renderHeatmap(containerElement, dailyCounts, options = {}) {
         const dateFormatted = `${monthNames[cur.getUTCMonth()]} ${cur.getUTCDate()}, ${y}`;
         const label = `${count} ${count === 1 ? 'activity' : 'activities'} on ${dateFormatted}`;
 
-        gridHtml += `<div class="heatmap-cell level-${level}" data-date="${dateStr}" data-count="${count}" title="${label}" aria-label="${label}"></div>`;
+        gridHtml += `<div class="heatmap-cell level-${level}" data-date="${dateStr}" data-count="${count}" role="img" title="${label}" aria-label="${label}"></div>`;
         cur.setUTCDate(cur.getUTCDate() + 1);
     }
 
     containerElement.innerHTML = `
         <div class="heatmap-wrapper">
-            <div class="heatmap-scroll">
-                <div class="heatmap-grid" role="img" aria-label="Learning activity heatmap">
+            <div class="heatmap-scroll" tabindex="0" role="region" aria-label="Scrollable daily activity history">
+                <div class="heatmap-grid" role="group" aria-label="Learning activity heatmap">
                     ${gridHtml}
                 </div>
             </div>
