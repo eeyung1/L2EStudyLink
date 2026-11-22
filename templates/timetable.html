@@ -26,8 +26,10 @@
     <link rel="stylesheet" href="/static/css/ui-polish.css">
     <script src="/static/js/mobile-nav.js" defer></script>
     <script src="/static/js/session.js"></script>
+    <link rel="stylesheet" href="/static/redesign/tokens.css">
+    <link rel="stylesheet" href="/static/css/workspace.css">
 </head>
-<body class="bg-gray-100">
+<body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
             <div class="sidebar-heading">
@@ -38,44 +40,7 @@
                 </button>
             </div>
 
-            <nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation">
-                <span class="nav-kicker" aria-hidden="true">WORKSPACE</span>
-                <a href="/dashboard" class="sidebar-link">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
-                    Dashboard
-                </a>
-                <a href="/search-page" class="sidebar-link">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                    Find Study Partners
-                </a>
-                <a href="/my-bookings" class="sidebar-link">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path><path d="m9 15 2 2 4-4"></path></svg>
-                    My Study Sessions
-                </a>
-                <a href="/skills" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></svg> Skills</a>
-                <a href="/availability" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Availability</a>
-                <span class="nav-kicker nav-kicker-second" aria-hidden="true">EXPLORE &amp; PLAN</span>
-                <a href="/learn" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22z"/><path d="M4 5.5V19.5M8 7h8M8 11h6"/></svg> Learning Hub</a>
-                <a href="/projects" class="sidebar-link">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M3 10h18"></path></svg>
-                    Projects
-                </a>
-                <a href="/masterclass" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 2 2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg>Masterclass</a>
-                <a href="/timetable" class="sidebar-link active" aria-current="page">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
-                    Timetable
-                </a>
-                <a href="/reflections" class="sidebar-link">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg>
-                    Reflections
-                </a>
-                <div id="adminNavLink" class="hidden">
-                    <a href="/admin" class="sidebar-link">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3Z"></path></svg>
-                        Admin
-                    </a>
-                </div>
-            </nav>
+            {{template "app-navigation" .}}
 
             <div class="sidebar-foot">
                 <button class="logout-link" onclick="logout()">
@@ -86,8 +51,8 @@
             </div>
         </aside>
 
-        <main class="main-content workspace-page">
-<header class="workspace-header"><div><p class="workspace-eyebrow">MAKE SPACE TO GROW</p><h1 class="workspace-title">My weekly timetable</h1><p class="workspace-subtitle">Shape a week that makes room for focused work, learning, and reflection.</p></div></header>
+        <main class="main-content workspace-page l2e-ui">
+<header class="workspace-header"><div><p class="workspace-eyebrow">MAKE SPACE TO GROW</p><h1 class="workspace-title">Make room to learn.</h1><p class="workspace-subtitle">Shape a week that makes room for focused work, learning, and reflection.</p></div></header>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow p-6">
@@ -109,20 +74,21 @@
                 <button type="button" data-day="4" onclick="selectTimetableDay(4)">Fri</button>
                 <button type="button" data-day="5" onclick="selectTimetableDay(5)">Sat</button>
                 <button type="button" data-day="6" onclick="selectTimetableDay(6)">Sun</button>
-                <button type="button" data-day="all" onclick="selectTimetableDay('all')">All</button>
+                <button type="button" data-day="all" onclick="selectTimetableDay('all')">Week</button>
             </nav>
-            <div id="timetable">Loading...</div>
+            <p class="l2e-muted" id="agendaHelp">Recurring schedule · times use your local timetable clock. Select a day, or choose Week for an overview.</p>
+            <div id="timetable" class="l2e-timetable" aria-live="polite" aria-busy="true">Loading timetable…</div>
         </div>
     </div>
         </main>
     </div>
 
-    <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="addModal" data-workspace-dialog aria-labelledby="addBlockTitle" role="dialog" aria-modal="true" class="l2e-ui fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 class="text-xl font-bold mb-4">Add Time Block</h3>
+            <h2 id="addBlockTitle" class="text-xl font-bold mb-4">Add time block</h2>
 
-            <label class="block text-sm font-medium mb-2 text-gray-700">Repeat on</label>
-            <div id="dayPicker" class="day-picker mb-1">
+            <p class="block text-sm font-medium mb-2 text-gray-700" id="repeatLabel">Repeat on</p>
+            <div id="dayPicker" role="group" aria-labelledby="repeatLabel" class="day-picker mb-1">
                 <button type="button" class="day-chip" data-day="0">Mon</button>
                 <button type="button" class="day-chip" data-day="1">Tue</button>
                 <button type="button" class="day-chip" data-day="2">Wed</button>
@@ -147,7 +113,7 @@
         </div>
     </div>
 
-    <dialog id="deleteBlockDialog" class="timetable-delete-dialog" aria-labelledby="deleteBlockTitle" aria-describedby="deleteBlockDescription">
+    <dialog id="deleteBlockDialog" class="l2e-ui timetable-delete-dialog" aria-labelledby="deleteBlockTitle" aria-describedby="deleteBlockDescription">
         <div class="timetable-delete-icon" aria-hidden="true">!</div>
         <h2 id="deleteBlockTitle">Delete time block?</h2>
         <p id="deleteBlockDescription">This will permanently delete the block and every reflection saved for it, including reflections from previous weeks. This cannot be undone.</p>
@@ -159,7 +125,7 @@
         </div>
     </dialog>
 
-    <div id="reflectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="reflectionModal" class="l2e-ui fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="reflection-modal" role="dialog" aria-modal="true" aria-labelledby="reflectionTitle">
             <h3 id="reflectionTitle">Add Reflection</h3>
             <p id="reflectionDate" class="reflection-modal-date"></p>
@@ -237,9 +203,16 @@
         let existingReflections = {};
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-        let timetableDay = (new Date().getDay() + 6) % 7;
+        const compactAgenda = matchMedia('(max-width: 1100px)');
+        let timetableDay = compactAgenda.matches ? (new Date().getDay() + 6) % 7 : 'all';
+        let timetableDayChosen = false;
+        compactAgenda.addEventListener('change', () => {
+            if (!timetableDayChosen) selectTimetableDay(compactAgenda.matches ? (new Date().getDay() + 6) % 7 : 'all', false);
+        });
 
-        function selectTimetableDay(day) {
+        function selectTimetableDay(day, chosen = true) {
+            if (chosen) timetableDayChosen = true;
+            document.getElementById('timetable').classList.toggle('week-overview', day === 'all');
             timetableDay = day;
             document.querySelectorAll('.timetable-day-card').forEach(section => {
                 section.hidden = day !== 'all' && section.id !== `day-${day}`;
@@ -248,7 +221,7 @@
                 button.setAttribute('aria-pressed', String(button.dataset.day === String(day)));
             });
         }
-        selectTimetableDay(timetableDay);
+        selectTimetableDay(timetableDay, false);
 
         window.logout = async function() {
             await endSession(token);
@@ -281,6 +254,7 @@
                     if (grouped[b.day_of_week]) grouped[b.day_of_week].push(b);
                 }
 
+                window.timetableBlocks = blocks;
                 const today = new Date();
                 const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                 const todayDay = (today.getDay() + 6) % 7;
@@ -298,7 +272,7 @@
 
                             let reflectionButton = '';
                             if (!hasReflection) {
-                                reflectionButton = `<button onclick="openReflection(${block.id}, '${escapeHtml(block.activity)}', '${todayStr}')" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Add Reflection</button>`;
+                                reflectionButton = `<button type="button" data-reflect="${block.id}" class="l2e-button">Add reflection</button>`;
                             } else {
                                 reflectionButton = `<span class="text-green-600 text-sm">✅ Reflection added</span>`;
                             }
@@ -319,16 +293,40 @@
                     html += `</section>`;
                 }
                 document.getElementById('timetable').innerHTML = reflectionsWarning + html;
-                selectTimetableDay(timetableDay);
+                selectTimetableDay(timetableDay, false);
+                document.getElementById('timetable').setAttribute('aria-busy', 'false');
+                const params = new URLSearchParams(location.search);
+                if (params.has('reflect')) {
+                    selectTimetableDay(todayDay, false);
+                    const requested = Number(params.get('block'));
+                    const target = blocks.find(b => b.day_of_week === todayDay && (!requested || b.id === requested) && !existingReflections[`${b.id}|${todayStr}`]);
+                    history.replaceState(null, '', location.pathname);
+                    if (target) {
+                        document.querySelector(`#day-${todayDay} [data-reflect="${target.id}"]`)?.focus();
+                        openReflection(target.id, target.activity, todayStr);
+                    } else document.getElementById('timetableNotice').textContent = "Choose a block to reflect on, or add a time block first.";
+                    document.getElementById('timetableNotice').hidden = false;
+                }
             } catch(e) {
                 console.error('Error:', e);
                 if (e.message === 'Session expired') return;
+                document.getElementById('timetable').setAttribute('aria-busy', 'false');
                 document.getElementById('timetable').innerHTML =
                     `<div class="text-red-500">Could not load timetable (${escapeHtml(e.message)}). ` +
                     '<button type="button" onclick="loadTimetable()" class="underline">Try again</button></div>';
             }
         }
 
+        document.getElementById('timetable').addEventListener('click', event => {
+            const button = event.target.closest('[data-reflect]');
+            if (!button) return;
+            const block = (window.timetableBlocks || []).find(b => b.id === Number(button.dataset.reflect));
+            if (block) {
+                const now = new Date();
+                const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+                openReflection(block.id, block.activity, date);
+            }
+        });
         let selectedDays = new Set();
 
         document.getElementById('dayPicker').addEventListener('click', function(e) {
@@ -573,5 +571,6 @@
         }
 
     </script>
+<script src="/static/js/workspace-controls.js"></script>
 </body>
 </html>

@@ -15,11 +15,13 @@
 .focus-list{list-style:none;padding:0;margin:0;display:grid;gap:12px}.focus-room,.focus-person{border:1px solid var(--line);border-radius:14px;padding:16px;overflow-wrap:anywhere}.focus-room{display:flex;justify-content:space-between;gap:16px;align-items:center}.focus-room p,.focus-person p{margin:5px 0}.focus-person strong{display:block}.focus-count{font-size:.8rem;color:var(--muted)}.focus-link{color:#059669;font-weight:700}.focus-target-form{border-top:1px solid var(--line);padding-top:12px;margin-top:16px}
 @media(max-width:760px){.focus-grid{grid-template-columns:1fr}.focus-room{align-items:start;flex-direction:column}.focus-room button{width:100%}.focus-actions button{flex:1}.focus-panel{border-radius:18px}}
 </style>
+    <link rel="stylesheet" href="/static/redesign/tokens.css">
+    <link rel="stylesheet" href="/static/css/workspace.css">
 </head>
-<body>
+<body class="l2e-workspace ">
 <div class="app-shell" id="focus-app">
-<aside class="sidebar"><div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard">L2E<span>Study</span>Link</a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span aria-hidden="true">☰</span><span>Menu</span></button></div>
-<nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation"><span class="nav-kicker">WORKSPACE</span><a class="sidebar-link" href="/dashboard">Dashboard</a><a class="sidebar-link" href="/timetable">My timetable</a><a class="sidebar-link" href="/reflections">My reflections</a><a class="sidebar-link" href="/planner">Growth coach</a><a class="sidebar-link active" aria-current="page" href="/focus">Focus together</a><a class="sidebar-link" href="/projects">Projects</a></nav>
+<aside class="sidebar"><div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard">L2E<span>Study</span>Link</a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span></button></div>
+{{template "app-navigation" .}}
 <div class="sidebar-foot"><button class="logout-link" id="focus-logout">Log out</button><button class="icon-btn" id="focus-theme" aria-label="Toggle dark mode">◐</button></div></aside>
 <main class="main-content"><div class="focus-page">
 <header><p class="focus-kicker">A LITTLE COMPANY. A LITTLE MORE FOCUS.</p><h1>Different goals.<br>One shared rhythm.</h1><p class="focus-muted">Set one intention. Settle in with your peers for 25 minutes, then take a 5-minute break together.</p></header>

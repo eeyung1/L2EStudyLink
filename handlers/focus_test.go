@@ -257,7 +257,7 @@ func TestFocusAuthCookieAndPage(t *testing.T) {
 	t.Setenv("JWT_SECRET", "focus-test-signing-key")
 	service, _, _ := focusFixture(t)
 	router := gin.New()
-	router.LoadHTMLFiles("../templates/focus.html")
+	router.LoadHTMLFiles("../templates/focus.html", "../templates/app-navigation.html")
 	router.GET("/focus", middleware.AuthRequired, FocusPage)
 	service.register(router.Group("/api/v1", middleware.AuthRequired))
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"user_id": 1, "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("focus-test-signing-key"))

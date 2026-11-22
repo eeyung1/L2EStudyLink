@@ -28,14 +28,14 @@
     @media(max-width:700px){.coach-stats{grid-template-columns:1fr 1fr}.coach-review-grid{grid-template-columns:1fr}.coach-day{grid-template-columns:40px minmax(0,1fr) 76px}.coach-panel,.coach-stat{padding:17px}.coach-controls button{width:100%}}
     @media(prefers-reduced-motion:no-preference){.coach-bar{transition:width .2s ease}}
   </style>
+    <link rel="stylesheet" href="/static/redesign/tokens.css">
+    <link rel="stylesheet" href="/static/css/workspace.css">
 </head>
-<body>
+<body class="l2e-workspace ">
 <div class="app-shell">
   <aside class="sidebar">
-    <div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard">L2E<span>Study</span>Link</a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span aria-hidden="true">☰</span><span>Menu</span></button></div>
-    <nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation">
-      <span class="nav-kicker">WORKSPACE</span><a class="sidebar-link" href="/dashboard">Dashboard</a><a class="sidebar-link" href="/timetable">My timetable</a><a class="sidebar-link" href="/reflections">My reflections</a><a class="sidebar-link active" aria-current="page" href="/planner">Weekly growth coach</a><a class="sidebar-link" href="/projects">Projects</a>
-    </nav>
+    <div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard">L2E<span>Study</span>Link</a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span></button></div>
+    {{template "app-navigation" .}}
     <div class="sidebar-foot"><button class="logout-link" onclick="logout()">Log out</button><button class="icon-btn" onclick="toggleDark()" aria-label="Toggle dark mode">◐</button></div>
   </aside>
   <main class="main-content">
