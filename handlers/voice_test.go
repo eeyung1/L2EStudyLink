@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+    "path/filepath"
 	"strings"
 	"testing"
 
@@ -17,6 +18,8 @@ import (
 func TestHandleVoiceUpload_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+    t.Setenv("VOICE_UPLOAD_DIR",t.TempDir())
+    router.Use(func(c *gin.Context){c.Set("user_id",int64(1));c.Next()})
 	router.POST("/api/v1/voice/upload", HandleVoiceUpload)
 
 	body := &bytes.Buffer{}
@@ -51,12 +54,10 @@ func TestHandleVoiceUpload_Success(t *testing.T) {
 	if !strings.HasPrefix(resp.AudioURL, "/uploads/") || !strings.HasSuffix(resp.AudioURL, ".webm") {
 		t.Errorf("Unexpected audio URL format: %s", resp.AudioURL)
 	}
-	if resp.Text == "" {
-		t.Errorf("Expected non-empty placeholder text")
-	}
+	if resp.Text != "" {t.Error("Upload must not pretend to transcribe audio")}
 
 	// Verify file was saved on disk
-	localPath := strings.TrimPrefix(resp.AudioURL, "/")
+	localPath := filepath.Join(voiceDirectory(),strings.TrimPrefix(resp.AudioURL, "/uploads/"))
 	if _, err := os.Stat(localPath); os.IsNotExist(err) {
 		t.Errorf("Saved file does not exist at %s", localPath)
 	} else {
@@ -68,6 +69,8 @@ func TestHandleVoiceUpload_Success(t *testing.T) {
 func TestHandleVoiceUpload_MissingFile(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+    t.Setenv("VOICE_UPLOAD_DIR",t.TempDir())
+    router.Use(func(c *gin.Context){c.Set("user_id",int64(1));c.Next()})
 	router.POST("/api/v1/voice/upload", HandleVoiceUpload)
 
 	body := &bytes.Buffer{}
@@ -89,6 +92,8 @@ func TestHandleVoiceUpload_MissingFile(t *testing.T) {
 func TestHandleVoiceUpload_TooLarge(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+    t.Setenv("VOICE_UPLOAD_DIR",t.TempDir())
+    router.Use(func(c *gin.Context){c.Set("user_id",int64(1));c.Next()})
 	router.POST("/api/v1/voice/upload", HandleVoiceUpload)
 
 	// Create oversized payload (>5MB)

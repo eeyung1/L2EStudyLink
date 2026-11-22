@@ -31,7 +31,7 @@ func main() {
 
     // Static assets (CSS, JS, images)
     router.Static("/static", "./static")
-    router.Static("/uploads", "./uploads")
+    handlers.RegisterVoiceRoutes(router)
     router.StaticFile("/sw.js", "./static/sw.js")
 
     // Static HTML pages
@@ -121,8 +121,6 @@ func main() {
         api.GET("/articles/:slug", handlers.GetLearningArticle)
         api.GET("/articles/:slug/comments", handlers.ListLearningComments)
         api.GET("/portfolio/:handle", handlers.GetPublicPortfolio)
-        api.POST("/voice/upload", handlers.HandleVoiceUpload)
-        router.POST("/api/voice/upload", handlers.HandleVoiceUpload)
 
         protected := api.Group("/")
         protected.Use(middleware.AuthRequired)
@@ -137,6 +135,7 @@ func main() {
             protected.GET("/buddies", handlers.ListBuddies)
             protected.POST("/buddies/request", handlers.RequestBuddy)
             protected.POST("/buddies/respond", handlers.RespondBuddy)
+            protected.GET("/reflections/retention", handlers.GetReflectionRetention)
             protected.GET("/me", handlers.GetProfile)
             protected.GET("/me/streaks", handlers.GetUserStreaks)
             protected.GET("/planner/week", handlers.GetPlannerWeek)

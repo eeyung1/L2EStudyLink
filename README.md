@@ -72,11 +72,11 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [x] Unify Write/Speak reflection modes with persistent field labels and clear focus states.
 - [x] Show recording, duration, stop, audio preview, re-record, upload and save states accurately.
 - [x] Handle microphone denial, unsupported recording, interrupted uploads and save failures without silently losing text.
-- [ ] Make dialogs/sheets fit small screens and on-screen keyboards; support Escape and restore focus.
-- [ ] Improve history filtering, date/activity labels and audio playback.
-- [ ] Keep personal reflections private and account-scoped.
+- [x] Make dialogs/sheets fit small screens and on-screen keyboards; support Escape and restore focus.
+- [x] Improve history filtering, date/activity labels and audio playback.
+- [x] Keep personal reflections private and account-scoped.
 - [ ] Verify reflection retention against current schema and deployed migrations before changing deletion copy; any data-model fix must be a separately tested, explicit change.
-- [ ] Verify text and voice journeys, validation, retry and account separation.
+- [x] Verify text and voice journeys, validation, retry and account separation.
 
 **Acceptance:** users can review what will be saved, recover from failure, and find previous entries. Do not imply transcription, offline persistence or permanent retention unless implemented and verified.
 
@@ -506,3 +506,9 @@ The first five integration tasks now use the real Dashboard/Timetable templates:
 ### Reflection reliability (tasks 11–15)
 
 Selected timetable day is retained across create/delete/reflection saves and verified by browser fixtures. The required shared-navigation, Dashboard and Timetable browser checks run in CI. Write/Speak now share persistent labelled text fields, keyboard tabs and accurate recorder/upload/save states. Failed uploads retain a retryable local take; failed saves retain text and attachment. Drafts are isolated by activity/date in current-page memory; late microphone/upload callbacks cannot attach to a reopened different reflection. No automatic transcription is claimed. See [reflection reliability notes](docs/redesign/reflection-reliability.md) for evidence and boundaries.
+
+### Reflection history, dialogs and privacy (tasks 16–20)
+
+Dialogs now use the visible viewport with fixed action areas, scrollable fields, Escape and focus restoration. History adds search/date/format filters, detached-block labels and private-audio retry. Upload and playback routes require sign-in and file ownership; saved recordings cannot be attached across accounts. Reflection rows have app-only PostgreSQL RLS/grants. CI includes a browser journey through real Gin handlers, isolated PostgreSQL, temporary audio storage and two authenticated accounts.
+
+The source retention rule and legacy migration are covered by tests. Deletion now verifies the connected database's retention constraints and refuses to proceed on an unsafe/unverified schema; copy is based on that response. **Independent production migration verification remains unchecked:** the currently connected Supabase project contains no StudyLink timetable/reflection tables, and the connected Render workspace is not identified as this deployment. No unrelated database was changed. See [evidence and remaining verification](docs/redesign/reflection-history-privacy.md).

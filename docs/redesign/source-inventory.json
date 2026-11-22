@@ -187,16 +187,6 @@
       "scope": "api"
     },
     {
-      "method": "POST",
-      "path": "/voice/upload",
-      "scope": "api"
-    },
-    {
-      "method": "POST",
-      "path": "/api/voice/upload",
-      "scope": "router"
-    },
-    {
       "method": "GET",
       "path": "/masterclasses",
       "scope": "protected"
@@ -234,6 +224,11 @@
     {
       "method": "POST",
       "path": "/buddies/respond",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/reflections/retention",
       "scope": "protected"
     },
     {
@@ -522,6 +517,21 @@
       "source": "handlers/notifications.go",
       "method": "PUT",
       "path": "/notifications/:id/read"
+    },
+    {
+      "source": "handlers/voice.go",
+      "method": "POST",
+      "path": "/api/v1/voice/upload"
+    },
+    {
+      "source": "handlers/voice.go",
+      "method": "POST",
+      "path": "/api/voice/upload"
+    },
+    {
+      "source": "handlers/voice.go",
+      "method": "GET",
+      "path": "/uploads/:filename"
     }
   ],
   "screens": {
@@ -1086,11 +1096,12 @@
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/read-api.js",
-        "/static/js/heatmap.js"
+        "/static/js/heatmap.js",
+        "/static/js/reflection-history.js"
       ],
-      "forms": 0,
+      "forms": 1,
       "dialogs": [],
-      "controls": 5,
+      "controls": 7,
       "inline_styles": 0
     },
     "templates/reset-password.html": {
@@ -1246,7 +1257,8 @@
         "/static/js/session.js",
         "/static/js/read-api.js",
         "/static/js/voice-reflection.js",
-        "/static/js/workspace-controls.js"
+        "/static/js/workspace-controls.js",
+        "/static/js/dialog-viewport.js"
       ],
       "forms": 0,
       "dialogs": [

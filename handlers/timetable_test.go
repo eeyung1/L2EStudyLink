@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"os/exec"
+    "path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -102,7 +103,11 @@ func TestTimetableReflectionHistory(t *testing.T) {
 		router.ServeHTTP(w, req)
 		return w
 	}
-	payload := fmt.Sprintf(`{"timetable_id":%d,"log_date":"2026-10-27","summary":"First reflection","audio_url":"/audio/take.webm","activity_name":"Spoofed"}`, block)
+    t.Setenv("VOICE_UPLOAD_DIR",t.TempDir())
+    audioName:=fmt.Sprintf("%d-00000000-0000-4000-8000-000000000001.webm",user)
+    audioURL:="/uploads/"+audioName
+    if err:=os.WriteFile(filepath.Join(voiceDirectory(),audioName),[]byte("fixture audio"),0600);err!=nil {t.Fatal(err)}
+	payload := fmt.Sprintf(`{"timetable_id":%d,"log_date":"2026-10-27","summary":"First reflection","audio_url":"%s","activity_name":"Spoofed"}`, block,audioURL)
 	if w := request("POST", "/reflections", payload, true); w.Code != 404 {
 		t.Fatalf("foreign block accepted: %d %s", w.Code, w.Body.String())
 	}
@@ -139,7 +144,7 @@ func TestTimetableReflectionHistory(t *testing.T) {
 			t.Fatalf("expected one reflection: %s", w.Body.String())
 		}
 		h := history[0]
-		if h.Activity != "Learn Go" || h.ActivityName != "Learn Go" || h.Summary != "Updated reflection" || h.AudioURL != "/audio/take.webm" || !h.Completed {
+		if h.Activity != "Learn Go" || h.ActivityName != "Learn Go" || h.Summary != "Updated reflection" || h.AudioURL != audioURL || !h.Completed {
 			t.Fatalf("snapshot/content lost: %+v", h)
 		}
 		if deleted && (h.TimetableID != nil || h.Start != "" || h.Day != 2) {

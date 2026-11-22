@@ -85,7 +85,8 @@
 
     <div id="addModal" data-workspace-dialog aria-labelledby="addBlockTitle" role="dialog" aria-modal="true" class="l2e-ui fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 id="addBlockTitle" class="text-xl font-bold mb-4">Add time block</h2>
+            <header class="dialog-header"><h2 id="addBlockTitle" class="text-xl font-bold mb-4">Add time block</h2></header>
+            <div class="dialog-body">
 
             <p class="block text-sm font-medium mb-2 text-gray-700" id="repeatLabel">Repeat on</p>
             <div id="dayPicker" role="group" aria-labelledby="repeatLabel" class="day-picker mb-1">
@@ -108,26 +109,27 @@
             <label for="blockGoal" class="block text-sm font-medium mb-1 text-gray-700">Goal (optional)</label>
             <textarea id="blockGoal" rows="2" placeholder="Goal (optional)" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
             <div id="blockFormError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
+            </div><footer class="dialog-footer">
             <button id="saveBlockButton" onclick="saveTimeBlock()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save time block</button>
-            <button onclick="closeAddModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
+            <button onclick="closeAddModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button></footer>
         </div>
     </div>
 
     <dialog id="deleteBlockDialog" class="l2e-ui timetable-delete-dialog" aria-labelledby="deleteBlockTitle" aria-describedby="deleteBlockDescription">
         <div class="timetable-delete-icon" aria-hidden="true">!</div>
         <h2 id="deleteBlockTitle">Delete time block?</h2>
-        <p id="deleteBlockDescription">This will permanently delete the block and every reflection saved for it, including reflections from previous weeks. This cannot be undone.</p>
+        <p id="deleteBlockDescription">Checking how this database retains your saved reflections before deletion.</p>
         <p id="deleteBlockLabel" class="timetable-delete-label"></p>
         <div id="deleteBlockError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
         <div class="timetable-delete-actions">
             <button type="button" id="cancelDeleteBlock" class="timetable-delete-cancel">Keep block</button>
-            <button type="button" id="confirmDeleteBlock" class="timetable-delete-confirm">Delete block and reflections</button>
+            <button type="button" id="confirmDeleteBlock" class="timetable-delete-confirm">Delete time block</button>
         </div>
     </dialog>
 
     <div id="reflectionModal" class="l2e-ui fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="reflection-modal" role="dialog" aria-modal="true" aria-labelledby="reflectionTitle">
-            <h3 id="reflectionTitle">Add Reflection</h3>
+            <header class="dialog-header"><h3 id="reflectionTitle">Add Reflection</h3>
             <p id="reflectionDate" class="reflection-modal-date"></p>
 
             <div class="reflection-mode-switch" role="tablist" aria-label="Reflection mode">
@@ -135,6 +137,7 @@
                 <button type="button" id="modeSpeakTab" role="tab" tabindex="-1" aria-selected="false" aria-controls="reflectionVoicePanel" onclick="setReflectionMode('voice')">Speak</button>
             </div>
 
+            </header><div class="dialog-body">
             <div id="reflectionWritePanel" role="tabpanel" aria-labelledby="modeWriteTab"><p class="reflection-entry-hint">Write what happened below. You can add a voice note in Speak mode without losing your text.</p></div>
             <div id="reflectionVoicePanel" class="reflection-voice-panel" role="tabpanel" aria-labelledby="modeSpeakTab" hidden>
                 <p class="reflection-voice-intro">Record up to 3 minutes. Your written fields stay available below. Audio is attached only after upload succeeds; transcription is not available.</p>
@@ -185,10 +188,11 @@
             </div>
 
             <p class="reflection-entry-hint">Drafts stay on this page while you switch activities. Refreshing or leaving the page clears unsaved drafts. Closing cancels an active recording and keeps the previous take.</p>
+            </div><footer class="dialog-footer">
             <input type="hidden" id="url-summary" value="">
             <div id="reflectionFormError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
             <button id="saveReflectionButton" onclick="saveReflection()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save reflection</button>
-            <button id="cancelReflectionButton" onclick="closeReflectionModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button>
+            <button id="cancelReflectionButton" onclick="closeReflectionModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button></footer>
         </div>
     </div>
 
@@ -440,8 +444,9 @@
         const deleteDialog = document.getElementById('deleteBlockDialog');
         let pendingDeleteId = null;
         let deleteTrigger = null;
+        let deletingBlock = false;
         deleteDialog.addEventListener('cancel', event => {
-            if (document.getElementById('confirmDeleteBlock').disabled) event.preventDefault();
+            if (deletingBlock) event.preventDefault();
         });
         document.getElementById('cancelDeleteBlock').addEventListener('click', () => deleteDialog.close());
         deleteDialog.addEventListener('close', () => {
@@ -450,8 +455,12 @@
             deleteTrigger = null;
         });
 
-        window.deleteBlock = function(id, trigger) {
+        window.deleteBlock = async function(id, trigger) {
             pendingDeleteId = id;
+            const requestedID=id;
+            const confirmButton=document.getElementById('confirmDeleteBlock');
+            confirmButton.disabled=true;
+            document.getElementById('deleteBlockDescription').textContent='Checking saved reflection retention…';
             deleteTrigger = trigger;
             const block = trigger.closest('.bg-gray-50');
             const day = trigger.closest('.timetable-day-card').querySelector('h3').textContent.replace(' · Today', '');
@@ -461,12 +470,24 @@
             error.textContent = '';
             deleteDialog.showModal();
             document.getElementById('cancelDeleteBlock').focus();
+            try {
+                const response=await fetch('/api/v1/reflections/retention',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+                const result=await response.json();
+                if(pendingDeleteId!==requestedID||!deleteDialog.open)return;
+                if(!response.ok||!result.verified)throw Error('Deletion is unavailable until reflection retention is verified. Your block is unchanged.');
+                document.getElementById('deleteBlockDescription').textContent='This removes the recurring time block. Saved reflections and their attached voice notes stay in your history. The block cannot be restored.';
+                confirmButton.disabled=false;
+            } catch(failure) {
+                if(pendingDeleteId!==requestedID||!deleteDialog.open)return;
+                error.textContent=failure.message;error.hidden=false;
+            }
         };
 
         document.getElementById('confirmDeleteBlock').addEventListener('click', async () => {
             if (pendingDeleteId === null) return;
             const confirmButton = document.getElementById('confirmDeleteBlock');
             const cancelButton = document.getElementById('cancelDeleteBlock');
+            deletingBlock = true;
             confirmButton.disabled = true;
             cancelButton.disabled = true;
             confirmButton.textContent = 'Deleting…';
@@ -479,7 +500,7 @@
                 deleteDialog.close();
                 await loadTimetable();
                 const notice = document.getElementById('timetableNotice');
-                notice.textContent = 'Time block and its linked reflections deleted.';
+                notice.textContent = 'Time block removed. Saved reflections remain in your history.';
                 notice.hidden = false;
                 document.querySelector('[onclick="showAddBlock()"]')?.focus();
             } catch (failure) {
@@ -487,9 +508,10 @@
                 error.textContent = failure.message;
                 error.hidden = false;
             } finally {
+                deletingBlock = false;
                 confirmButton.disabled = false;
                 cancelButton.disabled = false;
-                confirmButton.textContent = 'Delete block and reflections';
+                confirmButton.textContent = 'Delete time block';
             }
         });
 
@@ -548,6 +570,7 @@
                 closeReflectionModal();
                 document.getElementById('reflectionSavedNotice').hidden = false;
                 await loadTimetable();
+                document.querySelector('.timetable-day-nav [aria-pressed="true"]')?.focus();
             } catch (failure) {
                 error.textContent = (failure.name === 'AbortError' ? 'Could not confirm the save in time.' : failure.message) + ' Your text and attached voice note are kept here. Try saving again.';
                 error.hidden = false;
@@ -582,5 +605,6 @@
 
     </script>
 <script src="/static/js/workspace-controls.js"></script>
+<script src="/static/js/dialog-viewport.js"></script>
 </body>
 </html>

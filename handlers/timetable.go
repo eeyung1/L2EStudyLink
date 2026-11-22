@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+    "time"
+    "strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -96,7 +98,13 @@ func DeleteTimeBlock(c *gin.Context) {
 	blockID := c.Param("id")
 	db := c.MustGet("db").(*sql.DB)
 
-	result, err := db.Exec("DELETE FROM timetable WHERE id = $1 AND user_id = $2", blockID, userID)
+    tx,err:=db.BeginTx(c.Request.Context(),nil)
+    if err!=nil {c.JSON(503,gin.H{"error":"Deletion is unavailable. Please try again."});return}
+    defer tx.Rollback()
+    if _,err=tx.ExecContext(c.Request.Context(),"LOCK TABLE activity_logs IN SHARE ROW EXCLUSIVE MODE");err!=nil || !reflectionRetentionReady(c.Request.Context(),tx) {
+        c.JSON(503,gin.H{"error":"Reflection retention could not be verified. Your block is unchanged."});return
+    }
+    result, err := tx.ExecContext(c.Request.Context(),"DELETE FROM timetable WHERE id = $1 AND user_id = $2", blockID, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -108,6 +116,7 @@ func DeleteTimeBlock(c *gin.Context) {
 		return
 	}
 
+    if err=tx.Commit();err!=nil {c.JSON(500,gin.H{"error":"Could not confirm deletion"});return}
 	c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 }
 
@@ -135,6 +144,14 @@ func AddReflection(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save reflection"})
 		return
 	}
+
+    if strings.TrimSpace(input.Summary)=="" || len([]rune(input.Summary))>2000 || len([]rune(input.Challenges))>1000 || len([]rune(input.Learnings))>1000 {
+        c.JSON(400,gin.H{"error":"Add a summary under 2000 characters; challenges and learnings must be under 1000 characters"});return
+    }
+    if _,err:=time.Parse("2006-01-02",input.LogDate);err!=nil {c.JSON(400,gin.H{"error":"Choose a valid reflection date"});return}
+    if input.AudioURL!="" && (!voiceOwned(c,input.AudioURL)||!voiceExists(input.AudioURL)) {
+        c.JSON(400,gin.H{"error":"Choose a recording uploaded by your account"});return
+    }
 
 	// 2. Check if a reflection already exists for this block, user, and date
 	var existingID int64
@@ -200,6 +217,7 @@ func AddReflection(c *gin.Context) {
 }
 
 func GetReflections(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
 	userID := c.GetInt64("user_id")
 	db := c.MustGet("db").(*sql.DB)
 

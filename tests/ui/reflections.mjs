@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import AxeBuilder from '@axe-core/playwright';
 
 // Synthetic audio and permissions model test browser lifecycle races without a real microphone.
-function mediaFixture() {
+export function mediaFixture() {
     window.__mic='allow';window.__stoppedTracks=0;window.__recordStarts=0;
     const stream=()=>({getTracks:()=>[{stop(){window.__stoppedTracks++;}}]});
     Object.defineProperty(navigator,'mediaDevices',{configurable:true,value:{getUserMedia:async()=>{

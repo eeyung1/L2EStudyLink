@@ -130,6 +130,17 @@ CREATE INDEX IF NOT EXISTS idx_bookings_student ON bookings(student_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings(session_date);
 CREATE INDEX IF NOT EXISTS idx_reviews_reviewee ON reviews(reviewee_id);
 CREATE INDEX IF NOT EXISTS idx_timetable_user ON timetable(user_id);
+
+-- Reflections use the Go API's account authorization, never a public Data API grant.
+ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+        REVOKE ALL ON activity_logs FROM anon;
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+        REVOKE ALL ON activity_logs FROM authenticated;
+    END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS idx_activity_logs_timetable ON activity_logs(timetable_id);
 CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs(user_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_handle ON users (lower(public_handle));

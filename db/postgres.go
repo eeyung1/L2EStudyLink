@@ -229,6 +229,15 @@ func MigrateReflectionHistory(ctx context.Context, database *sql.DB) error {
                     FOREIGN KEY (timetable_id) REFERENCES timetable(id) ON DELETE SET NULL;
             END IF;
 
+            -- App-owned access only; no direct public/private-user Data API access.
+            ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+            IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+                REVOKE ALL ON activity_logs FROM anon;
+            END IF;
+            IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+                REVOKE ALL ON activity_logs FROM authenticated;
+            END IF;
+
             -- Ensure unique index for (timetable_id, user_id, log_date)
             BEGIN
                 CREATE UNIQUE INDEX IF NOT EXISTS idx_activity_logs_user_block_date
