@@ -49,9 +49,9 @@
             </div>
         </aside>
 
-        <main class="main-content settings-page"><div id="settingsNotice" class="settings-notice" role="status" aria-live="polite"></div><header class="workspace-header"><div><p class="workspace-eyebrow">YOUR TIME, YOUR IMPACT</p><h1 class="workspace-title">Make room to share what you know.</h1><p class="workspace-subtitle">Choose the times you are happy to meet. Fellows can then find a slot that works for both of you.</p></div></header>
-                    <div id="availabilitySection" class="card">
-                        <div class="weekly-heading"><div><p class="workspace-eyebrow">YOUR WEEK AT A GLANCE</p><h2>Your weekly hours</h2><p class="page-sub">A little time can make a big difference to another fellow.</p></div><span id="weeklyCount" class="weekly-count">Loading…</span></div>
+        <main class="main-content settings-page"><div id="settingsNotice" class="settings-notice" role="status" aria-live="polite"></div><header class="workspace-header"><div><p class="workspace-eyebrow">YOUR TIME, YOUR IMPACT</p><h1 class="workspace-title">Make room to share what you know.</h1><p class="workspace-subtitle">These hours let other learners request tutoring sessions with you. Personal study blocks belong in your timetable.</p></div></header>
+                    <p class="l2e-feedback">Tutoring availability is published for booking. It does not create or change a <a href="/timetable">personal study block</a>.</p><p id="bookingClock" class="page-sub" role="status">Loading the shared booking clock…</p><div id="availabilitySection" class="card">
+                        <div class="weekly-heading"><div><p class="workspace-eyebrow">YOUR WEEK AT A GLANCE</p><h2>Your tutoring availability</h2><p class="page-sub">A little time can make a big difference to another fellow.</p></div><span id="weeklyCount" class="weekly-count">Loading…</span></div>
                         <div id="availability"></div>
                         <div class="avail-form">
                             <h3>Add a time you can meet</h3><p class="page-sub">Pick a day and start and end times. You can remove a slot whenever your plans change.</p>
@@ -73,4 +73,4 @@
                     </div>
         </main></div>
 <script src="/static/js/settings.js" defer></script>
-</body></html>
+<script src="/static/js/booking-common.js"></script><script> L2EBooking.clock().then(clock=>document.getElementById('bookingClock').textContent='Tutoring hours use the shared booking clock: '+clock.timezone).catch(()=>document.getElementById('bookingClock').textContent='Booking clock unavailable. Check it before publishing or booking hours.'); </script></body></html>

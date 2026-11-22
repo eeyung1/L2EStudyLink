@@ -7,6 +7,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { verifyApp } from './workspace.mjs';
 import { verifyReflections } from './reflections.mjs';
 import { verifyHistoryAndDialogs } from './history.mjs';
+import { verifyBookings } from './bookings.mjs';
 
 const root = process.cwd(), output = 'test-results/ui';
 await mkdir(output,{recursive:true});
@@ -16,7 +17,7 @@ const server = createServer(async (req,res) => {
   const path = new URL(req.url,'http://localhost').pathname;
   let file;
   if(path.startsWith('/static/')) file = resolve(root,'.'+path);
-  else if(path === '/dashboard' || path === '/timetable' || path === '/reflections') file=resolve(root,'templates',path.slice(1)+'.html');
+  else if(path === '/dashboard' || path === '/timetable' || path === '/reflections' || path === '/search-page' || path === '/my-bookings') file=resolve(root,'templates',path.slice(1)+'.html');
   else if(path === '/page/login') file=resolve(root,'templates/login.html');
   else {res.writeHead(404);res.end();return;}
   if(!file.startsWith(root+'/static/')&&!file.startsWith(root+'/templates/')) {res.writeHead(403);res.end();return;}
@@ -63,6 +64,7 @@ try {
   await verifyApp(browser,origin,output,evidence);
   await verifyReflections(browser,origin,output,evidence);
   await verifyHistoryAndDialogs(browser,origin,output,evidence);
+  await verifyBookings(browser,origin,output,evidence);
   for(const theme of ['light','dark']) {
     const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
     const page=await context.newPage();

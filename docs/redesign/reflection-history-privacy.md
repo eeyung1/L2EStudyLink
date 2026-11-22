@@ -33,3 +33,7 @@ Once the correct deployment database is available, run the read-only `scripts/ch
 - `TestReflectionBrowserJourney` with `L2E_BROWSER_E2E=1` in the UI CI job: actual Go/PostgreSQL/storage/browser journey, with `real-server-evidence.json` and screenshot added to the existing Actions artifact.
 
 Production smoke, physical-device acceptance and the independent deployed-migration check remain pending. The four completed tasks can be merged without claiming that outstanding live verification.
+
+## Verification completed — 22 November 2026
+
+After the correct Supabase account was connected, the `l2e-studylink` catalog confirmed the nullable timetable parent, non-null activity snapshot, validated SET NULL timetable foreign key, and retained user-delete cascade. This closes the earlier independent database-verification blocker. No data-model fix was needed. The missing reflection access policy was applied as `studylink_private_reflection_access`; recheck confirmed RLS enabled and zero grants to anon/authenticated/PUBLIC. The rest of this document's connection-blocker description records the earlier state, not the current connection. Browser deployment/physical-device acceptance remains separate.

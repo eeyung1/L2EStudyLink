@@ -75,18 +75,18 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [x] Make dialogs/sheets fit small screens and on-screen keyboards; support Escape and restore focus.
 - [x] Improve history filtering, date/activity labels and audio playback.
 - [x] Keep personal reflections private and account-scoped.
-- [ ] Verify reflection retention against current schema and deployed migrations before changing deletion copy; any data-model fix must be a separately tested, explicit change.
+- [x] Verify reflection retention against current schema and deployed migrations before changing deletion copy; any data-model fix must be a separately tested, explicit change.
 - [x] Verify text and voice journeys, validation, retry and account separation.
 
 **Acceptance:** users can review what will be saved, recover from failure, and find previous entries. Do not imply transcription, offline persistence or permanent retention unless implemented and verified.
 
 #### Batch 3 — Tutor discovery, availability and booking
 
-- [ ] Make tutor cards and skill/availability filters easy to scan and operate.
-- [ ] Clearly separate tutoring availability from personal study timetable blocks.
-- [ ] Clarify selected tutor, date, time, timezone and meeting type before booking.
-- [ ] Preserve validation, conflict handling, self-booking protections and existing notifications.
-- [ ] Present pending, confirmed, cancelled, completed and no-show states with permitted actions.
+- [x] Make tutor cards and skill/availability filters easy to scan and operate.
+- [x] Clearly separate tutoring availability from personal study timetable blocks.
+- [x] Clarify selected tutor, date, time, timezone and meeting type before booking.
+- [x] Preserve validation, conflict handling, self-booking protections and existing notifications.
+- [x] Present pending, confirmed, cancelled, completed and no-show states with permitted actions.
 - [ ] Refine post-session reviews and empty/loading/error states.
 
 **Acceptance:** search → tutor → slot → booking → status/review works end to end, including unavailable slots, cancellation and role-specific controls.
@@ -512,3 +512,9 @@ Selected timetable day is retained across create/delete/reflection saves and ver
 Dialogs now use the visible viewport with fixed action areas, scrollable fields, Escape and focus restoration. History adds search/date/format filters, detached-block labels and private-audio retry. Upload and playback routes require sign-in and file ownership; saved recordings cannot be attached across accounts. Reflection rows have app-only PostgreSQL RLS/grants. CI includes a browser journey through real Gin handlers, isolated PostgreSQL, temporary audio storage and two authenticated accounts.
 
 The source retention rule and legacy migration are covered by tests. Deletion now verifies the connected database's retention constraints and refuses to proceed on an unsafe/unverified schema; copy is based on that response. **Independent production migration verification remains unchecked:** the currently connected Supabase project contains no StudyLink timetable/reflection tables, and the connected Render workspace is not identified as this deployment. No unrelated database was changed. See [evidence and remaining verification](docs/redesign/reflection-history-privacy.md).
+
+### Tutoring and bookings (next five tasks; retention carryover closed)
+
+The connected `l2e-studylink` database was verified on 22 November 2026: the reflection parent is nullable, the activity snapshot is non-null and the validated foreign key uses SET NULL. The previously delivered reflection access policy was applied as `studylink_private_reflection_access` and rechecked: RLS enabled and no anon/authenticated/PUBLIC grants. No reflection rows or other project tables were changed.
+
+Tutor discovery now has labelled skill/date/availability filters, scan-friendly cards and a request review showing tutor, date, published time, shared booking timezone and meeting type. Tutoring hours are clearly separate from personal study blocks. Session cards expose all five statuses and only server-permitted actions. Booking creation validates active users and published hours, rejects past/self/overlapping requests, and serializes concurrent requests for both participants. Existing participant notifications and review flows are preserved. See [implementation and verification](docs/redesign/tutoring-bookings.md).
