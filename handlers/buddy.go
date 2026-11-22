@@ -127,6 +127,7 @@ func BuddyPage(c *gin.Context) {
 // ListBuddies returns accepted buddies, pending requests and available fellows.
 // Streak records are only disclosed for an accepted buddy relationship.
 func ListBuddies(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
 	database, ok := buddyDatabase(c)
 	if !ok {
 		return
