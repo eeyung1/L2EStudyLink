@@ -8,6 +8,7 @@ import { verifyApp } from './workspace.mjs';
 import { verifyReflections } from './reflections.mjs';
 import { verifyHistoryAndDialogs } from './history.mjs';
 import { verifyCommunity } from './community.mjs';
+import { verifyLearningCoach } from './learning-coach.mjs';
 import { verifyBookings } from './bookings.mjs';
 
 const root = process.cwd(), output = 'test-results/ui';
@@ -18,7 +19,9 @@ const server = createServer(async (req,res) => {
   const path = new URL(req.url,'http://localhost').pathname;
   let file;
   if(path.startsWith('/static/')) file = resolve(root,'.'+path);
-  else if(path === '/dashboard' || path === '/timetable' || path === '/reflections' || path === '/search-page' || path === '/my-bookings' || path === '/projects' || path === '/masterclasses' || path === '/buddies') file=resolve(root,'templates',({'/buddies':'buddy','/masterclasses':'masterclass'}[path]||path.slice(1))+'.html');
+  else if(path === '/dashboard' || path === '/timetable' || path === '/reflections' || path === '/search-page' || path === '/my-bookings' || path === '/projects' || path === '/masterclasses' || path === '/buddies' || path === '/planner') file=resolve(root,'templates',({'/buddies':'buddy','/masterclasses':'masterclass'}[path]||path.slice(1))+'.html');
+  else if(path === '/learn') file=resolve(root,'templates/learn.html');
+  else if(path.startsWith('/learn/')) file=resolve(root,'templates/article.html');
   else if(path === '/page/login') file=resolve(root,'templates/login.html');
   else {res.writeHead(404);res.end();return;}
   if(!file.startsWith(root+'/static/')&&!file.startsWith(root+'/templates/')) {res.writeHead(403);res.end();return;}
@@ -67,6 +70,7 @@ try {
   await verifyHistoryAndDialogs(browser,origin,output,evidence);
   await verifyBookings(browser,origin,output,evidence);
   await verifyCommunity(browser,origin,output,evidence);
+  await verifyLearningCoach(browser,origin,output,evidence);
   for(const theme of ['light','dark']) {
     const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
     const page=await context.newPage();

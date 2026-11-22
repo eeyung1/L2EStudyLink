@@ -101,17 +101,26 @@ func loadNotifications(ctx context.Context, database *sql.DB, userID, before int
 	if err := tx.QueryRowContext(ctx, `SELECT COUNT(*) FILTER(WHERE is_read=false),COALESCE(MAX(id),0) FROM notifications WHERE user_id=$1`, userID).Scan(&result.UnreadCount, &result.LastEventID); err != nil {
 		return result, err
 	}
-	rows, err := tx.QueryContext(ctx, `SELECT id,title,LEFT(message,1000),link_url,is_read,created_at FROM notifications WHERE user_id=$1 AND ($2::bigint=0 OR id<$2) ORDER BY id DESC LIMIT 21`, userID, before)
+	rows, err := tx.QueryContext(ctx, `SELECT id,title,LEFT(message,1000),link_url,is_read,created_at,event_key FROM notifications WHERE user_id=$1 AND ($2::bigint=0 OR id<$2) ORDER BY id DESC LIMIT 21`, userID, before)
 	if err != nil {
 		return result, err
 	}
 	for rows.Next() {
 		var item userNotification
-		if err := rows.Scan(&item.ID, &item.Title, &item.Message, &item.LinkURL, &item.IsRead, &item.CreatedAt); err != nil {
+        var eventKey string
+		if err := rows.Scan(&item.ID, &item.Title, &item.Message, &item.LinkURL, &item.IsRead, &item.CreatedAt, &eventKey); err != nil {
 			rows.Close()
 			return result, err
 		}
 		item.LinkURL = notificationLink(item.LinkURL)
+        // Existing persisted booking events can open their exact session
+        // without changing triggers or reading another participant's records.
+        parts := strings.Split(eventKey, ":")
+        if item.LinkURL == "/my-bookings" && len(parts) == 3 && parts[0] == "booking" {
+            if booking, err := strconv.ParseInt(parts[1], 10, 64); err == nil && booking > 0 {
+                item.LinkURL = fmt.Sprintf("/my-bookings?session=%d", booking)
+            }
+        }
 		result.Items = append(result.Items, item)
 	}
 	err = rows.Err()

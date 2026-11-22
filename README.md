@@ -97,9 +97,9 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [x] Make collaboration opt-in and request decisions clear.
 - [x] Expose and validate the existing buddy request/response journey.
 - [x] Align masterclass listing, creation, RSVP, seat availability and cancellation.
-- [ ] Improve Learning Hub article hierarchy, discussion/reply layout and moderation feedback.
-- [ ] Unify notification tray, unread states and navigation to relevant records.
-- [ ] Test long content, empty lists, permissions and partial API failures.
+- [x] Improve Learning Hub article hierarchy, discussion/reply layout and moderation feedback.
+- [x] Unify notification tray, unread states and navigation to relevant records.
+- [x] Test long content, empty lists, permissions and partial API failures.
 
 **Acceptance:** existing community actions are discoverable and retain their authorization and data-visibility rules. Do not advertise automated buddy matching, external nudges or notification coverage beyond verified implementation.
 
@@ -107,8 +107,8 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 
 #### Batch 5 — Weekly coach, focus and learner identity
 
-- [ ] Present weekly coverage, daily breakdown and coaching in readable layouts.
-- [ ] Clearly label scheduled/reflection-covered minutes as estimates, not verified hours worked.
+- [x] Present weekly coverage, daily breakdown and coaching in readable layouts.
+- [x] Clearly label scheduled/reflection-covered minutes as estimates, not verified hours worked.
 - [ ] Show provider-unavailable, rate-limit, empty-week and truncated-context states.
 - [ ] Keep the planner author's personal history out of other users' coaching.
 - [ ] Align focus-room join/leave, timer, participant and reflection handoff states.
@@ -116,6 +116,8 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [ ] Verify these flows using each user's own records.
 
 **Acceptance:** observed activity is visually distinct from AI suggestions. Saved reviews, long-term trends and new coaching capabilities are separate product work until delivered.
+
+**Learning/coverage evidence:** [Learning Hub, notification and coach guide](docs/redesign/learning-notifications-coach.md) records this five-item delivery, API boundaries and verification.
 
 #### Batch 6 — Landing, account and administration
 

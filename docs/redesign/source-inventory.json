@@ -613,25 +613,28 @@
         "#main",
         "/",
         "/learn",
-        "/page/signup",
+        "/page/login?next=%2Flearn",
         "/dashboard",
         "/learn",
+        "#discussion-heading",
         "/page/signup",
         "/page/login",
-        "/",
         "/learn"
       ],
       "styles": [
-        "/static/css/landing.css",
-        "/static/css/learn.css"
+        "/static/redesign/tokens.css",
+        "/static/css/reading.css"
       ],
       "scripts": [
+        "/static/js/reading-theme.js",
         "/static/js/public-nav.js",
         "/static/js/learn.js"
       ],
       "forms": 1,
-      "dialogs": [],
-      "controls": 2,
+      "dialogs": [
+        "moderationDialog"
+      ],
+      "controls": 7,
       "inline_styles": 0
     },
     "templates/availability.html": {
@@ -856,7 +859,9 @@
       "styles": [],
       "scripts": [],
       "forms": 0,
-      "dialogs": [],
+      "dialogs": [
+        "notification-panel"
+      ],
       "controls": 5,
       "inline_styles": 1
     },
@@ -864,27 +869,24 @@
       "links": [
         "#main",
         "/",
-        "/",
-        "/page/signup?next=%2Flearn",
+        "/learn",
+        "/page/login?next=%2Flearn",
         "/dashboard",
         "#latest",
-        "/learn/start-an-agentic-workflow#discussion-heading",
-        "/learn/start-an-agentic-workflow",
-        "/",
-        "/page/login?next=%2Flearn",
-        "/dashboard"
+        "/learn"
       ],
       "styles": [
-        "/static/css/landing.css",
-        "/static/css/learn.css"
+        "/static/redesign/tokens.css",
+        "/static/css/reading.css"
       ],
       "scripts": [
+        "/static/js/reading-theme.js",
         "/static/js/public-nav.js",
         "/static/js/learn.js"
       ],
-      "forms": 0,
+      "forms": 1,
       "dialogs": [],
-      "controls": 0,
+      "controls": 4,
       "inline_styles": 0
     },
     "templates/login.html": {
@@ -1012,23 +1014,26 @@
         "/learn",
         "/skills",
         "/availability",
-        "/admin"
+        "/admin",
+        "/timetable"
       ],
       "styles": [
         "/static/css/dashboard.css",
         "/static/css/dark-mode.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/coach.css"
       ],
       "scripts": [
         "/static/js/session.js",
-        "/static/js/mobile-nav.js"
+        "/static/js/mobile-nav.js",
+        "/static/js/weekly-coach.js"
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 7,
-      "inline_styles": 1
+      "controls": 8,
+      "inline_styles": 0
     },
     "templates/portfolio.html": {
       "links": [
