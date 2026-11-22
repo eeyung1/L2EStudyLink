@@ -6,3 +6,7 @@ uploads/*
 !uploads/.gitkeep
 .agent-worktrees/
 .agent-coordination-lock/
+
+# UI verification tools and generated evidence
+/node_modules/
+/test-results/

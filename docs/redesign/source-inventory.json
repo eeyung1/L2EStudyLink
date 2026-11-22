@@ -1,0 +1,1152 @@
+{
+  "baseline_commit": "5e2309e14a98ed7f03aca5c8620b599cbdb1c581",
+  "notes": [
+    "Paths retain the route-group spelling in source; api/protected groups use /api/v1 and admin uses /api/v1/admin.",
+    "Source inventory is not a production authorization or device audit.",
+    "Generic /page/:name and article/portfolio dynamic routes require representative runtime coverage."
+  ],
+  "main_routes": [
+    {
+      "method": "GET",
+      "path": "/",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/learn",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/learn/:slug",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/skills",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/availability",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/search-page",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/my-bookings",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/admin",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/page/forgot-password",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/page/reset-password",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/reflections",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/portfolio",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/u/:handle",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/planner",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/focus",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/buddies",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/masterclasses",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/masterclass",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/projects",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/page/:name",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "scope": "router"
+    },
+    {
+      "method": "POST",
+      "path": "/signup",
+      "scope": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/login",
+      "scope": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/forgot-password",
+      "scope": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/reset-password",
+      "scope": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/logout",
+      "scope": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/ping",
+      "scope": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/search",
+      "scope": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/search-with-availability",
+      "scope": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/tutors/:id",
+      "scope": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/articles",
+      "scope": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/articles/:slug",
+      "scope": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/articles/:slug/comments",
+      "scope": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/portfolio/:handle",
+      "scope": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/voice/upload",
+      "scope": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/voice/upload",
+      "scope": "router"
+    },
+    {
+      "method": "GET",
+      "path": "/masterclasses",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/masterclasses",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/masterclasses/:id/rsvp",
+      "scope": "protected"
+    },
+    {
+      "method": "DELETE",
+      "path": "/masterclasses/:id/rsvp",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/masterclasses/:id/cancel",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/buddies",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/buddies/request",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/buddies/respond",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/me",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/me/streaks",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/planner/week",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/planner/analyze",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/portfolio/me",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/portfolio/handle",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/portfolio/visibility",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/articles/:slug/comments",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/session/migrate",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/profile",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/me/product-emails",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/skills",
+      "scope": "protected"
+    },
+    {
+      "method": "DELETE",
+      "path": "/skills/:skill",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/skills/:skill",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/availability",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/availability",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/bookings",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/bookings",
+      "scope": "protected"
+    },
+    {
+      "method": "DELETE",
+      "path": "/bookings/:id",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/bookings/:id/status",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/bookings/:id/outcome",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/bookings/:id/reviews",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/stats",
+      "scope": "admin"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "scope": "admin"
+    },
+    {
+      "method": "GET",
+      "path": "/product-email-audience",
+      "scope": "admin"
+    },
+    {
+      "method": "GET",
+      "path": "/product-email-audience.csv",
+      "scope": "admin"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users/:id",
+      "scope": "admin"
+    },
+    {
+      "method": "PUT",
+      "path": "/users/:id/suspend",
+      "scope": "admin"
+    },
+    {
+      "method": "GET",
+      "path": "/bookings",
+      "scope": "admin"
+    },
+    {
+      "method": "POST",
+      "path": "/articles",
+      "scope": "admin"
+    },
+    {
+      "method": "DELETE",
+      "path": "/articles/comments/:id",
+      "scope": "admin"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable",
+      "scope": "protected"
+    },
+    {
+      "method": "DELETE",
+      "path": "/timetable/:id",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/reflections",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/reflections",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/collaboration/preferences",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/collaboration/preferences",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/collaborators",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/projects",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/projects",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/projects/:id",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/projects/:id/status",
+      "scope": "protected"
+    },
+    {
+      "method": "POST",
+      "path": "/projects/:id/requests",
+      "scope": "protected"
+    },
+    {
+      "method": "GET",
+      "path": "/project-requests",
+      "scope": "protected"
+    },
+    {
+      "method": "PUT",
+      "path": "/project-requests/:id/status",
+      "scope": "protected"
+    }
+  ],
+  "handler_routes": [
+    {
+      "source": "handlers/focus.go",
+      "method": "GET",
+      "path": "/focus/rooms"
+    },
+    {
+      "source": "handlers/focus.go",
+      "method": "POST",
+      "path": "/focus/rooms"
+    },
+    {
+      "source": "handlers/focus.go",
+      "method": "POST",
+      "path": "/focus/rooms/:id/join"
+    },
+    {
+      "source": "handlers/focus.go",
+      "method": "PUT",
+      "path": "/focus/rooms/:id/target"
+    },
+    {
+      "source": "handlers/focus.go",
+      "method": "DELETE",
+      "path": "/focus/rooms/:id/membership"
+    },
+    {
+      "source": "handlers/focus.go",
+      "method": "GET",
+      "path": "/focus/stream"
+    },
+    {
+      "source": "handlers/notifications.go",
+      "method": "GET",
+      "path": "/notifications"
+    },
+    {
+      "source": "handlers/notifications.go",
+      "method": "GET",
+      "path": "/notifications/widget"
+    },
+    {
+      "source": "handlers/notifications.go",
+      "method": "GET",
+      "path": "/notifications/stream"
+    },
+    {
+      "source": "handlers/notifications.go",
+      "method": "PUT",
+      "path": "/notifications/read"
+    },
+    {
+      "source": "handlers/notifications.go",
+      "method": "PUT",
+      "path": "/notifications/:id/read"
+    }
+  ],
+  "screens": {
+    "templates/admin.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/skills",
+        "/availability",
+        "/learn",
+        "/projects",
+        "/masterclass",
+        "/timetable",
+        "/reflections",
+        "/admin",
+        "/learn",
+        "/api/v1/admin/product-email-audience.csv"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "https://cdn.tailwindcss.com",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js"
+      ],
+      "forms": 2,
+      "dialogs": [],
+      "controls": 11,
+      "inline_styles": 0
+    },
+    "templates/article.html": {
+      "links": [
+        "#main",
+        "/",
+        "/learn",
+        "/page/signup",
+        "/dashboard",
+        "/learn",
+        "/page/signup",
+        "/page/login",
+        "/",
+        "/learn"
+      ],
+      "styles": [
+        "/static/css/landing.css",
+        "/static/css/learn.css"
+      ],
+      "scripts": [
+        "/static/js/public-nav.js",
+        "/static/js/learn.js"
+      ],
+      "forms": 1,
+      "dialogs": [],
+      "controls": 2,
+      "inline_styles": 0
+    },
+    "templates/availability.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/skills",
+        "/availability",
+        "/learn",
+        "/projects",
+        "/masterclass",
+        "/timetable",
+        "/reflections",
+        "/admin"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js",
+        "/static/js/settings.js"
+      ],
+      "forms": 1,
+      "dialogs": [],
+      "controls": 7,
+      "inline_styles": 1
+    },
+    "templates/buddy.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/buddies",
+        "/planner",
+        "/projects",
+        "/focus",
+        "/reflections"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "https://cdn.tailwindcss.com",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js"
+      ],
+      "forms": 0,
+      "dialogs": [],
+      "controls": 4,
+      "inline_styles": 1
+    },
+    "templates/dashboard.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/skills",
+        "/availability",
+        "/learn",
+        "/projects",
+        "/masterclass",
+        "/timetable",
+        "/reflections",
+        "/admin",
+        "/skills",
+        "/availability",
+        "/projects",
+        "/skills",
+        "/availability",
+        "/masterclass"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500;600&display=swap",
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js",
+        "/static/js/read-api.js",
+        "/static/js/heatmap.js"
+      ],
+      "forms": 0,
+      "dialogs": [],
+      "controls": 4,
+      "inline_styles": 1
+    },
+    "templates/focus.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/timetable",
+        "/reflections",
+        "/planner",
+        "/focus",
+        "/projects",
+        "/timetable"
+      ],
+      "styles": [
+        "/static/css/dashboard.css",
+        "/static/css/dark-mode.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/session.js",
+        "/static/js/mobile-nav.js",
+        "/static/js/focus-room.js"
+      ],
+      "forms": 2,
+      "dialogs": [],
+      "controls": 11,
+      "inline_styles": 1
+    },
+    "templates/forgot-password.html": {
+      "links": [
+        "/",
+        "/page/login",
+        "/page/login"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap",
+        "/static/css/login.css",
+        "/static/css/auth-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js"
+      ],
+      "forms": 1,
+      "dialogs": [],
+      "controls": 2,
+      "inline_styles": 0
+    },
+    "templates/landing.html": {
+      "links": [
+        "#main",
+        "/",
+        "/learn",
+        "/page/login",
+        "/page/signup",
+        "/dashboard",
+        "/page/signup",
+        "/page/login",
+        "/learn",
+        "/learn/start-an-agentic-workflow",
+        "/page/signup",
+        "/",
+        "/learn",
+        "/page/login",
+        "/dashboard"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/landing.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "/static/js/public-nav.js"
+      ],
+      "forms": 0,
+      "dialogs": [],
+      "controls": 0,
+      "inline_styles": 0
+    },
+    "templates/layout.html": {
+      "links": [],
+      "styles": [],
+      "scripts": [],
+      "forms": 0,
+      "dialogs": [],
+      "controls": 5,
+      "inline_styles": 1
+    },
+    "templates/learn.html": {
+      "links": [
+        "#main",
+        "/",
+        "/",
+        "/page/signup?next=%2Flearn",
+        "/dashboard",
+        "#latest",
+        "/learn/start-an-agentic-workflow#discussion-heading",
+        "/learn/start-an-agentic-workflow",
+        "/",
+        "/page/login?next=%2Flearn",
+        "/dashboard"
+      ],
+      "styles": [
+        "/static/css/landing.css",
+        "/static/css/learn.css"
+      ],
+      "scripts": [
+        "/static/js/public-nav.js",
+        "/static/js/learn.js"
+      ],
+      "forms": 0,
+      "dialogs": [],
+      "controls": 0,
+      "inline_styles": 0
+    },
+    "templates/login.html": {
+      "links": [
+        "/",
+        "/",
+        "/page/forgot-password",
+        "/page/signup"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap",
+        "/static/css/login.css",
+        "/static/css/auth-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "/static/js/learning-return.js"
+      ],
+      "forms": 1,
+      "dialogs": [],
+      "controls": 4,
+      "inline_styles": 0
+    },
+    "templates/masterclass.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/skills",
+        "/availability",
+        "/learn",
+        "/projects",
+        "/masterclass",
+        "/timetable",
+        "/reflections",
+        "/admin"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "https://cdn.tailwindcss.com",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js"
+      ],
+      "forms": 4,
+      "dialogs": [],
+      "controls": 21,
+      "inline_styles": 1
+    },
+    "templates/my-bookings.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/skills",
+        "/availability",
+        "/learn",
+        "/projects",
+        "/masterclass",
+        "/timetable",
+        "/reflections",
+        "/admin",
+        "/search-page"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "https://cdn.tailwindcss.com",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js"
+      ],
+      "forms": 0,
+      "dialogs": [],
+      "controls": 3,
+      "inline_styles": 0
+    },
+    "templates/planner.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/timetable",
+        "/reflections",
+        "/planner",
+        "/projects"
+      ],
+      "styles": [
+        "/static/css/dashboard.css",
+        "/static/css/dark-mode.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/session.js",
+        "/static/js/mobile-nav.js"
+      ],
+      "forms": 1,
+      "dialogs": [],
+      "controls": 7,
+      "inline_styles": 1
+    },
+    "templates/portfolio.html": {
+      "links": [
+        "#main",
+        "/",
+        "/learn",
+        "/page/signup",
+        "/dashboard",
+        "/",
+        "/learn"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/landing.css",
+        "/static/css/learn.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/public-nav.js",
+        "/static/js/heatmap.js"
+      ],
+      "forms": 1,
+      "dialogs": [],
+      "controls": 3,
+      "inline_styles": 1
+    },
+    "templates/projects.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/skills",
+        "/availability",
+        "/learn",
+        "/projects",
+        "/masterclass",
+        "/timetable",
+        "/reflections",
+        "/admin",
+        "#projectList"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "https://cdn.tailwindcss.com",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js"
+      ],
+      "forms": 1,
+      "dialogs": [],
+      "controls": 10,
+      "inline_styles": 0
+    },
+    "templates/reflections.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/skills",
+        "/availability",
+        "/learn",
+        "/projects",
+        "/masterclass",
+        "/timetable",
+        "/reflections",
+        "/admin",
+        "/timetable"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "https://cdn.tailwindcss.com",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js",
+        "/static/js/read-api.js",
+        "/static/js/heatmap.js"
+      ],
+      "forms": 0,
+      "dialogs": [],
+      "controls": 5,
+      "inline_styles": 0
+    },
+    "templates/reset-password.html": {
+      "links": [
+        "/",
+        "/page/login",
+        "/page/forgot-password",
+        "/page/login"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap",
+        "/static/css/login.css",
+        "/static/css/auth-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js"
+      ],
+      "forms": 1,
+      "dialogs": [],
+      "controls": 5,
+      "inline_styles": 0
+    },
+    "templates/search-page.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/skills",
+        "/availability",
+        "/learn",
+        "/projects",
+        "/masterclass",
+        "/timetable",
+        "/reflections",
+        "/admin",
+        "/masterclass"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "https://cdn.tailwindcss.com",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js"
+      ],
+      "forms": 0,
+      "dialogs": [
+        "tutorModal",
+        "modalTitle",
+        "modalContent"
+      ],
+      "controls": 12,
+      "inline_styles": 0
+    },
+    "templates/signup.html": {
+      "links": [
+        "/",
+        "/page/login",
+        "/page/login"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap",
+        "/static/css/login.css",
+        "/static/css/auth-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "/static/js/learning-return.js"
+      ],
+      "forms": 1,
+      "dialogs": [],
+      "controls": 5,
+      "inline_styles": 0
+    },
+    "templates/skills.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/skills",
+        "/availability",
+        "/learn",
+        "/projects",
+        "/masterclass",
+        "/timetable",
+        "/reflections",
+        "/admin"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js",
+        "/static/js/settings.js"
+      ],
+      "forms": 1,
+      "dialogs": [],
+      "controls": 7,
+      "inline_styles": 1
+    },
+    "templates/timetable.html": {
+      "links": [
+        "/dashboard",
+        "/dashboard",
+        "/search-page",
+        "/my-bookings",
+        "/skills",
+        "/availability",
+        "/learn",
+        "/projects",
+        "/masterclass",
+        "/timetable",
+        "/reflections",
+        "/admin",
+        "/reflections"
+      ],
+      "styles": [
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
+        "/static/css/dark-mode.css",
+        "/static/css/dashboard.css",
+        "/static/css/ui-polish.css"
+      ],
+      "scripts": [
+        "/static/js/pwa.js",
+        "https://cdn.tailwindcss.com",
+        "/static/js/mobile-nav.js",
+        "/static/js/session.js",
+        "/static/js/read-api.js",
+        "/static/js/voice-reflection.js"
+      ],
+      "forms": 0,
+      "dialogs": [
+        "addModal",
+        "deleteBlockDialog",
+        "reflectionModal",
+        "unnamed"
+      ],
+      "controls": 40,
+      "inline_styles": 0
+    }
+  }
+}

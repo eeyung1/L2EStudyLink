@@ -1,0 +1,26 @@
+/* Opt-in semantic tokens. Production templates do not consume this file yet. */
+.l2e-preview {
+  --l2e-canvas: #f4f7f6; --l2e-surface: #ffffff; --l2e-subtle: #edf3f0;
+  --l2e-text: #142d26; --l2e-secondary: #4f655d; --l2e-muted: #5a6e65;
+  --l2e-border: #dbe5df; --l2e-accent: #08734d; --l2e-accent-hover: #055537;
+  --l2e-accent-soft: #e4f4ec; --l2e-on-accent: #ffffff;
+  --l2e-warning: #815700; --l2e-warning-soft: #fff3d6;
+  --l2e-error: #a32931; --l2e-error-soft: #fff0ef;
+  --l2e-focus: #08734d; --l2e-shadow: 0 6px 24px #163d2710;
+  --l2e-space-1: 4px; --l2e-space-2: 8px; --l2e-space-3: 12px;
+  --l2e-space-4: 16px; --l2e-space-5: 24px; --l2e-space-6: 32px; --l2e-space-7: 48px;
+  --l2e-radius-sm: 10px; --l2e-radius-md: 16px; --l2e-radius-lg: 24px;
+  --l2e-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --l2e-title: clamp(1.8rem, 2.8vw, 2.6rem); --l2e-body: 1rem;
+  --l2e-icon: 20px; --l2e-stroke: 1.7; --l2e-touch: 44px; --l2e-duration: 160ms;
+  color-scheme: light;
+}
+.l2e-preview[data-l2e-theme="dark"] {
+  --l2e-canvas: #101c20; --l2e-surface: #19292c; --l2e-subtle: #213639;
+  --l2e-text: #edf7f1; --l2e-secondary: #bdcfc7; --l2e-muted: #a7beb4;
+  --l2e-border: #38504b; --l2e-accent: #8de2ba; --l2e-accent-hover: #b7f2d4;
+  --l2e-accent-soft: #25443a; --l2e-on-accent: #102c20;
+  --l2e-warning: #f6d48c; --l2e-warning-soft: #44391f;
+  --l2e-error: #ffb3b8; --l2e-error-soft: #492d33; --l2e-focus: #8de2ba;
+  --l2e-shadow: 0 6px 24px #0002; color-scheme: dark;
+}
