@@ -27,7 +27,8 @@ const evidence={fixtureOnly:true,baselineCommit:'5e2309e14a98ed7f03aca5c8620b599
 try {
   // Baseline: existing template HTML and JS, unchanged. APIs use fictional fixtures.
   for(const width of [390,1440]) for(const view of ['dashboard','timetable']) for(const state of ['populated','empty','loading','error','expired']) {
-    const page=await browser.newPage({viewport:{width,height:950},timezoneId:'Africa/Lagos'});
+    const context=await browser.newContext({viewport:{width,height:950},timezoneId:'Africa/Lagos'});
+    const page=await context.newPage();
     await page.clock.setFixedTime(new Date('2026-11-23T10:00:00+01:00'));
     page.on('requestfailed',r=>{if(!r.url().startsWith(origin))evidence.externalAssetFailures.push({url:r.url(),reason:r.failure()?.errorText});});
     await page.route('**/api/v1/**',async route=>{
@@ -46,16 +47,17 @@ try {
     await page.goto(origin+'/'+view,{waitUntil:'domcontentloaded'});
     if(state==='expired') await page.waitForURL('**/page/login',{waitUntil:'domcontentloaded'});
     else if(state==='populated'||state==='empty') {if(view==='dashboard')await page.locator('#greeting').filter({hasText:'Demo Fellow'}).waitFor();else await page.locator('#day-0').waitFor();}
-    else if(state==='error') {if(view==='dashboard')await page.getByText('Projects are unavailable right now').waitFor();else await page.getByText(/Could not load timetable/).waitFor();}
+    else if(state==='error') {if(view==='dashboard')await page.getByText('Projects are unavailable right now').scrollIntoViewIfNeeded();else await page.getByText(/Could not load timetable/).scrollIntoViewIfNeeded();}
     else await page.waitForTimeout(200);
     const file=`baseline-${view}-${state}-${width}.png`;
     await page.screenshot({path:output+'/'+file,fullPage:false});
     evidence.screenshots.push(file);
     evidence.baselineObservations.push({view,state,width,url:new URL(page.url()).pathname,overflow:await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),pageErrors:'Not asserted for baseline; existing failures must be triaged separately.'});
-    await page.close();
+    await context.close();
   }
   for(const theme of ['light','dark']) {
-    const page=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
+    const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
+    const page=await context.newPage();
     const errors=[];let apiRequests=0;
     page.on('pageerror',e=>errors.push(e.message));
     await page.route('**/api/**',route=>{apiRequests++;return route.abort();});
@@ -96,7 +98,7 @@ try {
     await page.getByRole('status').filter({hasText:'Preview only'}).waitFor();
     await page.reload();assert.equal(await page.locator('body').getAttribute('data-l2e-theme'),theme,'theme persistence');
     assert.equal(apiRequests,0,'preview must not call account APIs');assert.deepEqual(errors,[]);
-    await page.close();
+    await context.close();
   }
   console.log('UI checks passed: baseline state captures, responsive previews, touch targets, clearance, WCAG scans, state recovery, menus, themes and zero preview API calls.');
 } finally {
