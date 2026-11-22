@@ -116,3 +116,4 @@
 .l2e-workspace .dialog-footer .reflection-feedback { max-height:80px;overflow:auto;margin:0; }
 .l2e-workspace #deleteBlockDialog { top:var(--l2e-visible-top,0px);bottom:auto;margin:12px auto;max-height:calc(var(--l2e-visible-height,100dvh) - 24px);overflow:auto; }
 .l2e-workspace .heatmap-footer span { color:var(--l2e-secondary)!important; }
+.l2e-workspace .l2e-ui #reflectionStreakSection p { color:var(--l2e-secondary)!important; }
