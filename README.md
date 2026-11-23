@@ -586,3 +586,20 @@ The initial Vercel project is deployed through the connected API because Vercel 
 - [x] Export only the public, template-free landing HTML to Vercel with its public assets; private pages and APIs remain on Render.
 
 The page uses the existing semantic tokens and vanilla JavaScript tabs. Planning, shared learning and private reflection remain the three real product outcomes; the preview is clearly labelled fictional. Benchmark references: [Notion Calendar](https://www.notion.com/product/calendar), [Focusmate](https://www.focusmate.com/how-it-works/) and [Todoist](https://www.todoist.com/). The custom domain is https://www.l2estudylink.com; its Render `PUBLIC_ORIGIN` and Vercel project-level redirect were configured after PR #77. Full owner acceptance on physical devices remains outstanding.
+
+### Consistent frontend refinement — first ten items
+
+The agreed scope is 25 optimization items: five shared improvements plus 20 remaining page templates (the portfolio has owner/public states). This batch delivers items 1–10. Shared styles reach the remaining pages; their individual content/layout refinements remain items 11–25.
+
+- [x] 1. Workspace navigation: consistent SVG branding and appearance controls, grouped links, explicit profile/skills and learner portfolio access.
+- [x] 2. Public/account navigation: compact public header, responsive controls and shared appearance semantics.
+- [x] 3. Shared visual system: one scoped final visual layer for type, controls, cards, theme tokens and focus treatment.
+- [x] 4. Forms/dialogs: consistent field spacing, secondary controls, readable feedback and safe-area/reduced-motion treatment; preserve existing confirmation/focus controllers.
+- [x] 5. States/verification: preserve loading/retry/empty/unsaved states and add dedicated account geometry, contrast, appearance persistence, busy/error retention and profile-layout checks.
+- [x] 6. Login: balanced entry layout, clear return information, password visibility and accessible request feedback.
+- [x] 7. Signup: deliberate consent, associated password guidance and clear transition to sign-in.
+- [x] 8. Forgot password: focused recovery step and honest inbox/delivery guidance.
+- [x] 9. Reset password: clear second step, expiry/one-use guidance and preserved mismatch/expired-code recovery.
+- [x] 10. Profile/skills: separate identity, preferences/sharing and skills sections with existing save/remove protections.
+
+Remaining items: 11 Dashboard; 12 Timetable; 13 Reflections; 14 Tutor discovery; 15 Study sessions; 16 Availability; 17 Weekly coach; 18 Focus room; 19 Buddies; 20 Masterclasses; 21 Projects; 22 Learning Hub; 23 Article/discussion; 24 Portfolio; 25 Administration. Existing APIs, schema, cookie authentication, consent, pagination, availability revisions and unsaved-work guards remain unchanged. The public login/signup/recovery/reset shells are also exported to Vercel; authenticated profile data and all account API requests remain on Render. The expanded fixture suite uses fictional accounts; real-server CI remains required before merge. Production email delivery and owner physical-device acceptance remain separate checks.

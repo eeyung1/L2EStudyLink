@@ -12,6 +12,7 @@ import { verifyHistoryAndDialogs } from './history.mjs';
 import { verifyCommunity } from './community.mjs';
 import { verifyLearningCoach } from './learning-coach.mjs';
 import { verifyFocusIdentity } from './focus-identity.mjs';
+import { verifySharedAccount } from './shared-account.mjs';
 import { verifyPublicAccountAdmin } from './public-account-admin.mjs';
 import { verifyBookings } from './bookings.mjs';
 
@@ -80,6 +81,7 @@ try {
   await verifyLearningCoach(browser,origin,output,evidence);
   await verifyFocusIdentity(browser,origin,output,evidence);
   await verifyPublicAccountAdmin(browser,origin,output,evidence);
+  await verifySharedAccount(browser,origin,output,evidence);
   for(const theme of ['light','dark']) {
     const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
     const page=await context.newPage();
