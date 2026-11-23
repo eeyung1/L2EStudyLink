@@ -132,7 +132,7 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 
 **Acceptance:** public/account/admin journeys share the design system, with correctly labelled forms, clear recovery paths and no unintended changes to consent.
 
-**Delivery evidence:** [PR #74](https://github.com/eeyung1/L2EStudyLink/pull/74) and the [public, account and admin guide](docs/redesign/public-account-admin.md) records scope, automated checks and remaining acceptance limits. The server authorization/public-content audit remains a separate unchecked item.
+**Delivery evidence:** [PR #74](https://github.com/eeyung1/L2EStudyLink/pull/74) and the [public, account and admin guide](docs/redesign/public-account-admin.md) record scope, automated checks and remaining acceptance limits. The server authorization/public-content audit remains a separate unchecked item.
 
 #### Batch 7 — Release audit and acceptance
 
