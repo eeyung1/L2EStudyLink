@@ -10,6 +10,7 @@ uploads/*
 # UI verification tools and generated evidence
 /node_modules/
 /test-results/
+/vercel-public/
 
 # Compiled deployment artifact
 /L2EStudyLink
