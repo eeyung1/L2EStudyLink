@@ -28,7 +28,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
+<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script><link rel="stylesheet" href="/static/css/blue-workspace.css"><script src="/static/js/workspace-tools.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
@@ -60,7 +60,7 @@
             <div><label for="sessionStatus">Session status</label><select id="sessionStatus"><option value="all">All statuses</option><option value="pending">Pending confirmation</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option><option value="no_show">No-show</option></select></div>
             <div><label for="sessionRole">My role</label><select id="sessionRole"><option value="all">Learning and tutoring</option><option value="student">Learning</option><option value="tutor">Tutoring</option></select></div>
         </form>
-        <p id="bookingNotice" class="booking-feedback" role="status" aria-live="polite"></p>
+        <div class="workspace-filter-bar"><div class="learning-chips" role="group" aria-label="Quick session role"><button type="button" data-session-role="all" aria-pressed="true">Both roles</button><button type="button" data-session-role="student" aria-pressed="false">I’m learning</button><button type="button" data-session-role="tutor" aria-pressed="false">I’m tutoring</button></div><button id="clearSessionFilters" class="workspace-secondary" type="button">Reset session filters</button></div><p id="sessionCount" class="workspace-selection" role="status" aria-live="polite"></p><p id="bookingNotice" class="booking-feedback" role="status" aria-live="polite"></p>
         <div id="bookingsList" aria-busy="true"><p class="l2e-loading">Loading study sessions…</p></div>
     </section>
         </main>

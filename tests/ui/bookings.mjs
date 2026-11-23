@@ -21,7 +21,7 @@ export async function verifyBookings(browser,origin,output,evidence){
             await route.fulfill({status:200,json:body});
         });
         await page.goto(origin+'/search-page');await page.locator('#bookingClock').getByText(/Shared booking clock/).waitFor();await page.locator('#skillSearch').fill('Go');await page.locator('#dateSearch').fill('2026-11-24');await page.locator('#searchButton').click();await page.getByRole('heading',{name:'Go <mentor>',exact:true}).waitFor();
-        assert.equal(await page.locator('.tutor-card').count(),2);assert.equal(await page.getByRole('button',{name:'View and request session',exact:true}).count(),1);assert.equal(await page.evaluate(()=>window.pwned),undefined);
+        await page.locator('#tutorOrder').selectOption('rating');assert.equal(await page.locator('.tutor-card h2').first().textContent(),'Go <mentor>');await page.locator('#tutorOrder').selectOption('name');assert.equal(await page.locator('.tutor-card h2').first().textContent(),'Go <mentor>');assert.equal(await page.locator('.tutor-card').count(),2);assert.equal(await page.getByRole('button',{name:'View and request session',exact:true}).count(),1);assert.equal(await page.evaluate(()=>window.pwned),undefined);
         await page.locator('#availableOnly').uncheck();assert.equal(await page.locator('.tutor-card').count(),3);await page.locator('#availableOnly').check();
         for(const width of [320,390,768,1440]){
             await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${theme} ${width} search overflow`);

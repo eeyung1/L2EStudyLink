@@ -29,6 +29,7 @@
         results.replaceChildren();const selectedDay=day(date.value),only=document.getElementById('availableOnly').checked;
         const visible=tutors.filter(t=>!only||(t.availability||[]).some(a=>a.day_of_week===selectedDay));
         feedback.textContent=visible.length?`${visible.length} tutor${visible.length===1?'':'s'} found. Times use ${bookingClock.timezone}.`:'No matching tutors for these filters. Try another skill/date or include tutors without hours on this date.';
+        const order=document.getElementById('tutorOrder')?.value;if(order==='rating')visible.sort((a,b)=>(Number(b.rating)||0)-(Number(a.rating)||0)||String(a.name).localeCompare(String(b.name)));if(order==='name')visible.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
         visible.forEach(t=>{
             const card=node('article',undefined,'tutor-card');card.append(node('h2',t.name),node('p',`${Number(t.rating)||0} / 5 · ${Number(t.total_reviews)||0} reviews`),node('p',t.bio||'No introduction added yet.'));
             const selected=(t.availability||[]).filter(a=>a.day_of_week===selectedDay);card.append(node('p',selected.length?'Tutoring hours: '+selected.map(a=>time(a.start_time)+'–'+time(a.end_time)).join(' · '):'No published tutoring hours for this date.','l2e-muted'));
@@ -37,14 +38,15 @@
     }
     async function search(event){
         event?.preventDefault();if(!form.reportValidity())return;
-        const version=++searchVersion,button=document.getElementById('searchButton');button.disabled=true;results.setAttribute('aria-busy','true');feedback.textContent='Finding tutors and checking the booking clock…';
+        const version=++searchVersion,button=document.getElementById('searchButton');button.disabled=true;const order=document.getElementById('tutorOrder');if(order)order.disabled=true;results.setAttribute('aria-busy','true');feedback.textContent='Finding tutors and checking the booking clock…';
         try {
             const [found,serverClock,me]=await Promise.all([api('/search-with-availability?skill='+encodeURIComponent(skill.value.trim())),clock(),window.bookingUser?Promise.resolve(window.bookingUser):api('/me')]);
             window.bookingUser=me;
             if(version!==searchVersion)return;if(!Array.isArray(found))throw Error('Unexpected tutor results');bookingClock=serverClock;date.min=serverClock.today;if(date.value<serverClock.today)throw Error('Choose today or a future date in the shared booking clock');tutors=found;document.getElementById('bookingClock').textContent='Shared booking clock: '+serverClock.timezone+'. Your device: '+Intl.DateTimeFormat().resolvedOptions().timeZone+'. Published tutoring hours use the shared clock.';render();
         }catch(e){if(version!==searchVersion)return;results.replaceChildren();feedback.replaceChildren(document.createTextNode(e.message+' '));const retry=node('button','Retry search');retry.type='button';retry.addEventListener('click',search);feedback.append(retry);}
-        finally{if(version===searchVersion){button.disabled=false;results.setAttribute('aria-busy','false');}}
+        finally{if(version===searchVersion){button.disabled=false;if(order)order.disabled=false;results.setAttribute('aria-busy','false');}}
     }
+    document.getElementById('tutorOrder')?.addEventListener('change',()=>{if(bookingClock)render();});
     form.addEventListener('submit',search);document.getElementById('availableOnly').addEventListener('change',()=>{if(bookingClock)render();});
     bookingDate.addEventListener('change',updateSlots);for(const id of ['timeSlot','topic','meetingType'])document.getElementById(id).addEventListener(id==='topic'?'input':'change',review);
     for(const id of ['closeTutor','cancelTutor'])document.getElementById(id).addEventListener('click',()=>{if(!sending)dialog.close();});

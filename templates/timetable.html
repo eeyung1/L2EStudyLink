@@ -28,7 +28,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
+<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script><link rel="stylesheet" href="/static/css/blue-workspace.css"><script src="/static/js/workspace-tools.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
@@ -76,7 +76,7 @@
                 <button type="button" data-day="6" onclick="selectTimetableDay(6)">Sun</button>
                 <button type="button" data-day="all" onclick="selectTimetableDay('all')">Week</button>
             </nav>
-            <p class="l2e-muted" id="agendaHelp">Recurring schedule · times use your local timetable clock. Select a day, or choose Week for an overview.</p>
+            <p id="selectedDayLabel" class="workspace-selection" role="status" aria-live="polite"></p><details class="workspace-details"><summary>How planning and reflections fit together</summary><p>Study blocks repeat weekly. Choose a block to record what you learned for a particular day. Deleting a block keeps your earlier reflections in history.</p></details><p class="l2e-muted" id="agendaHelp">Recurring schedule · times use your local timetable clock. Select a day, or choose Week for an overview.</p>
             <div id="timetable" class="l2e-timetable" aria-live="polite" aria-busy="true">Loading timetable…</div>
         </div>
     </div>

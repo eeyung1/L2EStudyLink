@@ -10,7 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
         link.classList.toggle('active', active);
         if (active) link.setAttribute('aria-current','page'); else link.removeAttribute('aria-current');
     });
-    const focusable = () => Array.from(sidebar.querySelectorAll('a[href], button:not([disabled])'))
+    const search=sidebar.querySelector('#workspaceNavSearch'),clear=sidebar.querySelector('#workspaceNavClear'),count=sidebar.querySelector('#workspaceNavCount');
+    function filterPages(){if(!search)return;const query=search.value.trim().toLocaleLowerCase();let matches=0;for(const link of sidebar.querySelectorAll('.sidebar-nav a[href]')){const match=!query||link.textContent.toLocaleLowerCase().includes(query);link.hidden=!match;if(match&&!link.closest('#adminNavLink.hidden'))matches++;}for(const group of sidebar.querySelectorAll('.workspace-nav-group'))group.hidden=![...group.querySelectorAll('a')].some(a=>!a.hidden);count.hidden=!query;clear.hidden=!query;count.textContent=matches+' matching page'+(matches===1?'':'s');}
+    search?.addEventListener('input',filterPages);clear?.addEventListener('click',()=>{search.value='';filterPages();search.focus();});
+    const focusable = () => Array.from(sidebar.querySelectorAll('a[href], button:not([disabled]), input:not([disabled])'))
         .filter(element => element.getClientRects().length > 0);
     const setOpen = (open, restoreFocus = false) => {
         sidebar.classList.toggle('menu-open', open);

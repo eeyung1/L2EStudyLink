@@ -28,7 +28,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
+<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script><link rel="stylesheet" href="/static/css/blue-workspace.css"><script src="/static/js/workspace-tools.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
@@ -64,7 +64,7 @@
         </form>
         <p id="bookingClock" class="l2e-muted" role="status">Loading shared booking clock…</p>
         <p id="searchFeedback" role="status" aria-live="polite">Choose a skill and date to find a study partner.</p>
-        <div class="learning-toolbar"><button type="button" class="secondary" id="clearTutorSearch">Clear skill &amp; availability filter</button><p class="learning-hint">Your selected date stays in place.</p></div><div id="searchResults" class="tutor-grid" aria-busy="false"></div>
+        <div class="learning-toolbar"><button type="button" class="secondary" id="clearTutorSearch">Clear skill &amp; availability filter</button><p class="learning-hint">Your selected date stays in place.</p></div><label class="workspace-sort" for="tutorOrder">Order matching tutors<select id="tutorOrder"><option value="recommended">Search order</option><option value="rating">Highest rating first</option><option value="name">Name A–Z</option></select></label><div id="searchResults" class="tutor-grid" aria-busy="false"></div>
     </section>
         </main>
     </div>

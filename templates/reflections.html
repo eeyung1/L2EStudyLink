@@ -28,7 +28,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
+<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script><link rel="stylesheet" href="/static/css/blue-workspace.css"><script src="/static/js/workspace-tools.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
@@ -84,7 +84,7 @@
                 <div><label for="reflectionMediaFilter">Format</label><select id="reflectionMediaFilter" aria-controls="reflectionsList"><option value="all">All reflections</option><option value="voice">With voice note</option><option value="text">Text only</option></select></div>
                 <button type="reset" id="clearReflectionFilter">Clear filters</button>
             </form>
-            <div class="learning-toolbar"><label class="learning-select">Order reflections<select id="reflectionOrder"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label><div class="learning-chips" role="group" aria-label="Quick reflection format"><button type="button" data-reflection-format="all" aria-pressed="true">All entries</button><button type="button" data-reflection-format="voice" aria-pressed="false">Voice notes</button><button type="button" data-reflection-format="text" aria-pressed="false">Text entries</button></div></div><p id="historyCount" role="status" aria-live="polite"></p>
+            <div class="learning-toolbar"><label class="learning-select">Order reflections<select id="reflectionOrder"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label><div class="learning-chips" role="group" aria-label="Quick reflection format"><button type="button" data-reflection-format="all" aria-pressed="true">All entries</button><button type="button" data-reflection-format="voice" aria-pressed="false">Voice notes</button><button type="button" data-reflection-format="text" aria-pressed="false">Text entries</button></div></div><button id="reflectionDensity" class="workspace-secondary" type="button" aria-pressed="false">Compact reading view</button><p id="historyCount" role="status" aria-live="polite"></p>
             <div id="reflectionsList" aria-busy="true"><p class="l2e-loading">Loading reflection history…</p></div>
         </div>
     </div>
