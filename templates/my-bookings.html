@@ -28,7 +28,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script></head>
+<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
@@ -51,12 +51,12 @@
             </div>
         </aside>
 
-        <main class="main-content workspace-page l2e-ui">
+        <main data-learning-page="my-bookings" class="main-content workspace-page l2e-ui">
 <header class="workspace-header"><div><p class="workspace-eyebrow">YOUR SESSIONS</p><h1 class="workspace-title">My study sessions</h1><p class="workspace-subtitle">Everything you have booked and every session you are hosting, in one place.</p></div><a class="workspace-header-link" href="/search-page">Find a study partner <span aria-hidden="true">↗</span></a></header>
 
     <section class="l2e-card">
         <p class="l2e-muted">Booked tutoring sessions appear here. Your <a href="/timetable">personal study timetable</a> and <a href="/availability">tutoring availability</a> are managed separately.</p>
-        <form id="sessionFilters" class="tutoring-filters" aria-label="Filter study sessions">
+        <div class="learning-chips" role="group" aria-label="Quick session status"><button type="button" data-session-status="all" aria-pressed="true">All sessions</button><button type="button" data-session-status="pending" aria-pressed="false">Pending</button><button type="button" data-session-status="confirmed" aria-pressed="false">Confirmed</button><button type="button" data-session-status="completed" aria-pressed="false">Completed</button></div><form id="sessionFilters" class="tutoring-filters" aria-label="Filter study sessions">
             <div><label for="sessionStatus">Session status</label><select id="sessionStatus"><option value="all">All statuses</option><option value="pending">Pending confirmation</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option><option value="no_show">No-show</option></select></div>
             <div><label for="sessionRole">My role</label><select id="sessionRole"><option value="all">Learning and tutoring</option><option value="student">Learning</option><option value="tutor">Tutoring</option></select></div>
         </form>

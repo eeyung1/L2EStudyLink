@@ -603,3 +603,18 @@ The agreed scope is 25 optimization items: five shared improvements plus 20 rema
 - [x] 10. Profile/skills: separate identity, preferences/sharing and skills sections with existing save/remove protections.
 
 Remaining items: 11 Dashboard; 12 Timetable; 13 Reflections; 14 Tutor discovery; 15 Study sessions; 16 Availability; 17 Weekly coach; 18 Focus room; 19 Buddies; 20 Masterclasses; 21 Projects; 22 Learning Hub; 23 Article/discussion; 24 Portfolio; 25 Administration. Existing APIs, schema, cookie authentication, consent, pagination, availability revisions and unsaved-work guards remain unchanged. The public login/signup/recovery/reset shells are also exported to Vercel; authenticated profile data and all account API requests remain on Render. The expanded fixture suite uses fictional accounts; real-server CI remains required before merge. Production email delivery and owner physical-device acceptance remain separate checks.
+
+### Learning-page refinement — items 11–20
+
+- [x] 11. Dashboard: prominent plan/partner/reflection actions and a quieter hierarchy for daily cards, setup and secondary statistics.
+- [x] 12. Timetable: jump-to-today interaction, readable day controls and direct history access; existing create/reflection dialogs retained.
+- [x] 13. Reflections: newest/oldest ordering, synchronized format shortcuts and refined text/audio history cards.
+- [x] 14. Tutor discovery: clear skill/availability search without losing the selected booking date; improved discovery cards and filters.
+- [x] 15. Study sessions: synchronized status shortcuts, legible session cards and clear role/status context.
+- [x] 16. Availability: accessible day shortcuts respect loading/conflict-disabled states and retain conditional save protection.
+- [x] 17. Weekly coach: previous/next week navigation using the selected timezone; disabled controls during requests, no automatic AI calls.
+- [x] 18. Focus room: calmer timer presentation and an optional distraction-free active-room view; room membership/leave rules unchanged.
+- [x] 19. Buddies: section shortcuts and local search across loaded suggested fellows, with honest match counts.
+- [x] 20. Masterclasses: optional upcoming/open-seat filtering across loaded classes and clearer discovery/hosting presentation.
+
+All shortcuts delegate to existing form/controller events; they do not create alternative mutation paths. Existing permissions, account scoping, clock validation, unsaved warnings and availability revisions remain authoritative. The release browser suite exercises the new shortcuts alongside the 320px–4K theme/geometry/accessibility matrix; existing real-server journeys verify mutations and permissions. Remaining optimization items: 21 Projects, 22 Learning Hub, 23 Article/discussion, 24 Portfolio, 25 Administration.

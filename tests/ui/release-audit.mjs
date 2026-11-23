@@ -41,6 +41,9 @@ export async function verifyReleaseAudit(browser,origin,output,evidence){
  return r.fulfill({json:body});
  });
  async function geometry(view,width,zoom=false){
+ // Shortcut interactions may intentionally scroll to a field/section. Measure
+ // header clearance at the top of the page, not with its heading offscreen.
+ await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,`${view} ${theme} ${width} overflow`);
  const main=await page.locator('main').boundingBox();assert.ok(main&&main.width>0,view+' main visible');
  if(view==='/'){
@@ -58,6 +61,16 @@ export async function verifyReleaseAudit(browser,origin,output,evidence){
  evidence.releaseMatrix.push({view,theme,width,zoom,overflow:false,headerClearance:true,inputSize:true});
  }
  for(const view of views){mode='ready';await page.goto(origin+view,{waitUntil:'networkidle'});
+ if(view==='/dashboard')assert.equal(await page.locator('.learning-actions a').count(),3);
+ if(view==='/timetable'){await page.locator('#showToday').click();const today=await page.evaluate(()=>(new Date().getDay()+6)%7);assert.equal(await page.locator('.timetable-day-nav [data-day="'+today+'"]').getAttribute('aria-pressed'),'true');}
+ if(view==='/reflections'){await page.locator('#reflectionOrder').selectOption('oldest');await page.locator('[data-reflection-format="voice"]').click();assert.equal(await page.locator('#reflectionMediaFilter').inputValue(),'voice');await page.locator('#clearReflectionFilter').click();assert.equal(await page.locator('[data-reflection-format="all"]').getAttribute('aria-pressed'),'true');}
+ if(view==='/search-page'){await page.locator('#searchButton:enabled').waitFor();await page.locator('#skillSearch').fill('Temporary filter');await page.locator('#clearTutorSearch').click();assert.equal(await page.locator('#skillSearch').inputValue(),'');}
+ if(view==='/my-bookings'){await page.locator('[data-session-status="pending"]').click();assert.equal(await page.locator('#sessionStatus').inputValue(),'pending');await page.locator('[data-session-status="all"]').click();}
+ if(view==='/availability'){await page.locator('#availDay:enabled').waitFor();await page.locator('[data-availability-day="2"]').click();assert.equal(await page.locator('#availDay').inputValue(),'2');await page.locator('[data-availability-day="0"]').click();}
+ if(view==='/planner'){await page.locator('#week-start:enabled').waitFor();const before=await page.locator('#week-start').inputValue();await page.locator('[data-week-shift="-1"]').click();const shifted=await page.locator('#week-start').inputValue();assert.equal((Date.parse(before)-Date.parse(shifted))/86400000,7);await page.locator('#week-start:enabled').waitFor();await page.locator('[data-week-shift="1"]').click();await page.locator('#week-start:enabled').waitFor();assert.equal(await page.locator('#week-start').inputValue(),before);}
+ if(view==='/focus')assert.equal(await page.locator('#focusQuiet').isDisabled(),true);
+ if(view==='/buddies'){await page.locator('#buddySuggestionSearch').fill('No matching suggestion');assert.equal(await page.locator('#buddySearchStatus').isVisible(),true);await page.locator('#buddySuggestionSearch').fill('');}
+ if(view==='/masterclasses'){await page.locator('#classOpenOnly').check();assert.equal(await page.locator('#classOpenOnly').isChecked(),true);await page.locator('#classOpenOnly').uncheck();}
  for(const width of widths){await page.setViewportSize({width,height:950});try{await geometry(view,width);}catch(e){findings.push({view,theme,width,error:e.message});}}
  await page.setViewportSize({width:390,height:950});
  const scan=await new AxeBuilder({page}).include('main').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();for(const v of scan.violations)findings.push({view,theme,rule:v.id,nodes:v.nodes.map(n=>n.target)});

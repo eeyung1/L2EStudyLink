@@ -28,7 +28,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script></head>
+<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
@@ -51,7 +51,7 @@
             </div>
         </aside>
 
-        <main class="main-content workspace-page l2e-ui">
+        <main data-learning-page="timetable" class="main-content workspace-page l2e-ui">
 <header class="workspace-header"><div><p class="workspace-eyebrow">MAKE SPACE TO GROW</p><h1 class="workspace-title">Make room to learn.</h1><p class="workspace-subtitle">Shape a week that makes room for focused work, learning, and reflection.</p></div></header>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
@@ -60,7 +60,7 @@
 
 
             <button onclick="showAddBlock()" class="workspace-primary mb-6">+ Add time block</button>
-            <div id="timetableNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden></div>
+            <div class="learning-toolbar"><button type="button" class="secondary" id="showToday">Jump to today</button><a href="/reflections">Reflection history</a><p class="learning-hint">Choose a day to plan; choose a block to reflect.</p></div><div id="timetableNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden></div>
             <div id="reflectionSavedNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden>
                 <span class="reflection-feedback-icon" aria-hidden="true">✓</span>
                 <span><strong>Reflection saved</strong><span>Your progress is recorded. You can view it on the Reflections page.</span></span>

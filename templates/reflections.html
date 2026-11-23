@@ -28,7 +28,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script></head>
+<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
@@ -51,7 +51,7 @@
             </div>
         </aside>
 
-        <main class="main-content workspace-page l2e-ui">
+        <main data-learning-page="reflections" class="main-content workspace-page l2e-ui">
 <header class="workspace-header"><div><p class="workspace-eyebrow">LOOK BACK. MOVE FORWARD.</p><h1 class="workspace-title">My reflections</h1><p class="workspace-subtitle">See what you learned, the challenges you met, and how far you have come.</p></div><a class="workspace-header-link" href="/timetable">View timetable <span aria-hidden="true">↗</span></a></header>
 
     <div class="max-w-4xl mx-auto px-4 py-8">
@@ -84,7 +84,7 @@
                 <div><label for="reflectionMediaFilter">Format</label><select id="reflectionMediaFilter" aria-controls="reflectionsList"><option value="all">All reflections</option><option value="voice">With voice note</option><option value="text">Text only</option></select></div>
                 <button type="reset" id="clearReflectionFilter">Clear filters</button>
             </form>
-            <p id="historyCount" role="status" aria-live="polite"></p>
+            <div class="learning-toolbar"><label class="learning-select">Order reflections<select id="reflectionOrder"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label><div class="learning-chips" role="group" aria-label="Quick reflection format"><button type="button" data-reflection-format="all" aria-pressed="true">All entries</button><button type="button" data-reflection-format="voice" aria-pressed="false">Voice notes</button><button type="button" data-reflection-format="text" aria-pressed="false">Text entries</button></div></div><p id="historyCount" role="status" aria-live="polite"></p>
             <div id="reflectionsList" aria-busy="true"><p class="l2e-loading">Loading reflection history…</p></div>
         </div>
     </div>

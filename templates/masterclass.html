@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
     <link rel="stylesheet" href="/static/css/community.css">
-<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script></head>
+<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
@@ -53,12 +53,12 @@
             </div>
         </aside>
 
-<main class="main-content l2e-ui"><div class="community-page">
+<main data-learning-page="masterclass" class="main-content l2e-ui"><div class="community-page">
 <header class="workspace-header"><div><p class="workspace-eyebrow">LEARN IN GOOD COMPANY</p><h1 class="workspace-title">Group masterclasses</h1><p class="workspace-subtitle">Learn one skill together. Reserve a learner seat or host a class for your community.</p></div><a class="l2e-button secondary" href="/search-page">Find one-to-one tutoring</a></header>
 <p id="classTimezone" class="l2e-muted"></p><p id="classMessage" role="status" aria-live="polite" class="l2e-feedback"></p>
 <div class="community-columns"><section class="l2e-card" aria-labelledby="catalogHeading"><h2 id="catalogHeading">Find a class</h2>
 <form id="searchForm" class="community-filters"><label>Topic<input id="classSearch" type="search" maxlength="100" placeholder="Search class topics"></label><label class="community-check"><input type="checkbox" id="mineOnly"> My classes</label><button type="submit">Search</button><button type="button" id="refreshClasses" class="secondary">Refresh</button></form>
-<div id="classList" class="community-list" aria-busy="true">Loading classes…</div><button id="retryClasses" type="button" hidden>Retry classes</button><button id="olderClasses" type="button" hidden>Show more classes</button></section>
+<label class="learning-open-filter"><input id="classOpenOnly" type="checkbox"> Only upcoming classes with available seats</label><p class="learning-hint">This filter applies to classes already loaded. Load more to explore further.</p><div id="classList" class="community-list" aria-busy="true">Loading classes…</div><button id="retryClasses" type="button" hidden>Retry classes</button><button id="olderClasses" type="button" hidden>Show more classes</button></section>
 <aside><details class="l2e-card"><summary>Host a masterclass</summary><p>Share a skill with 2–100 learners. Explain how attendees will join. The host does not use a learner seat.</p>
 <form data-unsaved-watch id="hostForm" class="community-form"><label for="classTitle">Class title</label><input id="classTitle" required minlength="3" maxlength="100"><label for="classDescription">What will learners do, and how will they join?</label><textarea id="classDescription" rows="4" maxlength="2000"></textarea><label for="classStarts">Start date and time (your device timezone)</label><input id="classStarts" type="datetime-local" required><label for="classDuration">Duration in minutes</label><input id="classDuration" type="number" min="15" max="240" value="60" required><label for="classCapacity">Learner seats</label><input id="classCapacity" type="number" min="2" max="100" value="10" required><p id="hostError" role="status" class="l2e-feedback is-error"></p><button id="createClass" type="submit">Publish class</button></form></details></aside></div>
 </div></main></div>
