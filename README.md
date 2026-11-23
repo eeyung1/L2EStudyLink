@@ -573,6 +573,16 @@ The Docker image and CI use Go 1.26.1. `sh scripts/build.sh` builds the package;
 - [x] Add exact `PUBLIC_ORIGIN` support with origin-validation regressions; never trust arbitrary forwarded hosts or wildcard preview domains.
 - [ ] Verify the deployed Vercel origin, cookie writes and public pages after the backend update.
 
-Set `PUBLIC_ORIGIN=https://l2e-studylink.vercel.app` on Render. All database, JWT, email and AI secrets stay on Render; Vercel needs none. `sh scripts/build-vercel.sh` copies public assets only into `vercel-public`; all other paths forward to Render without rewrite caching. Protected HTML stays server-rendered rather than exported publicly. The secondary project alias redirects to the canonical frontend address. Production preview hostnames are not trusted for cookie writes.
+Set `PUBLIC_ORIGIN=https://www.l2estudylink.com` on Render. All database, JWT, email and AI secrets stay on Render; Vercel needs none. `sh scripts/build-vercel.sh` copies public assets only into `vercel-public`; all other paths forward to Render without rewrite caching. Protected HTML stays server-rendered rather than exported publicly. The secondary project alias redirects to the canonical frontend address. Production preview hostnames are not trusted for cookie writes.
 
 The initial Vercel project is deployed through the connected API because Vercel reported missing GitHub integration access. Automatic source deployments require granting Vercel access to `eeyung1/L2EStudyLink`, then selecting Other framework, repository root, build `sh scripts/build-vercel.sh`, empty install command and output `vercel-public`. Render continues automatically deploying merged main commits. Existing voice files still require durable storage/migration; local free-service uploads are not durable.
+
+### Landing-page refinement — 23 November 2026
+
+- [x] Re-read the owner’s principal frontend-engineer prompt and review the reported desktop capture.
+- [x] Replace oversized generic header controls with a compact brand, clear account action and accessible appearance icon.
+- [x] Tighten hero copy, first-screen action placement and phone/desktop spacing; give the learning preview a week strip and distinct content hierarchy.
+- [x] Add scoped light/dark styling, restrained background motion with reduced-motion support, and explicit header/hero/touch-target checks across the release viewport matrix.
+- [x] Export only the public, template-free landing HTML to Vercel with its public assets; private pages and APIs remain on Render.
+
+The page uses the existing semantic tokens and vanilla JavaScript tabs. Planning, shared learning and private reflection remain the three real product outcomes; the preview is clearly labelled fictional. Benchmark references: [Notion Calendar](https://www.notion.com/product/calendar), [Focusmate](https://www.focusmate.com/how-it-works/) and [Todoist](https://www.todoist.com/). The custom domain is https://www.l2estudylink.com; its Render `PUBLIC_ORIGIN` and Vercel project-level redirect were configured after PR #77. Full owner acceptance on physical devices remains outstanding.
