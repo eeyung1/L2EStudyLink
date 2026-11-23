@@ -38,13 +38,13 @@
     }
     async function search(event){
         event?.preventDefault();if(!form.reportValidity())return;
-        const version=++searchVersion,button=document.getElementById('searchButton');button.disabled=true;results.setAttribute('aria-busy','true');feedback.textContent='Finding tutors and checking the booking clock…';
+        const version=++searchVersion,button=document.getElementById('searchButton');button.disabled=true;const order=document.getElementById('tutorOrder');if(order)order.disabled=true;results.setAttribute('aria-busy','true');feedback.textContent='Finding tutors and checking the booking clock…';
         try {
             const [found,serverClock,me]=await Promise.all([api('/search-with-availability?skill='+encodeURIComponent(skill.value.trim())),clock(),window.bookingUser?Promise.resolve(window.bookingUser):api('/me')]);
             window.bookingUser=me;
             if(version!==searchVersion)return;if(!Array.isArray(found))throw Error('Unexpected tutor results');bookingClock=serverClock;date.min=serverClock.today;if(date.value<serverClock.today)throw Error('Choose today or a future date in the shared booking clock');tutors=found;document.getElementById('bookingClock').textContent='Shared booking clock: '+serverClock.timezone+'. Your device: '+Intl.DateTimeFormat().resolvedOptions().timeZone+'. Published tutoring hours use the shared clock.';render();
         }catch(e){if(version!==searchVersion)return;results.replaceChildren();feedback.replaceChildren(document.createTextNode(e.message+' '));const retry=node('button','Retry search');retry.type='button';retry.addEventListener('click',search);feedback.append(retry);}
-        finally{if(version===searchVersion){button.disabled=false;results.setAttribute('aria-busy','false');}}
+        finally{if(version===searchVersion){button.disabled=false;if(order)order.disabled=false;results.setAttribute('aria-busy','false');}}
     }
     document.getElementById('tutorOrder')?.addEventListener('change',()=>{if(bookingClock)render();});
     form.addEventListener('submit',search);document.getElementById('availableOnly').addEventListener('change',()=>{if(bookingClock)render();});
