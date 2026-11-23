@@ -19,12 +19,19 @@ function sessionToken() {
     return 'cookie-session-' + sessionScope();
 }
 
+let loginRedirectPending=false;
+function redirectToLogin(){
+    if(loginRedirectPending)return;
+    loginRedirectPending=true;
+    window.location.href='/page/login';
+}
+
 const sessionFetch = window.fetch.bind(window);
 window.fetch = async function(input, options) {
     const response = await sessionFetch(input, options);
     const path = typeof input === 'string' ? input : input.url;
     if (response.status === 401 && path.startsWith('/api/v1/') && path !== '/api/v1/session/migrate') {
-        window.location.href = '/page/login';
+        redirectToLogin();
     }
     return response;
 };

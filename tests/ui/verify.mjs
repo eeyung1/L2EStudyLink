@@ -4,6 +4,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import { chromium } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { verifyReleaseAudit } from './release-audit.mjs';
 import { verifyApp } from './workspace.mjs';
 import { verifyReflections } from './reflections.mjs';
 import { verifyHistoryAndDialogs } from './history.mjs';
@@ -13,7 +14,7 @@ import { verifyFocusIdentity } from './focus-identity.mjs';
 import { verifyPublicAccountAdmin } from './public-account-admin.mjs';
 import { verifyBookings } from './bookings.mjs';
 
-const root = process.cwd(), output = 'test-results/ui';
+const root = process.cwd(), output = process.env.L2E_UI_SUITE==='release'?'test-results/ui/release':'test-results/ui';
 await mkdir(output,{recursive:true});
 const mime = {'.html':'text/html','.css':'text/css','.js':'text/javascript','.png':'image/png','.svg':'image/svg+xml','.webmanifest':'application/manifest+json'};
 // Read-only localhost fixture host. It never starts the app, accesses a DB or forwards APIs.
@@ -38,6 +39,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch();
 const evidence={fixtureOnly:true,sourceCommit:process.env.GITHUB_SHA || 'local',screenshots:[],appObservations:[],previewChecks:[],accessibility:[],externalAssetFailures:[]};
 try {
+  if(process.env.L2E_UI_SUITE!=='release'){
   // Current integrated app templates and shared navigation, with fictional API fixtures.
   for(const width of [390,1440]) for(const view of ['dashboard','timetable']) for(const state of ['populated','empty','loading','error','expired']) {
     const context=await browser.newContext({viewport:{width,height:950},timezoneId:'Africa/Lagos'});
@@ -122,6 +124,8 @@ try {
     assert.equal(apiRequests,0,'preview must not call account APIs');assert.deepEqual(errors,[]);
     await context.close();
   }
+  }
+  if(process.env.L2E_UI_SUITE!=='regression')await verifyReleaseAudit(browser,origin,output,evidence);
   console.log('UI checks passed: baseline state captures, responsive previews, touch targets, clearance, WCAG scans, state recovery, menus, themes and zero preview API calls.');
 } finally {
   await writeFile(output+'/evidence.json',JSON.stringify(evidence,null,2));

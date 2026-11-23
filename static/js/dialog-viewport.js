@@ -14,5 +14,16 @@
     viewport?.addEventListener('resize',schedule);viewport?.addEventListener('scroll',schedule);
     window.addEventListener('resize',schedule);
     for(const dialog of document.querySelectorAll('#reflectionModal, #addModal, #deleteBlockDialog, [data-viewport-dialog]'))new MutationObserver(schedule).observe(dialog,{attributes:true,attributeFilter:['class','open']});
+    // Keep keyboard traversal within the active native modal, including the
+    // first/last boundary where Chromium can otherwise move to browser chrome.
+    document.addEventListener('keydown',event=>{
+        if(event.key!=='Tab'||event.defaultPrevented)return;
+        const dialog=document.querySelector('dialog[open]');if(!dialog)return;
+        const items=[...dialog.querySelectorAll('a[href],button,input,select,textarea,[tabindex]')].filter(n=>!n.disabled&&n.tabIndex>=0&&n.getClientRects().length);
+        if(!items.length){event.preventDefault();dialog.focus();return;}
+        const first=items[0],last=items[items.length-1],active=document.activeElement;
+        if(event.shiftKey&&(active===first||!dialog.contains(active))){event.preventDefault();last.focus();}
+        else if(!event.shiftKey&&(active===last||!dialog.contains(active))){event.preventDefault();first.focus();}
+    });
     update();
 })();

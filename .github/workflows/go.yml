@@ -60,7 +60,8 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: python3 scripts/audit-ui.py --check
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:ui
+      - name: Existing feature browser regressions
+        run: L2E_UI_SUITE=regression npm run test:ui
       - uses: actions/setup-go@v5
         if: always()
         with:
@@ -75,6 +76,26 @@ jobs:
           name: redesign-foundation-evidence
           path: test-results/ui/
           if-no-files-found: ignore
+
+  release-ui:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: python3 scripts/audit-ui.py --check
+      - run: npx playwright install --with-deps chromium
+      - name: Release viewport, state and keyboard audit
+        run: L2E_UI_SUITE=release npm run test:ui
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: redesign-release-evidence
+          path: test-results/ui/release/
+          if-no-files-found: error
 
   container:
     runs-on: ubuntu-24.04

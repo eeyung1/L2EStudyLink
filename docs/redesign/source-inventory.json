@@ -634,7 +634,8 @@
       "scripts": [
         "/static/js/reading-theme.js",
         "/static/js/public-nav.js",
-        "/static/js/learn.js"
+        "/static/js/learn.js",
+        "/static/js/dialog-viewport.js"
       ],
       "forms": 1,
       "dialogs": [
@@ -1078,7 +1079,8 @@
       "scripts": [
         "/static/js/public-nav.js",
         "/static/js/reading-theme.js",
-        "/static/js/learner-portfolio.js"
+        "/static/js/learner-portfolio.js",
+        "/static/js/dialog-viewport.js"
       ],
       "forms": 1,
       "dialogs": [

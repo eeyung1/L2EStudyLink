@@ -47,7 +47,7 @@ async function readAPI(path, token) {
                 if (response.status === 401) {
                     await clearPlanningCache(token);
                     localStorage.removeItem('token');
-                    window.location.href = '/page/login';
+                    if(typeof redirectToLogin==='function')redirectToLogin();else window.location.href='/page/login';
                     throw new Error('Session expired');
                 }
                 if (!response.ok) {

@@ -3,17 +3,18 @@ const assert=require('node:assert/strict');
 const vm=require('node:vm');
 const fs=require('node:fs');
 
-function page({cookie='',legacy=null}={}) {
+function page({cookie='',legacy=null,status=200}={}) {
  const entries=new Map(legacy?[['token',legacy]]:[]), calls=[];
- const fetch=async (path,options)=>{calls.push({path,options});return {ok:true,status:200};};
+ let redirects=0,href='';const location={};Object.defineProperty(location,'href',{get:()=>href,set:value=>{href=value;redirects++;}});
+ const fetch=async (path,options)=>{calls.push({path,options});return {ok:status===200,status};};
  const context=vm.createContext({
-   document:{cookie},window:{location:{href:''},fetch},fetch,
+   document:{cookie},window:{location,fetch},fetch,
    localStorage:{getItem:key=>entries.get(key)||null,removeItem:key=>entries.delete(key)},
    alert:()=>{throw Error('Unexpected alert')},
    Promise
  });
  vm.runInContext(fs.readFileSync('static/js/session.js','utf8'),context);
- return {context,calls,entries};
+ return {context,calls,entries,redirects:()=>redirects};
 }
 
 test('cookie scope is a non-secret cache key',()=>{
@@ -36,4 +37,13 @@ test('logout clears cookie through the server before redirecting',async()=>{
  await context.endSession(context.sessionToken());
  assert.equal(calls[0].path,'/api/v1/logout');
  assert.equal(context.window.location.href,'/page/login');
+});
+
+
+test('concurrent expired reads trigger only one login navigation',async()=>{
+ const {context,redirects}=page({status:401});
+ await Promise.all(['/api/v1/me','/api/v1/availability','/api/v1/bookings'].map(path=>context.window.fetch(path)));
+ context.redirectToLogin();
+ assert.equal(context.window.location.href,'/page/login');
+ assert.equal(redirects(),1);
 });
