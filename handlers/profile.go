@@ -9,6 +9,7 @@ import (
 )
 
 func GetProfile(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     userID := c.GetInt64("user_id")
     db := c.MustGet("db").(*sql.DB)
 

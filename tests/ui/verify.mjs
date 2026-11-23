@@ -10,6 +10,7 @@ import { verifyHistoryAndDialogs } from './history.mjs';
 import { verifyCommunity } from './community.mjs';
 import { verifyLearningCoach } from './learning-coach.mjs';
 import { verifyFocusIdentity } from './focus-identity.mjs';
+import { verifyPublicAccountAdmin } from './public-account-admin.mjs';
 import { verifyBookings } from './bookings.mjs';
 
 const root = process.cwd(), output = 'test-results/ui';
@@ -20,11 +21,12 @@ const server = createServer(async (req,res) => {
   const path = new URL(req.url,'http://localhost').pathname;
   let file;
   if(path.startsWith('/static/')) file = resolve(root,'.'+path);
-  else if(path === '/dashboard' || path === '/timetable' || path === '/reflections' || path === '/search-page' || path === '/my-bookings' || path === '/projects' || path === '/masterclasses' || path === '/buddies' || path === '/planner' || path === '/focus' || path === '/portfolio') file=resolve(root,'templates',({'/buddies':'buddy','/masterclasses':'masterclass'}[path]||path.slice(1))+'.html');
+  else if(path === '/dashboard' || path === '/timetable' || path === '/reflections' || path === '/search-page' || path === '/my-bookings' || path === '/projects' || path === '/masterclasses' || path === '/buddies' || path === '/planner' || path === '/focus' || path === '/portfolio' || path === '/skills' || path === '/availability' || path === '/admin') file=resolve(root,'templates',({'/buddies':'buddy','/masterclasses':'masterclass'}[path]||path.slice(1))+'.html');
   else if(path.startsWith('/u/')) file=resolve(root,'templates/portfolio.html');
   else if(path === '/learn') file=resolve(root,'templates/learn.html');
   else if(path.startsWith('/learn/')) file=resolve(root,'templates/article.html');
-  else if(path === '/page/login') file=resolve(root,'templates/login.html');
+  else if(path === '/') file=resolve(root,'templates/landing.html');
+  else if(['/page/login','/page/signup','/page/forgot-password','/page/reset-password'].includes(path)) file=resolve(root,'templates',path.slice(6)+'.html');
   else {res.writeHead(404);res.end();return;}
   if(!file.startsWith(root+'/static/')&&!file.startsWith(root+'/templates/')) {res.writeHead(403);res.end();return;}
   try {let body=await readFile(file);
@@ -74,6 +76,7 @@ try {
   await verifyCommunity(browser,origin,output,evidence);
   await verifyLearningCoach(browser,origin,output,evidence);
   await verifyFocusIdentity(browser,origin,output,evidence);
+  await verifyPublicAccountAdmin(browser,origin,output,evidence);
   for(const theme of ['light','dark']) {
     const context=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
     const page=await context.newPage();

@@ -25,7 +25,7 @@
     <style>body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; }</style>
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
-    <link rel="stylesheet" href="/static/css/workspace.css">
+    <link rel="stylesheet" href="/static/css/workspace.css"><link rel="stylesheet" href="/static/css/community.css"><link rel="stylesheet" href="/static/css/account-admin.css">
 </head>
 <body class="l2e-workspace ">
     <div class="app-shell">
@@ -49,21 +49,4 @@
             </div>
         </aside>
 
-        <main class="main-content settings-page"><div id="settingsNotice" class="settings-notice" role="status" aria-live="polite"></div><header class="workspace-header"><div><p class="workspace-eyebrow">YOUR EXPERTISE</p><h1 class="workspace-title">Your skills</h1><p class="workspace-subtitle">Share what you know, and keep your profile ready for new opportunities.</p></div></header>
-                    <div id="skillsSection" class="card">
-                        <h2>Skills you share</h2><p class="page-sub">Keep these up to date so people discover what you can teach and build.</p>
-                        <div id="skills" class="mb-4"></div>
-                        <form id="skillForm" class="field-row">
-                            <label class="sr-only" for="newSkillName">Skill name</label><input type="text" id="newSkillName" required maxlength="50" placeholder="Skill name (e.g., Go, Python)">
-                            <label class="sr-only" for="newSkillProficiency">Proficiency</label><select id="newSkillProficiency">
-                                <option value="beginner">Beginner</option>
-                                <option value="intermediate">Intermediate</option>
-                                <option value="advanced">Advanced</option>
-                            </select>
-                            <button type="submit" id="skillSubmit" class="btn-add">Add skill</button><button type="button" id="cancelSkillEdit" class="btn-outline" hidden>Cancel</button>
-                        </form>
-                    </div>
-
-        </main></div>
-<script src="/static/js/settings.js" defer></script>
-</body></html>
+<main class="main-content l2e-ui"><div class="community-page"><header class="workspace-header"><div><p class="workspace-eyebrow">YOUR LEARNING ACCOUNT</p><h1 class="workspace-title">Profile & skills</h1><p class="workspace-subtitle">Keep your learner profile and sharing preferences up to date.</p></div></header><p id="settingsNotice" class="l2e-feedback" role="status" aria-live="polite"></p><section id="profileControls" class="l2e-card"><h2>Profile and preferences</h2><p id="profileIdentity" class="l2e-muted">Loading your profile…</p><p class="l2e-muted">Your bio and Discord name help fellow learners recognize you. Public portfolio sharing is managed separately.</p><form id="accountProfileForm" class="community-form"><label for="accountDiscord">Discord username (optional)</label><input id="accountDiscord" maxlength="50" autocomplete="off" disabled><label for="accountBio">Bio (optional)</label><textarea id="accountBio" maxlength="500" rows="4" disabled></textarea><p id="accountProfileStatus" role="status" class="l2e-feedback"></p><button id="accountProfileSave" type="submit" disabled>Save profile</button></form><label class="community-check"><input type="checkbox" id="settingsProductEmails" disabled> Send me occasional product updates and goal-setting tips</label><p class="l2e-muted">Optional. Turning this off does not affect access to learning tools.</p><p id="emailPreferenceStatus" role="status" class="l2e-feedback"></p><button id="retryProfile" type="button" hidden>Retry profile</button><a href="/portfolio">Manage your public portfolio</a></section><section id="skillsSection" class="l2e-card"><h2>Skills you share</h2><p class="l2e-muted">Proficiency is self-reported. Keep it current so fellows know what you can help with.</p><div id="skills" class="community-list" aria-busy="true">Loading skills…</div><form id="skillForm" class="community-form"><label for="newSkillName">Skill name</label><input id="newSkillName" required maxlength="50"><label for="newSkillProficiency">Proficiency</label><select id="newSkillProficiency"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select><div class="community-actions"><button id="skillSubmit" type="submit">Add skill</button><button type="button" id="cancelSkillEdit" hidden>Cancel edit</button></div></form></section></div></main></div><script src="/static/js/booking-common.js"></script><script src="/static/js/community-common.js"></script><script src="/static/js/settings.js"></script><script src="/static/js/dialog-viewport.js" defer></script></body></html>
