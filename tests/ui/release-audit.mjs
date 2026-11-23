@@ -43,6 +43,15 @@ export async function verifyReleaseAudit(browser,origin,output,evidence){
  async function geometry(view,width,zoom=false){
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,`${view} ${theme} ${width} overflow`);
  const main=await page.locator('main').boundingBox();assert.ok(main&&main.width>0,view+' main visible');
+ if(view==='/'){
+  const nav=await page.locator('.reading-header').boundingBox(),title=await page.locator('#heroTitle').boundingBox(),eyebrow=await page.locator('.landing-eyebrow').boundingBox();
+  assert.ok(eyebrow.y>=nav.y+nav.height+20,'landing header/hero clearance');
+  assert.ok(title.y>=eyebrow.y+eyebrow.height,'landing title/eyebrow separation');
+  const cta=await page.locator('.landing-copy .reading-button:visible').boundingBox();
+  if(!zoom)assert.ok(cta.y+cta.height<=950,'landing primary action visible on first screen');
+  const tiny=await page.locator('.reading-header a:visible,.reading-header button:visible,.journey-tabs button:visible').evaluateAll(ns=>ns.filter(n=>{const r=n.getBoundingClientRect();return r.width<43.9||r.height<43.9}).map(n=>n.textContent));
+  assert.deepEqual(tiny,[],'landing navigation and preview touch targets');
+ }
  const header=page.locator('.sidebar-heading:visible');if(await header.count()&&width<=860){const b=await header.boundingBox(),h=await page.locator('main h1').first().boundingBox();if(h)assert.ok(h.y>=b.y+b.height-1,view+' header clearance');}
  const bad=await page.locator('main input:visible:not([type=checkbox]):not([type=radio]),main select:visible,main textarea:visible').evaluateAll(ns=>ns.filter(n=>parseFloat(getComputedStyle(n).fontSize)<16).map(n=>n.id));assert.deepEqual(bad,[],view+' input text size');
  const small=await page.locator('main button:visible:not([role=tab])').evaluateAll(ns=>ns.filter(n=>{const b=n.getBoundingClientRect();return b.width<43.9||b.height<43.9}).map(n=>({id:n.id,text:n.textContent.trim()})));assert.deepEqual(small,[],view+' primary button touch size');

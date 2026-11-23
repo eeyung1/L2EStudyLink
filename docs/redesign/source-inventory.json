@@ -867,7 +867,8 @@
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
-        "/static/css/public-account.css"
+        "/static/css/public-account.css",
+        "/static/css/landing.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
