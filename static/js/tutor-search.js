@@ -29,6 +29,7 @@
         results.replaceChildren();const selectedDay=day(date.value),only=document.getElementById('availableOnly').checked;
         const visible=tutors.filter(t=>!only||(t.availability||[]).some(a=>a.day_of_week===selectedDay));
         feedback.textContent=visible.length?`${visible.length} tutor${visible.length===1?'':'s'} found. Times use ${bookingClock.timezone}.`:'No matching tutors for these filters. Try another skill/date or include tutors without hours on this date.';
+        const order=document.getElementById('tutorOrder')?.value;if(order==='rating')visible.sort((a,b)=>(Number(b.rating)||0)-(Number(a.rating)||0)||String(a.name).localeCompare(String(b.name)));if(order==='name')visible.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
         visible.forEach(t=>{
             const card=node('article',undefined,'tutor-card');card.append(node('h2',t.name),node('p',`${Number(t.rating)||0} / 5 · ${Number(t.total_reviews)||0} reviews`),node('p',t.bio||'No introduction added yet.'));
             const selected=(t.availability||[]).filter(a=>a.day_of_week===selectedDay);card.append(node('p',selected.length?'Tutoring hours: '+selected.map(a=>time(a.start_time)+'–'+time(a.end_time)).join(' · '):'No published tutoring hours for this date.','l2e-muted'));
@@ -45,6 +46,7 @@
         }catch(e){if(version!==searchVersion)return;results.replaceChildren();feedback.replaceChildren(document.createTextNode(e.message+' '));const retry=node('button','Retry search');retry.type='button';retry.addEventListener('click',search);feedback.append(retry);}
         finally{if(version===searchVersion){button.disabled=false;results.setAttribute('aria-busy','false');}}
     }
+    document.getElementById('tutorOrder')?.addEventListener('change',()=>{if(bookingClock)render();});
     form.addEventListener('submit',search);document.getElementById('availableOnly').addEventListener('change',()=>{if(bookingClock)render();});
     bookingDate.addEventListener('change',updateSlots);for(const id of ['timeSlot','topic','meetingType'])document.getElementById(id).addEventListener(id==='topic'?'input':'change',review);
     for(const id of ['closeTutor','cancelTutor'])document.getElementById(id).addEventListener('click',()=>{if(!sending)dialog.close();});

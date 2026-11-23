@@ -12,6 +12,7 @@
     function render(){
         list.replaceChildren();const status=document.getElementById('sessionStatus').value,role=document.getElementById('sessionRole').value;
         const visible=rows.filter(b=>(status==='all'||b.status===status)&&(role==='all'||b.role===role));
+        const count=document.getElementById('sessionCount');if(count)count.textContent=visible.length+' of '+rows.length+' sessions shown · '+(role==='all'?'learning and tutoring':role==='student'?'learning':'tutoring');
         if(!visible.length){const section=node('section',undefined,'workspace-empty');section.append(node('h2',rows.length?'No sessions match these filters':'Your first session is waiting'),node('p','Find a study partner or change the status and role filters.'));const link=node('a','Find a study partner →');link.href='/search-page';section.append(link);list.append(section);return;}
         visible.sort((a,b)=>Number(!!b.can_cancel)-Number(!!a.can_cancel)|| (a.can_cancel?(String(a.date)+a.start_time).localeCompare(String(b.date)+b.start_time):(String(b.date)+b.start_time).localeCompare(String(a.date)+a.start_time))).forEach(b=>{
             const card=node('article',undefined,'session-card');card.dataset.session=String(b.id);

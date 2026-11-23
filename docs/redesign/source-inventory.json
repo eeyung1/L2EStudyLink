@@ -591,7 +591,7 @@
       ],
       "forms": 4,
       "dialogs": [],
-      "controls": 17,
+      "controls": 19,
       "inline_styles": 0
     },
     "templates/app-navigation.html": {
@@ -616,7 +616,7 @@
       "scripts": [],
       "forms": 0,
       "dialogs": [],
-      "controls": 0,
+      "controls": 2,
       "inline_styles": 0
     },
     "templates/article.html": {
@@ -698,7 +698,7 @@
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 14,
+      "controls": 16,
       "inline_styles": 1
     },
     "templates/buddy.html": {
@@ -747,7 +747,7 @@
       ],
       "forms": 0,
       "dialogs": [],
-      "controls": 6,
+      "controls": 8,
       "inline_styles": 0
     },
     "templates/dashboard.html": {
@@ -776,6 +776,9 @@
         "/timetable",
         "/search-page",
         "/reflections",
+        "#todayWorkspace",
+        "#streakSection",
+        "#discoveryTitle",
         "/skills",
         "/availability",
         "/projects",
@@ -792,7 +795,8 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/experience.css",
-        "/static/css/learning-pages.css"
+        "/static/css/learning-pages.css",
+        "/static/css/blue-workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -801,13 +805,14 @@
         "/static/js/unsaved-work.js",
         "/static/js/experience.js",
         "/static/js/learning-pages.js",
+        "/static/js/workspace-tools.js",
         "/static/js/read-api.js",
         "/static/js/heatmap.js",
         "/static/js/dashboard-daily.js"
       ],
       "forms": 0,
       "dialogs": [],
-      "controls": 4,
+      "controls": 6,
       "inline_styles": 1
     },
     "templates/focus.html": {
@@ -852,7 +857,7 @@
       "dialogs": [
         "focus-leave-dialog"
       ],
-      "controls": 15,
+      "controls": 17,
       "inline_styles": 0
     },
     "templates/forgot-password.html": {
@@ -862,13 +867,15 @@
         "/learn",
         "/page/login",
         "/page/login",
-        "/"
+        "/",
+        "/learn"
       ],
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
         "/static/css/public-account.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/blue-account.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
@@ -964,16 +971,18 @@
         "#main",
         "/",
         "/learn",
-        "/page/login",
         "/page/forgot-password",
+        "/page/login",
         "/page/signup",
-        "/"
+        "/",
+        "/learn"
       ],
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
         "/static/css/public-account.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/blue-account.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
@@ -1032,7 +1041,7 @@
       ],
       "forms": 2,
       "dialogs": [],
-      "controls": 16,
+      "controls": 18,
       "inline_styles": 0
     },
     "templates/my-bookings.html": {
@@ -1065,7 +1074,8 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/experience.css",
-        "/static/css/learning-pages.css"
+        "/static/css/learning-pages.css",
+        "/static/css/blue-workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1075,6 +1085,7 @@
         "/static/js/unsaved-work.js",
         "/static/js/experience.js",
         "/static/js/learning-pages.js",
+        "/static/js/workspace-tools.js",
         "/static/js/booking-common.js",
         "/static/js/booking-sessions.js",
         "/static/js/dialog-viewport.js"
@@ -1083,7 +1094,7 @@
       "dialogs": [
         "bookingActionDialog"
       ],
-      "controls": 11,
+      "controls": 17,
       "inline_styles": 0
     },
     "templates/planner.html": {
@@ -1126,7 +1137,7 @@
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 10,
+      "controls": 12,
       "inline_styles": 0
     },
     "templates/portfolio.html": {
@@ -1203,7 +1214,7 @@
       ],
       "forms": 2,
       "dialogs": [],
-      "controls": 13,
+      "controls": 15,
       "inline_styles": 0
     },
     "templates/reflections.html": {
@@ -1234,7 +1245,8 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/experience.css",
-        "/static/css/learning-pages.css"
+        "/static/css/learning-pages.css",
+        "/static/css/blue-workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1243,13 +1255,14 @@
         "/static/js/session.js",
         "/static/js/experience.js",
         "/static/js/learning-pages.js",
+        "/static/js/workspace-tools.js",
         "/static/js/read-api.js",
         "/static/js/heatmap.js",
         "/static/js/reflection-history.js"
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 11,
+      "controls": 14,
       "inline_styles": 0
     },
     "templates/reset-password.html": {
@@ -1260,13 +1273,15 @@
         "/page/login",
         "/page/forgot-password",
         "/page/login",
-        "/"
+        "/",
+        "/learn"
       ],
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
         "/static/css/public-account.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/blue-account.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
@@ -1308,7 +1323,8 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/experience.css",
-        "/static/css/learning-pages.css"
+        "/static/css/learning-pages.css",
+        "/static/css/blue-workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1317,6 +1333,7 @@
         "/static/js/session.js",
         "/static/js/experience.js",
         "/static/js/learning-pages.js",
+        "/static/js/workspace-tools.js",
         "/static/js/booking-common.js",
         "/static/js/tutor-search.js",
         "/static/js/dialog-viewport.js"
@@ -1327,7 +1344,7 @@
         "modalTitle",
         "modalContent"
       ],
-      "controls": 15,
+      "controls": 18,
       "inline_styles": 0
     },
     "templates/signup.html": {
@@ -1337,13 +1354,15 @@
         "/learn",
         "/page/login",
         "/page/login",
-        "/"
+        "/",
+        "/learn"
       ],
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
         "/static/css/public-account.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/blue-account.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
@@ -1386,7 +1405,8 @@
         "/static/css/workspace.css",
         "/static/css/community.css",
         "/static/css/account-admin.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/blue-workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1394,6 +1414,7 @@
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
         "/static/js/experience.js",
+        "/static/js/workspace-tools.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
         "/static/js/settings.js",
@@ -1401,7 +1422,7 @@
       ],
       "forms": 2,
       "dialogs": [],
-      "controls": 12,
+      "controls": 15,
       "inline_styles": 1
     },
     "templates/timetable.html": {
@@ -1433,7 +1454,8 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/experience.css",
-        "/static/css/learning-pages.css"
+        "/static/css/learning-pages.css",
+        "/static/css/blue-workspace.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1443,6 +1465,7 @@
         "/static/js/unsaved-work.js",
         "/static/js/experience.js",
         "/static/js/learning-pages.js",
+        "/static/js/workspace-tools.js",
         "/static/js/read-api.js",
         "/static/js/voice-reflection.js",
         "/static/js/workspace-controls.js",
@@ -1455,7 +1478,7 @@
         "reflectionModal",
         "unnamed"
       ],
-      "controls": 42,
+      "controls": 44,
       "inline_styles": 0
     }
   }

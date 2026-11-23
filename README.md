@@ -633,16 +633,16 @@ This supersedes the earlier visual refinement queue. Items 1–10 establish the 
 - [x] 8. Feature discovery: five direct pathways into planning, tutoring, focus rooms, projects and public guides.
 - [x] 9. Landing narrative: focused sections, native FAQ disclosures, concise privacy/coaching explanations and final signup invitation.
 - [x] 10. Landing interaction polish: keyboard tabs, status announcements, safe text rendering, optional reveals, hover/focus feedback and stable section layouts.
-- [ ] 11. Login page: blue visual identity, compact phone layout and clear recovery access.
-- [ ] 12. Signup page: field guidance, password feedback and deliberate consent.
-- [ ] 13. Password recovery: consistent request/reset steps and expiry/success states.
-- [ ] 14. Workspace navigation: grouped destinations and obvious current-page context.
-- [ ] 15. Dashboard: today's work, clear next action and quieter supporting statistics.
-- [ ] 16. Profile and skills: section organization, skill editing and save feedback.
-- [ ] 17. Timetable: selected-day clarity and create/edit/reflection flows.
-- [ ] 18. Reflections: text/audio cards, filters and empty-state guidance.
-- [ ] 19. Tutor discovery: skill-led cards, availability and booking journey.
-- [ ] 20. Study sessions: upcoming/history views, status progression and contextual actions.
+- [x] 11. Login page: blue visual identity, compact phone layout and clear recovery access.
+- [x] 12. Signup page: field guidance, password feedback and deliberate consent.
+- [x] 13. Password recovery: consistent request/reset steps and expiry/success states.
+- [x] 14. Workspace navigation: grouped destinations and obvious current-page context.
+- [x] 15. Dashboard: today's work, clear next action and quieter supporting statistics.
+- [x] 16. Profile and skills: section organization, skill editing and save feedback.
+- [x] 17. Timetable: selected-day clarity and create/edit/reflection flows.
+- [x] 18. Reflections: text/audio cards, filters and empty-state guidance.
+- [x] 19. Tutor discovery: skill-led cards, availability and booking journey.
+- [x] 20. Study sessions: upcoming/history views, status progression and contextual actions.
 - [ ] 21. Availability editor: day/time entry and review before saving.
 - [ ] 22. Weekly coach: weekly summary, insights and explicit analysis-request feedback.
 - [ ] 23. Focus room discovery: room purpose, participants and state before joining.
@@ -665,3 +665,5 @@ This supersedes the earlier visual refinement queue. Items 1–10 establish the 
 - [ ] 40. Final coordinated release: complete checklist, green CI, merge and Render/Vercel smoke checks.
 
 Batch 1 verification adds a dedicated browser journey for the guest demo, timer transitions, text-injection resistance, no demo writes/persistence, menu keyboard behavior, theme/motion persistence, no-JavaScript fallback and both-theme layout/accessibility checks. Existing full release and regression suites remain required for this shared-palette change. Motion is decorative; the accelerated demo timer is explicitly not a real study-session clock. Production authenticated journeys and physical-device acceptance are distinct from fixture coverage.
+
+Batch 2 (items 11–20): blue account compositions, inline minimum-length and password-match guidance, recovery access beside login, searchable grouped navigation, daily-first dashboard with expandable tutoring statistics, profile character guidance and loaded-skill search, selected timetable-day context, compact reflection reading, local tutor ordering and synchronized session-role/reset controls. Existing account recovery, consent defaults, booking clock, permission checks, review drafts, reflection/audio privacy and unsaved-work guards retain their existing owners. Full CI and responsive release verification remain merge gates.

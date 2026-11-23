@@ -27,7 +27,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
+<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script><link rel="stylesheet" href="/static/css/blue-workspace.css"><script src="/static/js/workspace-tools.js" defer></script></head>
 <body class="l2e-workspace ">
     <div class="app-shell">
         <aside class="sidebar">
@@ -71,7 +71,7 @@
                 </div>
             </section>
             <nav class="learning-actions" aria-label="Your next learning action"><a href="/timetable">Plan a study block <span aria-hidden="true">↗</span></a><a href="/search-page">Find a study partner <span aria-hidden="true">↗</span></a><a href="/reflections">Review your reflections <span aria-hidden="true">↗</span></a></nav>
-            <h2 class="secondary-heading">Set up your learning space</h2>
+            <nav class="workspace-jumps" aria-label="Dashboard sections"><a href="#todayWorkspace">Today’s plan</a><a href="#streakSection">Learning habit</a><a href="#discoveryTitle">Discover people & projects</a></nav><h2 class="secondary-heading">Set up your learning space</h2>
             <div class="activation-banner">
                 <div>
                     <h2>Your next chapter starts here</h2>
@@ -83,7 +83,7 @@
                 </div>
             </div>
 
-            <div class="stats-grid">
+            <details class="workspace-details" id="profileStats"><summary>Your tutoring profile at a glance</summary><div class="stats-grid">
                 <div class="stat-card">
                     <p class="stat-label">Rating</p>
                     <p class="stat-value" id="statRating">—</p>
@@ -102,7 +102,7 @@
                 </div>
             </div>
 
-            <section class="card heatmap-card" id="streakSection" aria-labelledby="consistencyTitle">
+            </details><section class="card heatmap-card" id="streakSection" aria-labelledby="consistencyTitle">
                 <div class="heatmap-header">
                     <div>
                         <h2 id="consistencyTitle">Consistency &amp; Learning Habit</h2>

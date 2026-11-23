@@ -1,5 +1,8 @@
 (()=>{
  const el=id=>document.getElementById(id),mode=document.body.dataset.accountMode,form=el('accountForm');let busy=false;
+ const password=document.querySelector('[data-password-guidance]');
+ function passwordGuidance(){if(!password)return;const minimum=password.minLength,ready=password.value.length>=minimum;el('passwordFeedback').textContent=password.value.length?ready?'Minimum length met. A longer, unique password is a good choice.':'Add '+(minimum-password.value.length)+' more character'+(minimum-password.value.length===1?'':'s')+' to meet the minimum.':'Use at least '+minimum+' characters. Choose a unique password.';el('passwordFeedback').dataset.ready=String(ready);if(el('confirmPassword')){const confirm=el('confirmPassword'),typed=!!confirm.value;el('passwordMatch').textContent=typed?(confirm.value===password.value?'Passwords match.':'The two passwords do not match yet.'):'';confirm.setAttribute('aria-invalid',String(typed&&confirm.value!==password.value));}}
+ password?.addEventListener('input',passwordGuidance);el('confirmPassword')?.addEventListener('input',passwordGuidance);passwordGuidance();
  const next=learningReturnPath();el('accountReturn').textContent=next==='/learn'?'Continue to the Learning Hub after signing in.':'After signing in, return to the guide you opened.';
  for(const link of document.querySelectorAll('[data-auth-route]'))link.href='/page/'+link.dataset.authRoute+'?next='+encodeURIComponent(next);
  if(mode==='reset-password')el('email').value=new URLSearchParams(location.search).get('email')||'';
