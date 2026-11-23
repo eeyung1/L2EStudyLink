@@ -5,6 +5,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import { chromium } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { verifyLanding } from './landing.mjs';
 import { verifyReleaseAudit } from './release-audit.mjs';
 import { verifyApp } from './workspace.mjs';
 import { verifyReflections } from './reflections.mjs';
@@ -41,6 +42,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 const browser=await launchWithLeaveDefaults(chromium);
 const evidence={fixtureOnly:true,sourceCommit:process.env.GITHUB_SHA || 'local',screenshots:[],appObservations:[],previewChecks:[],accessibility:[],externalAssetFailures:[]};
 try {
+  await verifyLanding(browser,origin,output,evidence);
   if(process.env.L2E_UI_SUITE!=='release'){
   // Current integrated app templates and shared navigation, with fictional API fixtures.
   for(const width of [390,1440]) for(const view of ['dashboard','timetable']) for(const state of ['populated','empty','loading','error','expired']) {

@@ -1,12 +1,12 @@
 /* Shared semantic tokens for the preview and signed-in workspace. */
 .l2e-preview, .l2e-workspace {
-  --l2e-canvas: #f4f7f6; --l2e-surface: #ffffff; --l2e-subtle: #edf3f0;
-  --l2e-text: #142d26; --l2e-secondary: #4f655d; --l2e-muted: #5a6e65;
-  --l2e-border: #dbe5df; --l2e-accent: #08734d; --l2e-accent-hover: #055537;
-  --l2e-accent-soft: #e4f4ec; --l2e-on-accent: #ffffff;
+  --l2e-canvas: #f4f9ff; --l2e-surface: #ffffff; --l2e-subtle: #edf5fc;
+  --l2e-text: #102a43; --l2e-secondary: #48627a; --l2e-muted: #526b82;
+  --l2e-border: #d5e4f0; --l2e-accent: #0369a1; --l2e-accent-hover: #07557f;
+  --l2e-accent-soft: #e0f2fe; --l2e-on-accent: #ffffff;
   --l2e-warning: #815700; --l2e-warning-soft: #fff3d6;
   --l2e-error: #a32931; --l2e-error-soft: #fff0ef;
-  --l2e-focus: #08734d; --l2e-shadow: 0 6px 24px #163d2710;
+  --l2e-focus: #0369a1; --l2e-shadow: 0 6px 24px #123e6010;
   --l2e-space-1: 4px; --l2e-space-2: 8px; --l2e-space-3: 12px;
   --l2e-space-4: 16px; --l2e-space-5: 24px; --l2e-space-6: 32px; --l2e-space-7: 48px;
   --l2e-radius-sm: 10px; --l2e-radius-md: 16px; --l2e-radius-lg: 24px;
@@ -16,11 +16,11 @@
   color-scheme: light;
 }
 .l2e-preview[data-l2e-theme="dark"], html.dark .l2e-workspace {
-  --l2e-canvas: #101c20; --l2e-surface: #19292c; --l2e-subtle: #213639;
-  --l2e-text: #edf7f1; --l2e-secondary: #bdcfc7; --l2e-muted: #a7beb4;
-  --l2e-border: #38504b; --l2e-accent: #8de2ba; --l2e-accent-hover: #b7f2d4;
-  --l2e-accent-soft: #25443a; --l2e-on-accent: #102c20;
+  --l2e-canvas: #102337; --l2e-surface: #172e45; --l2e-subtle: #203c56;
+  --l2e-text: #edf7ff; --l2e-secondary: #c0d4e7; --l2e-muted: #abc3d9;
+  --l2e-border: #41617c; --l2e-accent: #8dd2ff; --l2e-accent-hover: #b9e4ff;
+  --l2e-accent-soft: #214660; --l2e-on-accent: #102d43;
   --l2e-warning: #f6d48c; --l2e-warning-soft: #44391f;
-  --l2e-error: #ffb3b8; --l2e-error-soft: #492d33; --l2e-focus: #8de2ba;
+  --l2e-error: #ffb3b8; --l2e-error-soft: #492d33; --l2e-focus: #8dd2ff;
   --l2e-shadow: 0 6px 24px #0002; color-scheme: dark;
 }
