@@ -152,7 +152,7 @@ if (typeof document !== 'undefined' && document.getElementById('focus-app')) {
         el('focus-leave-confirm').addEventListener('click',async()=>{
             if(busy||!room)return;setBusy(true);el('focus-leave-cancel').disabled=el('focus-leave-confirm').disabled=true;
             try{await api('rooms/'+room.id+'/membership','DELETE');resetRoom();leaveDialog.close();await refreshRooms();status('You left the room. Nothing was recorded as study time.');el('focus-finished').hidden=false;if(wantsReflection)el('focus-reflection-link').focus();}
-            catch(error){if(error.status===404){resetRoom();leaveDialog.close();status('Your membership has already ended. You can choose a block to reflect.');el('focus-finished').hidden=false;refreshRooms();}else el('focus-leave-error').textContent=error.message+' Your membership is unchanged until leaving succeeds.';}
+            catch(error){if(error.status===404){resetRoom();leaveDialog.close();status('Your membership has already ended. You can choose a block to reflect.');el('focus-finished').hidden=false;refreshRooms();}else el('focus-leave-error').textContent=error.message+' Leaving could not be confirmed. Retry, or refresh to check your membership.';}
             finally{setBusy(false);el('focus-leave-cancel').disabled=el('focus-leave-confirm').disabled=false;}
         });
         el('focus-target-form').addEventListener('submit', async event => {

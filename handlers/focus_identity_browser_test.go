@@ -62,6 +62,12 @@ func TestFocusIdentityBrowserJourney(t *testing.T){
     script,err:=filepath.Abs("../tests/ui/real-focus-identity.mjs");if err!=nil {t.Fatal(err)};command:=exec.Command("node",script)
     command.Env=append(os.Environ(),"L2E_TEST_ORIGIN="+server.URL,"L2E_ALPHA_TOKEN="+reflectionTestToken(t,a),"L2E_BETA_TOKEN="+reflectionTestToken(t,b))
     if output,err:=command.CombinedOutput();err!=nil {t.Fatalf("focus identity browser: %v\n%s",err,output)}else{t.Log(string(output))}
+    // Current suspension overrides an old token and an already-public URL.
+    if _,err:=database.Exec(`UPDATE users SET is_suspended=TRUE,portfolio_public=TRUE WHERE id=$1`,b);err!=nil {t.Fatal(err)}
+    for _,check:=range []struct{method,path,body string;want int}{{"GET","/api/v1/portfolio/beta_learner","",404},{"GET","/api/v1/portfolio/me","",403},{"PUT","/api/v1/portfolio/visibility",`{"public":true}`,403}} {
+        req:=httptest.NewRequest(check.method,check.path,strings.NewReader(check.body));if check.path!="/api/v1/portfolio/beta_learner"{req.Header.Set("Authorization","Bearer "+reflectionTestToken(t,b))};req.Header.Set("Content-Type","application/json")
+        w:=httptest.NewRecorder();router.ServeHTTP(w,req);if w.Code!=check.want {t.Fatalf("suspended %s %s: %d",check.method,check.path,w.Code)}
+    }
     if calls.Load()!=4 {t.Fatalf("Expected three Alpha attempts and one Beta attempt, got %d",calls.Load())}
     var count int;if err:=database.QueryRow(`SELECT count(*) FROM activity_logs WHERE summary='Explicit reflection after focus.' AND user_id=$1`,b).Scan(&count);err!=nil||count!=1 {t.Fatalf("explicit handoff save: %d %v",count,err)}
 }

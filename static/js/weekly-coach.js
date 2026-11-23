@@ -38,7 +38,7 @@ function renderMetrics(metrics,available){
  else coachState('ready','Ready when you are','Request coaching when you want suggestions based on your own selected-week records.');
 
 }
-function coachState(kind,title,copy,reflectionLink=false){const panel=byId('coach-state');panel.hidden=false;panel.dataset.state=kind;byId('coach-state-title').textContent=title;byId('coach-state-copy').textContent=copy;byId('coach-reflect-link').hidden=!reflectionLink;}
+function coachState(kind,title,copy,reflectionLink=false){const panel=byId('coach-state');panel.hidden=false;panel.dataset.state=kind;if(byId('coach-state-title').textContent!==title)byId('coach-state-title').textContent=title;if(byId('coach-state-copy').textContent!==copy)byId('coach-state-copy').textContent=copy;byId('coach-reflect-link').hidden=!reflectionLink;}
 function showLimit(){const seconds=Math.max(0,Math.ceil((blockedUntil-Date.now())/1000));coachState('limited','Coaching request limit reached',`Try again in about ${Math.max(1,Math.ceil(seconds/60))} minute(s). Your metrics remain available. Failed provider requests also count toward the limit.`);}
 async function loadWeek(event){
  if(event)event.preventDefault();if(busy)return;

@@ -119,7 +119,7 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 
 **Learning/coverage evidence:** [PR #72](https://github.com/eeyung1/L2EStudyLink/pull/72) and the [Learning Hub, notification and coach guide](docs/redesign/learning-notifications-coach.md) records this five-item delivery, API boundaries and verification.
 
-**Focus/identity evidence:** [weekly coaching states, focus and learner identity guide](docs/redesign/focus-identity.md) records delivery, privacy assertions, existing API compatibility and verification boundaries.
+**Focus/identity evidence:** [PR #73](https://github.com/eeyung1/L2EStudyLink/pull/73) and the [weekly coaching states, focus and learner identity guide](docs/redesign/focus-identity.md) records delivery, privacy assertions, existing API compatibility and verification boundaries.
 
 #### Batch 6 — Landing, account and administration
 
