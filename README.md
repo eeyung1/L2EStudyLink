@@ -144,7 +144,7 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [ ] Obtain and record owner acceptance on a physical phone and laptop.
 - [ ] Update remaining limitations and checked/unchecked roadmap items honestly.
 
-**Automated release evidence:** [Release audit guide](docs/redesign/release-audit.md) records the production-route authorization checks, all-screen viewport matrix, recovery/navigation checks and keyboard/reflow coverage. The 200% reflow check uses the equivalent reduced CSS viewport; physical browser zoom, screen-reader and device acceptance remain owner checks.
+**Automated release evidence:** [PR #75](https://github.com/eeyung1/L2EStudyLink/pull/75) and the [release audit guide](docs/redesign/release-audit.md) records the production-route authorization checks, all-screen viewport matrix, recovery/navigation checks and keyboard/reflow coverage. The 200% reflow check uses the equivalent reduced CSS viewport; physical browser zoom, screen-reader and device acceptance remain owner checks.
 
 ### Required verification matrix
 

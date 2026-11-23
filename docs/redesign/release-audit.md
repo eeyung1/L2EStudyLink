@@ -28,7 +28,7 @@ L2E_UI_SUITE=release npm run test:ui
 TEST_DATABASE_URL='postgres://test:test@localhost:5432/l2e_test?sslmode=disable' go test ./... -run TestReleaseAuthorizationAndPublicBoundary -count=1
 ```
 
-The full browser run is `npm run test:ui`. Evidence is generated under `test-results/ui/evidence.json`, including per-view/theme/width observations and state/interaction records, with representative screenshots. CI uploads the evidence artifact. Fixture data is fictional and separate from real-server integration tests.
+The full browser run is `npm run test:ui`. Evidence is generated under `test-results/ui/evidence.json`, (release-only runs write `test-results/ui/release/evidence.json`), including per-view/theme/width observations and state/interaction records, with representative screenshots. CI uploads the evidence artifact. Fixture data is fictional and separate from real-server integration tests.
 
 ## Remaining acceptance
 

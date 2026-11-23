@@ -60,7 +60,11 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: python3 scripts/audit-ui.py --check
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:ui
+      - name: Release viewport, state and keyboard audit
+        run: L2E_UI_SUITE=release npm run test:ui
+      - name: Existing feature browser regressions
+        if: always()
+        run: L2E_UI_SUITE=regression npm run test:ui
       - uses: actions/setup-go@v5
         if: always()
         with:

@@ -14,7 +14,7 @@ import { verifyFocusIdentity } from './focus-identity.mjs';
 import { verifyPublicAccountAdmin } from './public-account-admin.mjs';
 import { verifyBookings } from './bookings.mjs';
 
-const root = process.cwd(), output = 'test-results/ui';
+const root = process.cwd(), output = process.env.L2E_UI_SUITE==='release'?'test-results/ui/release':'test-results/ui';
 await mkdir(output,{recursive:true});
 const mime = {'.html':'text/html','.css':'text/css','.js':'text/javascript','.png':'image/png','.svg':'image/svg+xml','.webmanifest':'application/manifest+json'};
 // Read-only localhost fixture host. It never starts the app, accesses a DB or forwards APIs.
@@ -125,7 +125,7 @@ try {
     await context.close();
   }
   }
-  await verifyReleaseAudit(browser,origin,output,evidence);
+  if(process.env.L2E_UI_SUITE!=='regression')await verifyReleaseAudit(browser,origin,output,evidence);
   console.log('UI checks passed: baseline state captures, responsive previews, touch targets, clearance, WCAG scans, state recovery, menus, themes and zero preview API calls.');
 } finally {
   await writeFile(output+'/evidence.json',JSON.stringify(evidence,null,2));
