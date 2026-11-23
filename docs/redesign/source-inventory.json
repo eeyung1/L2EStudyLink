@@ -885,35 +885,41 @@
       "links": [
         "#main",
         "/",
+        "#explore",
         "/learn",
         "/page/login",
         "/page/signup",
         "/dashboard",
         "/page/signup",
         "/dashboard",
-        "#how-it-works",
+        "#try-it",
+        "/timetable",
+        "/search-page",
+        "/focus",
+        "/projects",
         "/learn",
         "/page/signup",
         "/dashboard",
+        "/page/signup",
+        "/dashboard",
         "/",
-        "/learn"
+        "/learn",
+        "#try-it",
+        "/page/login"
       ],
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
-        "/static/css/public-account.css",
-        "/static/css/landing.css",
-        "/static/css/experience.css"
+        "/static/css/landing.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
         "/static/js/public-nav.js",
-        "/static/js/landing-journey.js",
-        "/static/js/experience.js"
+        "/static/js/landing-journey.js"
       ],
-      "forms": 0,
+      "forms": 2,
       "dialogs": [],
-      "controls": 4,
+      "controls": 15,
       "inline_styles": 0
     },
     "templates/layout.html": {

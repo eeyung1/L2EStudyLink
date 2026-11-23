@@ -618,3 +618,50 @@ Remaining items: 11 Dashboard; 12 Timetable; 13 Reflections; 14 Tutor discovery;
 - [x] 20. Masterclasses: optional upcoming/open-seat filtering across loaded classes and clearer discovery/hosting presentation.
 
 All shortcuts delegate to existing form/controller events; they do not create alternative mutation paths. Existing permissions, account scoping, clock validation, unsaved warnings and availability revisions remain authoritative. The release browser suite exercises the new shortcuts alongside the 320px–4K theme/geometry/accessibility matrix; existing real-server journeys verify mutations and permissions. Remaining optimization items: 21 Projects, 22 Learning Hub, 23 Article/discussion, 24 Portfolio, 25 Administration.
+
+### Light-blue redesign — current 40-item implementation checklist
+
+This supersedes the earlier visual refinement queue. Items 1–10 establish the new light-blue foundation and rebuild the landing experience; later items cover individual account, learning, community and administration workflows. Existing API authorization, private reflections, consent, booking rules and edit-conflict protections remain authoritative.
+
+- [x] 1. Unified light-blue semantic tokens: pale-blue canvas, white cards, navy text, readable stronger-blue actions and coordinated dark appearance.
+- [x] 2. Stylesheet consolidation: replace the previous landing override stack with one scoped composition using shared tokens/reading controls; migrate exact green brand values and shared shadow accents. Legacy page-specific layout cleanup continues in later page batches.
+- [x] 3. Responsive foundation: fluid content widths, intentional phone/tablet/desktop/wide-screen landing layouts, safe-area spacing and 44px controls; retain the existing shared responsive workspace framework.
+- [x] 4. Public landing navigation: all entry points available through a responsive menu, Escape dismissal, expanded-state semantics, theme controls and no-JavaScript navigation fallback.
+- [x] 5. Landing hero: concise product promise, expressive heading, obvious guest/member primary actions and a hands-on demo entry.
+- [x] 6. Animated learning illustration: connected plan/people/focus/reflection nodes with flowing connections, persistent pause preference, reduced-motion support and offscreen/hidden-page suspension.
+- [x] 7. Hands-on product demo: editable practice goal/duration, accelerated 10-second timer with pause/resume/reset, reflection feedback, completion and fresh-cycle reset. No demo content is transmitted or persisted.
+- [x] 8. Feature discovery: five direct pathways into planning, tutoring, focus rooms, projects and public guides.
+- [x] 9. Landing narrative: focused sections, native FAQ disclosures, concise privacy/coaching explanations and final signup invitation.
+- [x] 10. Landing interaction polish: keyboard tabs, status announcements, safe text rendering, optional reveals, hover/focus feedback and stable section layouts.
+- [ ] 11. Login page: blue visual identity, compact phone layout and clear recovery access.
+- [ ] 12. Signup page: field guidance, password feedback and deliberate consent.
+- [ ] 13. Password recovery: consistent request/reset steps and expiry/success states.
+- [ ] 14. Workspace navigation: grouped destinations and obvious current-page context.
+- [ ] 15. Dashboard: today's work, clear next action and quieter supporting statistics.
+- [ ] 16. Profile and skills: section organization, skill editing and save feedback.
+- [ ] 17. Timetable: selected-day clarity and create/edit/reflection flows.
+- [ ] 18. Reflections: text/audio cards, filters and empty-state guidance.
+- [ ] 19. Tutor discovery: skill-led cards, availability and booking journey.
+- [ ] 20. Study sessions: upcoming/history views, status progression and contextual actions.
+- [ ] 21. Availability editor: day/time entry and review before saving.
+- [ ] 22. Weekly coach: weekly summary, insights and explicit analysis-request feedback.
+- [ ] 23. Focus room discovery: room purpose, participants and state before joining.
+- [ ] 24. Active focus room: timer, goal, participant controls and completion feedback.
+- [ ] 25. Buddy workspace: connections, suggestions and incoming/outgoing requests.
+- [ ] 26. Masterclasses: discovery cards, seats/time context and hosting forms.
+- [ ] 27. Projects: discovery, recruitment, invitations and team participation.
+- [ ] 28. Learning Hub: article hierarchy, search/categories and pagination feedback.
+- [ ] 29. Article/discussion: comfortable reading, discussion structure and reply feedback.
+- [ ] 30. Learner portfolio: public presentation, owner preview and sharing controls.
+- [ ] 31. Administration overview: prioritized information and readable account/booking lists.
+- [ ] 32. Admin action flows: selection, confirmation and outcomes for sensitive actions.
+- [ ] 33. Shared interaction states: coherent loading/empty/error/success/retry treatment.
+- [ ] 34. Forms/dialogs: field guidance, error retention and phone-keyboard-safe layouts.
+- [ ] 35. App-wide motion system: consistent transitions and visibility-aware decoration.
+- [ ] 36. Whole-app accessibility verification: keyboard, focus, contrast, touch and zoom.
+- [ ] 37. Whole-app responsive verification: representative 320px–4K and landscape layouts.
+- [ ] 38. Performance pass: stylesheet weight, animation cost, layout shifts and assets.
+- [ ] 39. Final journey regression tests: accounts, planning, booking, reflections and collaboration.
+- [ ] 40. Final coordinated release: complete checklist, green CI, merge and Render/Vercel smoke checks.
+
+Batch 1 verification adds a dedicated browser journey for the guest demo, timer transitions, text-injection resistance, no demo writes/persistence, menu keyboard behavior, theme/motion persistence, no-JavaScript fallback and both-theme layout/accessibility checks. Existing full release and regression suites remain required for this shared-palette change. Motion is decorative; the accelerated demo timer is explicitly not a real study-session clock. Production authenticated journeys and physical-device acceptance are distinct from fixture coverage.
