@@ -109,15 +109,17 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 
 - [x] Present weekly coverage, daily breakdown and coaching in readable layouts.
 - [x] Clearly label scheduled/reflection-covered minutes as estimates, not verified hours worked.
-- [ ] Show provider-unavailable, rate-limit, empty-week and truncated-context states.
-- [ ] Keep the planner author's personal history out of other users' coaching.
-- [ ] Align focus-room join/leave, timer, participant and reflection handoff states.
-- [ ] Align learner portfolio visibility, handle selection and public/private presentation.
-- [ ] Verify these flows using each user's own records.
+- [x] Show provider-unavailable, rate-limit, empty-week and truncated-context states.
+- [x] Keep the planner author's personal history out of other users' coaching.
+- [x] Align focus-room join/leave, timer, participant and reflection handoff states.
+- [x] Align learner portfolio visibility, handle selection and public/private presentation.
+- [x] Verify these flows using each user's own records.
 
 **Acceptance:** observed activity is visually distinct from AI suggestions. Saved reviews, long-term trends and new coaching capabilities are separate product work until delivered.
 
 **Learning/coverage evidence:** [PR #72](https://github.com/eeyung1/L2EStudyLink/pull/72) and the [Learning Hub, notification and coach guide](docs/redesign/learning-notifications-coach.md) records this five-item delivery, API boundaries and verification.
+
+**Focus/identity evidence:** [PR #73](https://github.com/eeyung1/L2EStudyLink/pull/73) and the [weekly coaching states, focus and learner identity guide](docs/redesign/focus-identity.md) records delivery, privacy assertions, existing API compatibility and verification boundaries.
 
 #### Batch 6 — Landing, account and administration
 
