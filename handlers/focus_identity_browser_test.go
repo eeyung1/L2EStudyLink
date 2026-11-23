@@ -40,6 +40,9 @@ func TestFocusIdentityBrowserJourney(t *testing.T){
         if len(request.Messages)!=2||request.Messages[0].Role!="system"||request.Messages[0].Content!=plannerCoachPrompt {t.Error("Unexpected coaching prompt source")}
         user:=request.Messages[1].Content;alpha:=strings.Contains(user,"ALPHA_ONLY_CANARY");beta:=strings.Contains(user,"BETA_ONLY_CANARY")
         if alpha==beta||strings.Contains(user,"OUTSIDE_WEEK_CANARY")||strings.Contains(user,"INCOMPLETE_CANARY"){t.Error("Coaching context crossed account, week or completion boundaries")}
+        var context struct{Metrics struct{Scheduled int `json:"scheduled_minutes"`} `json:"metrics"`}
+        if err:=json.Unmarshal([]byte(user),&context);err!=nil {t.Error(err)}
+        if (context.Metrics.Scheduled==60&&!alpha)||(context.Metrics.Scheduled==90&&!beta){t.Error("Reflection context does not match the report owner")}
         calls.Add(1);if providerFail.Swap(false){return plannerProviderResponse(400,"fixture unavailable","stop"),nil};return plannerProviderResponse(200,string(valid),"stop"),nil
     })
     for _,id:=range []int64{a,b}{plannerReviewQuota.Lock();delete(plannerReviewQuota.Entries,id);plannerReviewQuota.Unlock()}
