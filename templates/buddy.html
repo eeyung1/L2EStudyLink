@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
     <link rel="stylesheet" href="/static/css/community.css">
-<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script></head>
+<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
 <div class="app-shell">
   <aside class="sidebar">
@@ -28,17 +28,17 @@
     <div class="sidebar-foot"><button class="logout-link" id="logoutButton">↪ Logout</button><button id="darkToggle" class="icon-btn" type="button" title="Toggle dark mode">🌙</button></div>
   </aside>
 
-  <main class="main-content l2e-ui">
+  <main data-learning-page="buddy" class="main-content l2e-ui">
     <div class="community-page">
       <header class="workspace-header"><div><p class="workspace-eyebrow">CONSISTENCY, TOGETHER</p><h1 class="workspace-title">Accountability buddies</h1><p class="workspace-subtitle">Pair with fellow learners, encourage steady progress, and compare activity streaks after you both agree. These counts reflect saved reflections and completed sessions, not verified hours worked.</p></div><button id="refreshButton" class="l2e-button secondary" type="button">Refresh</button></header>
       <p id="buddyMessage" class="l2e-feedback" role="status" aria-live="polite"></p>
       <button id="retryBuddies" type="button" hidden>Retry buddies</button>
       <section class="buddy-stats" aria-label="Your learning consistency"><div class="buddy-stat"><strong id="myCurrent">—</strong><span>Current streak</span></div><div class="buddy-stat"><strong id="myLongest">—</strong><span>Longest streak</span></div><div class="buddy-stat"><strong id="myActiveDays">—</strong><span>Total active days</span></div></section>
 
-      <div class="buddy-layout">
+      <nav class="learning-jumps" aria-label="Buddy sections"><a href="#activeHeading">Your buddies</a><a href="#incomingHeading">Requests for you</a><a href="#discoverHeading">Find a buddy</a></nav><div class="buddy-layout">
         <div class="buddy-column">
           <section class="l2e-card" aria-labelledby="activeHeading"><div class="buddy-heading"><div><h2 id="activeHeading">Your buddies</h2><p>Accepted connections can compare streaks.</p></div></div><div id="activeList" class="buddy-list">Loading…</div></section>
-          <section class="l2e-card" aria-labelledby="discoverHeading"><div class="buddy-heading"><div><h2 id="discoverHeading">Find a buddy</h2><p>Send one respectful request.</p></div></div><div id="suggestionList" class="buddy-list">Loading…</div></section>
+          <section class="l2e-card" aria-labelledby="discoverHeading"><div class="buddy-heading"><div><h2 id="discoverHeading">Find a buddy</h2><p>Send one respectful request.</p></div></div><label class="learning-select buddy-search">Find among suggested fellows<input id="buddySuggestionSearch" type="search" placeholder="Search names or introductions" aria-controls="suggestionList"></label><p id="buddySearchStatus" class="learning-hint" role="status" hidden></p><div id="suggestionList" class="buddy-list">Loading…</div></section>
         </div>
         <div class="buddy-column">
           <section class="l2e-card" aria-labelledby="incomingHeading"><div class="buddy-heading"><div><h2 id="incomingHeading">Requests for you</h2><p>You decide who joins your journey.</p></div></div><div id="incomingList" class="buddy-list">Loading…</div></section>

@@ -27,7 +27,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script></head>
+<script src="/static/js/unsaved-work.js"></script><link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
 <body class="l2e-workspace ">
     <div class="app-shell">
         <aside class="sidebar">
@@ -50,7 +50,7 @@
             </div>
         </aside>
 
-        <main class="main-content l2e-ui">
+        <main data-learning-page="dashboard" class="main-content l2e-ui">
             <div class="page-header">
                 <div>
                     <p class="dashboard-eyebrow">YOUR LEARNING SPACE</p>
@@ -59,7 +59,7 @@
                 </div>
             </div>
 
-            <section class="daily-workspace" aria-labelledby="dailyTitle">
+            <nav class="learning-actions" aria-label="Your next learning action"><a href="/timetable">Plan a study block <span aria-hidden="true">↗</span></a><a href="/search-page">Find a study partner <span aria-hidden="true">↗</span></a><a href="/reflections">Review your reflections <span aria-hidden="true">↗</span></a></nav><section id="todayWorkspace" class="daily-workspace" aria-labelledby="dailyTitle">
                 <header class="daily-heading"><div><p class="workspace-eyebrow" id="dailyDate"></p><h2 id="dailyTitle">Make today count.</h2></div><a class="l2e-button" id="dailyReflection" href="/timetable?reflect=today">Add reflection</a></header>
                 <div class="daily-grid">
                     <section class="l2e-card" aria-labelledby="agendaTitle"><h3 id="agendaTitle">Today's learning plan</h3><div id="todayAgenda" aria-live="polite" aria-busy="true"><p class="l2e-loading">Loading today's blocks…</p></div><a href="/timetable" class="l2e-text-link">View my timetable →</a></section>

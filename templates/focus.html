@@ -9,15 +9,15 @@
 
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css"><link rel="stylesheet" href="/static/css/focus.css"><script src="/static/js/dialog-viewport.js" defer></script>
-<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script></head>
+<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
 <body class="l2e-workspace ">
 <div class="app-shell" id="focus-app">
 <aside class="sidebar"><div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard"><span class="experience-brand-mark" aria-hidden="true">L2E<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></span><span>StudyLink</span></a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span></button></div>
 {{template "app-navigation" .}}
 <div class="sidebar-foot"><button class="logout-link" id="focus-logout">Log out</button><button class="icon-btn" id="focus-theme" aria-label="Toggle dark mode">◐</button></div></aside>
-<main class="main-content l2e-ui"><div class="focus-page">
+<main data-learning-page="focus" class="main-content l2e-ui"><div class="focus-page">
 <header class="workspace-header"><div><p class="workspace-eyebrow">A LITTLE COMPANY. A LITTLE MORE FOCUS.</p><h1 class="workspace-title">Focus together</h1><p class="focus-muted">Set one intention. Settle in with your peers for 25 minutes, then take a 5-minute break together.</p></div></header>
-<p id="focus-status" tabindex="-1" class="focus-status" role="status" aria-live="polite">Finding your focus rooms…</p>
+<div class="learning-toolbar"><button id="focusQuiet" type="button" class="secondary" aria-pressed="false" disabled>Distraction-free view</button><p class="learning-hint">Join a room to simplify your focus view.</p></div><p id="focus-status" tabindex="-1" class="focus-status" role="status" aria-live="polite">Finding your focus rooms…</p>
 <section id="focus-finished" class="focus-panel" hidden aria-labelledby="focus-finished-title"><h2 id="focus-finished-title">You left the room</h2><p>Your timer and room membership have not saved a reflection or recorded study hours.</p><a class="l2e-button" href="/timetable" id="focus-reflection-link">Choose your timetable block to reflect</a></section><div class="focus-grid">
 <section>
 <section id="focus-lobby" class="focus-panel" aria-labelledby="lobby-title"><h2 id="lobby-title">What will you work on?</h2><label for="focus-goal">Your target for this session<input id="focus-goal" type="text" maxlength="160" placeholder="Write one parser test" required></label><p class="focus-muted">Your name and target are shared with room members. Rooms are temporary and reset when the server restarts. Your target is not saved as a reflection.</p><form id="focus-create"><label for="focus-room-title">Start a room<input id="focus-room-title" type="text" maxlength="80" placeholder="Quiet Go practice" required></label><button class="focus-primary" type="submit" id="focus-create-button">Create room &amp; join</button></form></section>

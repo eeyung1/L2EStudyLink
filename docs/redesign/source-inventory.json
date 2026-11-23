@@ -681,7 +681,8 @@
         "/static/css/workspace.css",
         "/static/css/community.css",
         "/static/css/account-admin.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/learning-pages.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -689,6 +690,7 @@
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
         "/static/js/experience.js",
+        "/static/js/learning-pages.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
         "/static/js/settings.js",
@@ -696,7 +698,7 @@
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 7,
+      "controls": 14,
       "inline_styles": 1
     },
     "templates/buddy.html": {
@@ -716,7 +718,10 @@
         "/skills",
         "/portfolio",
         "/availability",
-        "/admin"
+        "/admin",
+        "#activeHeading",
+        "#incomingHeading",
+        "#discoverHeading"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
@@ -726,13 +731,15 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/community.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/learning-pages.css"
       ],
       "scripts": [
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/experience.js",
+        "/static/js/learning-pages.js",
         "/static/js/dialog-viewport.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
@@ -740,7 +747,7 @@
       ],
       "forms": 0,
       "dialogs": [],
-      "controls": 5,
+      "controls": 6,
       "inline_styles": 0
     },
     "templates/dashboard.html": {
@@ -761,6 +768,9 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/timetable",
+        "/search-page",
+        "/reflections",
         "/timetable?reflect=today",
         "/timetable",
         "/my-bookings",
@@ -781,7 +791,8 @@
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/learning-pages.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -789,6 +800,7 @@
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
         "/static/js/experience.js",
+        "/static/js/learning-pages.js",
         "/static/js/read-api.js",
         "/static/js/heatmap.js",
         "/static/js/dashboard-daily.js"
@@ -825,20 +837,22 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/focus.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/learning-pages.css"
       ],
       "scripts": [
         "/static/js/session.js",
         "/static/js/mobile-nav.js",
         "/static/js/focus-room.js",
         "/static/js/dialog-viewport.js",
-        "/static/js/experience.js"
+        "/static/js/experience.js",
+        "/static/js/learning-pages.js"
       ],
       "forms": 2,
       "dialogs": [
         "focus-leave-dialog"
       ],
-      "controls": 14,
+      "controls": 15,
       "inline_styles": 0
     },
     "templates/forgot-password.html": {
@@ -994,7 +1008,8 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/community.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/learning-pages.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1003,6 +1018,7 @@
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
         "/static/js/experience.js",
+        "/static/js/learning-pages.js",
         "/static/js/dialog-viewport.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
@@ -1010,7 +1026,7 @@
       ],
       "forms": 2,
       "dialogs": [],
-      "controls": 15,
+      "controls": 16,
       "inline_styles": 0
     },
     "templates/my-bookings.html": {
@@ -1042,7 +1058,8 @@
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/learning-pages.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1051,6 +1068,7 @@
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
         "/static/js/experience.js",
+        "/static/js/learning-pages.js",
         "/static/js/booking-common.js",
         "/static/js/booking-sessions.js",
         "/static/js/dialog-viewport.js"
@@ -1059,7 +1077,7 @@
       "dialogs": [
         "bookingActionDialog"
       ],
-      "controls": 7,
+      "controls": 11,
       "inline_styles": 0
     },
     "templates/planner.html": {
@@ -1090,17 +1108,19 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/coach.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/learning-pages.css"
       ],
       "scripts": [
         "/static/js/session.js",
         "/static/js/mobile-nav.js",
         "/static/js/experience.js",
+        "/static/js/learning-pages.js",
         "/static/js/weekly-coach.js"
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 8,
+      "controls": 10,
       "inline_styles": 0
     },
     "templates/portfolio.html": {
@@ -1207,7 +1227,8 @@
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/learning-pages.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1215,13 +1236,14 @@
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/experience.js",
+        "/static/js/learning-pages.js",
         "/static/js/read-api.js",
         "/static/js/heatmap.js",
         "/static/js/reflection-history.js"
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 7,
+      "controls": 11,
       "inline_styles": 0
     },
     "templates/reset-password.html": {
@@ -1279,7 +1301,8 @@
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/learning-pages.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1287,6 +1310,7 @@
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/experience.js",
+        "/static/js/learning-pages.js",
         "/static/js/booking-common.js",
         "/static/js/tutor-search.js",
         "/static/js/dialog-viewport.js"
@@ -1297,7 +1321,7 @@
         "modalTitle",
         "modalContent"
       ],
-      "controls": 14,
+      "controls": 15,
       "inline_styles": 0
     },
     "templates/signup.html": {
@@ -1392,6 +1416,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/reflections",
         "/reflections"
       ],
       "styles": [
@@ -1401,7 +1426,8 @@
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
-        "/static/css/experience.css"
+        "/static/css/experience.css",
+        "/static/css/learning-pages.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1410,6 +1436,7 @@
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
         "/static/js/experience.js",
+        "/static/js/learning-pages.js",
         "/static/js/read-api.js",
         "/static/js/voice-reflection.js",
         "/static/js/workspace-controls.js",
@@ -1422,7 +1449,7 @@
         "reflectionModal",
         "unnamed"
       ],
-      "controls": 41,
+      "controls": 42,
       "inline_styles": 0
     }
   }

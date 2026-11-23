@@ -28,7 +28,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script></head>
+<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
@@ -51,7 +51,7 @@
             </div>
         </aside>
 
-        <main class="main-content workspace-page l2e-ui">
+        <main data-learning-page="search-page" class="main-content workspace-page l2e-ui">
 <header class="workspace-header"><div><p class="workspace-eyebrow">DISCOVER YOUR PEOPLE</p><h1 class="workspace-title">Find study partners</h1><p class="workspace-subtitle">Search by skill, see real availability, and book a session that works for you.</p></div><a class="workspace-header-link" href="/masterclass">Explore Masterclass <span aria-hidden="true">↗</span></a></header>
 
     <section class="l2e-card">
@@ -64,7 +64,7 @@
         </form>
         <p id="bookingClock" class="l2e-muted" role="status">Loading shared booking clock…</p>
         <p id="searchFeedback" role="status" aria-live="polite">Choose a skill and date to find a study partner.</p>
-        <div id="searchResults" class="tutor-grid" aria-busy="false"></div>
+        <div class="learning-toolbar"><button type="button" class="secondary" id="clearTutorSearch">Clear skill &amp; availability filter</button><p class="learning-hint">Your selected date stays in place.</p></div><div id="searchResults" class="tutor-grid" aria-busy="false"></div>
     </section>
         </main>
     </div>

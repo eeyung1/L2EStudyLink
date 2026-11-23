@@ -19,6 +19,7 @@
         document.getElementById('historyCount').textContent=failed?'History could not be loaded.':`${visible.length} of ${rows.length} reflection${rows.length===1?'':'s'} shown`;
         if(failed){const p=node('p','History is unavailable. Your filters are kept.','l2e-feedback');const retry=node('button','Try again');retry.type='button';retry.addEventListener('click',()=>load(true));p.append(retry);list.append(p);return;}
         if(!visible.length){const empty=node('section',undefined,'workspace-empty');empty.append(node('h2',rows.length?'No matching reflections':'Begin your reflection habit'),node('p',rows.length?'Change your filters or clear them to see more.':'Reflect on a timetable block to see your progress here.'));const link=node('a','Go to timetable →');link.href='/timetable';empty.append(link);list.append(empty);return;}
+        visible.sort((a,b)=>{const order=document.getElementById('reflectionOrder')?.value==='oldest'?1:-1;return order*(String(a.log_date).localeCompare(String(b.log_date))||Number(a.id)-Number(b.id));});
         visible.forEach((row,index)=>{
             const card=node('article',undefined,'history-card');const activity=row.activity_name||row.activity||'Previous activity';card.append(node('h2',activity));
             const dateLine=node('p',prettyDate(row.log_date),'history-date');const time=node('time',row.log_date);time.dateTime=row.log_date;dateLine.append(' · ',time);card.append(dateLine);
@@ -47,5 +48,6 @@
     filter.addEventListener('submit',event=>event.preventDefault());
     for(const id of ['reflectionSearch','reflectionDateFilter','reflectionMediaFilter'])document.getElementById(id).addEventListener(id==='reflectionSearch'?'input':'change',render);
     filter.addEventListener('reset',event=>{event.preventDefault();document.getElementById('reflectionSearch').value='';document.getElementById('reflectionDateFilter').value='';document.getElementById('reflectionMediaFilter').value='all';render();});
+    document.getElementById('reflectionOrder')?.addEventListener('change',render);
     load();
 })();
