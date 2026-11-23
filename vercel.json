@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "sh scripts/build-vercel.sh",
+  "installCommand": "",
+  "outputDirectory": "vercel-public",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "l2e-studylink-eeyung1.vercel.app"
+        }
+      ],
+      "headers": {
+        "Location": "https://l2e-studylink.vercel.app/$1"
+      },
+      "status": 308
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "https://l2e-studylink.onrender.com/$1"
+    }
+  ]
+}

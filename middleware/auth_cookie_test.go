@@ -12,6 +12,7 @@ import (
 )
 
 func TestCookieAuthAndSameOriginWrites(t *testing.T) {
+ t.Setenv("PUBLIC_ORIGIN", "")
  t.Setenv("JWT_SECRET","test-cookie-secret-for-ci")
  token,err:=jwt.NewWithClaims(jwt.SigningMethodHS256,jwt.MapClaims{"user_id":float64(42),"exp":time.Now().Add(time.Hour).Unix()}).SignedString([]byte("test-cookie-secret-for-ci"))
  if err!=nil {t.Fatal(err)}
@@ -23,4 +24,31 @@ func TestCookieAuthAndSameOriginWrites(t *testing.T) {
  if got:=call("POST","/save","https://example.test",true,false);got!=204 {t.Fatalf("same-origin write: %d",got)}
  if got:=call("GET","/me","",false,false);got!=401 {t.Fatalf("missing cookie: %d",got)}
  if got:=call("POST","/save","",false,true);got!=204 {t.Fatalf("legacy bearer: %d",got)}
+}
+
+func TestExplicitPublicOriginBehindVercel(t *testing.T) {
+ t.Setenv("PUBLIC_ORIGIN", "https://studylink.vercel.app")
+ for _,tc:=range []struct{origin,forwarded string;want bool}{
+  {"https://studylink.vercel.app","",true},
+  {"https://backend.onrender.com","",true},
+  {"https://evil.vercel.app","studylink.vercel.app",false},
+  {"https://studylink.vercel.app.evil.test","",false},
+  {"http://studylink.vercel.app","",false},
+  {"https://studylink.vercel.app/path","",false},
+  {"https://user@studylink.vercel.app","",false},
+  {"https://studylink.vercel.app?query=1","",false},
+  {"null","studylink.vercel.app",false},
+  {"","studylink.vercel.app",false},
+ } {
+  t.Run(tc.origin,func(t *testing.T){
+   w:=httptest.NewRecorder();c,_:=gin.CreateTestContext(w)
+   c.Request=httptest.NewRequest("POST","https://backend.onrender.com/api/v1/logout",nil)
+   c.Request.Header.Set("Origin",tc.origin);c.Request.Header.Set("X-Forwarded-Host",tc.forwarded)
+   if got:=SameOrigin(c);got!=tc.want {t.Fatalf("SameOrigin = %v, want %v",got,tc.want)}
+  })
+ }
+ t.Setenv("PUBLIC_ORIGIN", "")
+ c,_:=gin.CreateTestContext(httptest.NewRecorder());c.Request=httptest.NewRequest("POST","https://backend.onrender.com/",nil)
+ c.Request.Header.Set("Origin","https://studylink.vercel.app")
+ if SameOrigin(c) {t.Fatal("unset PUBLIC_ORIGIN must reject a foreign host")}
 }

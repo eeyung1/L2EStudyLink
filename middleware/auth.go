@@ -3,6 +3,7 @@ package middleware
 import (
     "net/http"
     "net/url"
+    "os"
     "strings"
 
     "github.com/gin-gonic/gin"
@@ -16,7 +17,13 @@ const SessionCookieName = "l2e_session"
 func SameOrigin(c *gin.Context) bool {
     origin:=c.GetHeader("Origin")
     parsed,err:=url.Parse(origin)
-    return err==nil && (parsed.Scheme=="https"||parsed.Scheme=="http") && strings.EqualFold(parsed.Host,c.Request.Host)
+    if err!=nil || parsed.User!=nil || parsed.Path!="" || parsed.RawQuery!="" || parsed.Fragment!="" || parsed.Host=="" || (parsed.Scheme!="https" && parsed.Scheme!="http") { return false }
+    if strings.EqualFold(parsed.Host,c.Request.Host) { return true }
+    // Vercel forwards the original browser Origin while using the Render Host.
+    // Trust only the explicitly configured HTTPS origin, never forwarded headers
+    // or a wildcard covering other Vercel projects and preview deployments.
+    publicOrigin:=strings.TrimSpace(os.Getenv("PUBLIC_ORIGIN"))
+    return parsed.Scheme=="https" && origin==publicOrigin
 }
 
 // The API and HTML guards share token and origin validation.

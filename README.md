@@ -565,4 +565,14 @@ Tutor discovery now has labelled skill/date/availability filters, scan-friendly 
 
 ### Deployment build/start verification
 
-The Docker image and CI use Go 1.26.1. `sh scripts/build.sh` builds the package; `sh start.sh` executes the compiled server. Docker, Blueprint and Procfile share these entrypoints. CI boots the built image against isolated PostgreSQL and checks health, templates and assets. The reported hosting failure has no supplied log, so its exact cause and production recovery remain unverified. Hosting restart/redeployment is owner-managed.
+The Docker image and CI use Go 1.26.1. `sh scripts/build.sh` builds the package; `sh start.sh` executes the compiled server. Docker, Blueprint and Procfile share these entrypoints. CI boots the built image against isolated PostgreSQL and checks health, templates and assets. Botkeep startup logs later confirmed exhausted build storage. The Render backend is live at https://l2e-studylink.onrender.com; its health endpoint returned HTTP 200 on 23 November 2026.
+
+### Vercel frontend and Render backend
+
+- [x] Add Vercel static-asset build and reverse-proxy routing for the existing Go-rendered pages/API; preserve server-side guards, private recordings and streaming routes.
+- [x] Add exact `PUBLIC_ORIGIN` support with origin-validation regressions; never trust arbitrary forwarded hosts or wildcard preview domains.
+- [ ] Verify the deployed Vercel origin, cookie writes and public pages after the backend update.
+
+Set `PUBLIC_ORIGIN=https://l2e-studylink.vercel.app` on Render. All database, JWT, email and AI secrets stay on Render; Vercel needs none. `sh scripts/build-vercel.sh` copies public assets only into `vercel-public`; all other paths forward to Render without rewrite caching. Protected HTML stays server-rendered rather than exported publicly. The secondary project alias redirects to the canonical frontend address. Production preview hostnames are not trusted for cookie writes.
+
+The initial Vercel project is deployed through the connected API because Vercel reported missing GitHub integration access. Automatic source deployments require granting Vercel access to `eeyung1/L2EStudyLink`, then selecting Other framework, repository root, build `sh scripts/build-vercel.sh`, empty install command and output `vercel-public`. Render continues automatically deploying merged main commits. Existing voice files still require durable storage/migration; local free-service uploads are not durable.
