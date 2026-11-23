@@ -562,8 +562,8 @@
         "/skills",
         "/availability",
         "/admin",
-        "/learn",
-        "/api/v1/admin/product-email-audience.csv"
+        "/api/v1/admin/product-email-audience.csv",
+        "/learn"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
@@ -571,17 +571,23 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/community.css",
+        "/static/css/account-admin.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
-        "/static/js/session.js"
+        "/static/js/session.js",
+        "/static/js/booking-common.js",
+        "/static/js/community-common.js",
+        "/static/js/admin-workspace.js",
+        "/static/js/dialog-viewport.js"
       ],
-      "forms": 2,
+      "forms": 4,
       "dialogs": [],
-      "controls": 11,
+      "controls": 15,
       "inline_styles": 0
     },
     "templates/app-navigation.html": {
@@ -662,14 +668,18 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/community.css",
+        "/static/css/account-admin.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/booking-common.js",
+        "/static/js/community-common.js",
         "/static/js/settings.js",
-        "/static/js/booking-common.js"
+        "/static/js/dialog-viewport.js"
       ],
       "forms": 1,
       "dialogs": [],
@@ -810,21 +820,26 @@
     },
     "templates/forgot-password.html": {
       "links": [
+        "#main",
         "/",
+        "/learn",
         "/page/login",
-        "/page/login"
+        "/page/login",
+        "/"
       ],
       "styles": [
-        "https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap",
-        "/static/css/login.css",
-        "/static/css/auth-polish.css"
+        "/static/redesign/tokens.css",
+        "/static/css/reading.css",
+        "/static/css/public-account.css"
       ],
       "scripts": [
-        "/static/js/pwa.js"
+        "/static/js/reading-theme.js",
+        "/static/js/learning-return.js",
+        "/static/js/account-auth.js"
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 2,
+      "controls": 3,
       "inline_styles": 0
     },
     "templates/landing.html": {
@@ -836,26 +851,27 @@
         "/page/signup",
         "/dashboard",
         "/page/signup",
-        "/page/login",
+        "/dashboard",
+        "#how-it-works",
         "/learn",
-        "/learn/start-an-agentic-workflow",
         "/page/signup",
+        "/dashboard",
         "/",
-        "/learn",
-        "/page/login",
-        "/dashboard"
+        "/learn"
       ],
       "styles": [
-        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
-        "/static/css/landing.css"
+        "/static/redesign/tokens.css",
+        "/static/css/reading.css",
+        "/static/css/public-account.css"
       ],
       "scripts": [
-        "/static/js/pwa.js",
-        "/static/js/public-nav.js"
+        "/static/js/reading-theme.js",
+        "/static/js/public-nav.js",
+        "/static/js/landing-journey.js"
       ],
       "forms": 0,
       "dialogs": [],
-      "controls": 0,
+      "controls": 4,
       "inline_styles": 0
     },
     "templates/layout.html": {
@@ -895,23 +911,27 @@
     },
     "templates/login.html": {
       "links": [
+        "#main",
         "/",
-        "/",
+        "/learn",
+        "/page/login",
         "/page/forgot-password",
-        "/page/signup"
+        "/page/signup",
+        "/"
       ],
       "styles": [
-        "https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap",
-        "/static/css/login.css",
-        "/static/css/auth-polish.css"
+        "/static/redesign/tokens.css",
+        "/static/css/reading.css",
+        "/static/css/public-account.css"
       ],
       "scripts": [
-        "/static/js/pwa.js",
-        "/static/js/learning-return.js"
+        "/static/js/reading-theme.js",
+        "/static/js/learning-return.js",
+        "/static/js/account-auth.js"
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 4,
+      "controls": 5,
       "inline_styles": 0
     },
     "templates/masterclass.html": {
@@ -1153,22 +1173,27 @@
     },
     "templates/reset-password.html": {
       "links": [
+        "#main",
         "/",
+        "/learn",
         "/page/login",
         "/page/forgot-password",
-        "/page/login"
+        "/page/login",
+        "/"
       ],
       "styles": [
-        "https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap",
-        "/static/css/login.css",
-        "/static/css/auth-polish.css"
+        "/static/redesign/tokens.css",
+        "/static/css/reading.css",
+        "/static/css/public-account.css"
       ],
       "scripts": [
-        "/static/js/pwa.js"
+        "/static/js/reading-theme.js",
+        "/static/js/learning-return.js",
+        "/static/js/account-auth.js"
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 5,
+      "controls": 7,
       "inline_styles": 0
     },
     "templates/search-page.html": {
@@ -1219,22 +1244,26 @@
     },
     "templates/signup.html": {
       "links": [
+        "#main",
         "/",
+        "/learn",
         "/page/login",
-        "/page/login"
+        "/page/login",
+        "/"
       ],
       "styles": [
-        "https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500&display=swap",
-        "/static/css/login.css",
-        "/static/css/auth-polish.css"
+        "/static/redesign/tokens.css",
+        "/static/css/reading.css",
+        "/static/css/public-account.css"
       ],
       "scripts": [
-        "/static/js/pwa.js",
-        "/static/js/learning-return.js"
+        "/static/js/reading-theme.js",
+        "/static/js/learning-return.js",
+        "/static/js/account-auth.js"
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 5,
+      "controls": 7,
       "inline_styles": 0
     },
     "templates/skills.html": {
@@ -1253,7 +1282,8 @@
         "/learn",
         "/skills",
         "/availability",
-        "/admin"
+        "/admin",
+        "/portfolio"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
@@ -1261,17 +1291,22 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/community.css",
+        "/static/css/account-admin.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
-        "/static/js/settings.js"
+        "/static/js/booking-common.js",
+        "/static/js/community-common.js",
+        "/static/js/settings.js",
+        "/static/js/dialog-viewport.js"
       ],
-      "forms": 1,
+      "forms": 2,
       "dialogs": [],
-      "controls": 7,
+      "controls": 12,
       "inline_styles": 1
     },
     "templates/timetable.html": {

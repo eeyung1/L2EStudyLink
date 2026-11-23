@@ -123,14 +123,16 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 
 #### Batch 6 — Landing, account and administration
 
-- [ ] Refresh the landing page around the real plan → study → reflect journey and clear entry actions.
-- [ ] Align signup, login, reset-code and recovery screens.
-- [ ] Preserve safe return-to-article behavior and existing session handling.
-- [ ] Refine profile, skills, availability and product-email preference controls.
-- [ ] Make admin tables/cards, filters and consequential-action confirmations readable on phones.
+- [x] Refresh the landing page around the real plan → study → reflect journey and clear entry actions.
+- [x] Align signup, login, reset-code and recovery screens.
+- [x] Preserve safe return-to-article behavior and existing session handling.
+- [x] Refine profile, skills, availability and product-email preference controls.
+- [x] Make admin tables/cards, filters and consequential-action confirmations readable on phones.
 - [ ] Keep admin-only actions authorized on the server and public content free of private reflections.
 
 **Acceptance:** public/account/admin journeys share the design system, with correctly labelled forms, clear recovery paths and no unintended changes to consent.
+
+**Delivery evidence:** [PR #74](https://github.com/eeyung1/L2EStudyLink/pull/74) and the [public, account and admin guide](docs/redesign/public-account-admin.md) record scope, automated checks and remaining acceptance limits. The server authorization/public-content audit remains a separate unchecked item.
 
 #### Batch 7 — Release audit and acceptance
 
@@ -274,7 +276,7 @@ PostgreSQL creates the two new tables and seeds the first guide on startup throu
 - The former hardcoded admin password reset route and handler have been removed. `GET /api/v1/admin/users` scans PostgreSQL boolean fields as booleans.
 
 ### Pages
-The public `/` route now renders a dedicated mobile-friendly landing page, with a goal → timetable → reflection example and direct login/signup links. It explains how a user's own entries build a personal learning record and describes a future personal AI agent as a possibility, not an active feature. The illustrated reflections are fictional examples; no real user's reflections are public. The phone login screen has a branded background and a home link. Login, signup, forgot/reset password, dashboard, search, my-bookings, timetable, reflections, projects, admin remain available as HTML pages with vanilla JS, with a generic `/page/:name` route for simpler pages. Six signed-in pages have a compact mobile header and menu, plus narrower card, form, modal and table layouts. The owner reports a hands-on mobile accessibility and UI/UX review with a good result; device-specific coverage and measured checks have not been provided.
+The public `/` route presents an interactive, explicitly fictional plan → study → reflect example, links to the Learning Hub and account entry points, and explains reflection privacy, optional portfolio publishing and requested coaching. Login, signup and reset-code recovery share labelled forms, appearance controls and safe article return links. Profile and optional product-email preferences are available on `/skills`, alongside skill editing; `/availability` publishes weekly tutoring hours separately from the personal timetable. Admin uses responsive record cards, account/booking filters and native confirmations for consequential actions. These pages retain the Go/Gin and vanilla JavaScript architecture. Physical-device and production acceptance remain outstanding; earlier owner-reported mobile feedback is not a substitute for the current release checks.
 
 **Future landing-page stories (planned, not implemented):** let users preview and explicitly select individual reflections to publish, showing exactly the text, name or attribution, and date that visitors would see. Default to private, provide a way to revoke visibility, and exclude unpublished reflections at the API/database level. Build this only after reviewing consent and moderation needs; do not surface private reflection data in the public landing-page response.
 

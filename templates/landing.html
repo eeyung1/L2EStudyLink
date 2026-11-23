@@ -1,93 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#111f36">
-    <meta name="description" content="Set a goal, make time for it, and reflect on your progress. Build a personal learning record with L2EStudyLink.">
-    <title>L2EStudyLink — make your learning count</title>
-    <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
-    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-    <link rel="manifest" href="/static/manifest.webmanifest">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/landing.css">
-    <script src="/static/js/pwa.js" defer></script>
-    <script src="/static/js/public-nav.js" defer></script>
-</head>
-<body>
-    <a class="skip-link" href="#main">Skip to content</a>
-    <div class="landing-top">
-        <header class="site-header shell">
-            <a class="brand" href="/" aria-label="L2EStudyLink home">L2E<span>Study</span>Link<span class="brand-mark" aria-hidden="true">✦</span></a>
-            <nav class="header-actions" aria-label="Account">
-                <a class="header-login" href="/learn">Learning Hub</a>
-                <a class="header-login guest-only" href="/page/login">Log in</a>
-                <a class="button button-light header-signup guest-only" href="/page/signup">Get started <span aria-hidden="true">↗</span></a>
-                <a class="button button-light member-only" href="/dashboard">Dashboard <span aria-hidden="true">↗</span></a>
-            </nav>
-        </header>
-
-        <main id="main">
-            <section class="hero shell" aria-labelledby="hero-heading">
-                <div class="hero-copy">
-                    <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> YOUR LEARNING HAS A STORY</p>
-                    <h1 id="hero-heading">Make a plan.<br>Do the work.<br><em>See how far you've come.</em></h1>
-                    <p class="hero-lead">Set a goal, give it time in your timetable, and reflect on what actually happened. Each entry adds to a personal record of your growth.</p>
-                    <div class="hero-actions">
-                        <a class="button button-gold" href="/page/signup">Start your journey <span aria-hidden="true">→</span></a>
-                        <a class="hero-secondary" href="/page/login">I already have an account <span aria-hidden="true">↗</span></a>
-                    </div>
-                    <p class="hero-note"><span aria-hidden="true">✳</span> Built for fellows who learn better together.</p>
-                </div>
-
-                <div class="hero-visual" role="img" aria-label="Example showing a weekly goal, a scheduled study block, and a reflection of what was learned">
-                    <div class="visual-glow" aria-hidden="true"></div>
-                    <div class="example-badge">AN EXAMPLE WEEK <span aria-hidden="true">✦</span></div>
-                    <div class="journey-card goal-card">
-                        <span class="step-icon goal-icon" aria-hidden="true">◎</span>
-                        <div><span class="card-kicker">01 / SET A GOAL</span><strong>Get comfortable with Go APIs</strong><span class="card-detail">A clear direction for this week</span></div>
-                    </div>
-                    <div class="journey-connector" aria-hidden="true"><span></span></div>
-                    <div class="journey-card time-card">
-                        <span class="step-icon time-icon" aria-hidden="true">▦</span>
-                        <div><span class="card-kicker">02 / MAKE THE TIME</span><strong>Thursday · 7:00–8:00 AM</strong><span class="card-detail">Coding practice on your timetable</span></div>
-                    </div>
-                    <div class="journey-connector" aria-hidden="true"><span></span></div>
-                    <div class="journey-card reflection-card">
-                        <span class="step-icon reflection-icon" aria-hidden="true">✎</span>
-                        <div><span class="card-kicker">03 / CAPTURE THE LEARNING</span><strong>“I built my first endpoint.”</strong><span class="card-detail">Your reflection becomes part of your record</span></div>
-                    </div>
-                    <div class="visual-footer"><span class="visual-footer-mark" aria-hidden="true">✦</span> Small steps become a bigger picture.</div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <section class="how shell" aria-labelledby="how-heading">
-        <p class="section-kicker">THE PRACTICE</p>
-        <h2 id="how-heading">Progress feels different when you can see it.</h2>
-        <p class="section-intro">A place to turn intentions into a practice you can look back on.</p>
-        <div class="feature-grid">
-            <article class="feature-card"><span class="feature-num">01</span><div class="feature-icon" aria-hidden="true">◎</div><h3>Choose what matters</h3><p>Give each study block a purpose and a goal worth showing up for.</p></article>
-            <article class="feature-card"><span class="feature-num">02</span><div class="feature-icon" aria-hidden="true">▦</div><h3>Make room to grow</h3><p>Build a timetable around your week, then find people to study or collaborate with.</p></article>
-            <article class="feature-card"><span class="feature-num">03</span><div class="feature-icon" aria-hidden="true">✎</div><h3>Keep the evidence</h3><p>Reflect on what you did, what challenged you, and what you learned along the way.</p></article>
-        </div>
-    </section>
-
-    <section class="learn-teaser shell" aria-labelledby="learn-heading">
-        <div><p class="section-kicker">LEARNING HUB</p><h2 id="learn-heading">Ideas you can put to work today.</h2><p>Read short guides on learning, building projects, and using AI tools with care. Explore freely; join the discussion when you're ready.</p><a class="button button-gold" href="/learn">Explore the Learning Hub <span aria-hidden="true">↗</span></a></div>
-        <a class="teaser-card" href="/learn/start-an-agentic-workflow"><span>NEW · PRACTICAL GUIDE</span><strong>Start an agentic workflow you can trust</strong><small>Five steps to give an AI coding assistant a clear task and verify the result.</small><b>Read the guide →</b></a>
-    </section>
-
-    <section class="future-section" aria-labelledby="future-heading">
-        <div class="future-inner shell">
-            <div><p class="section-kicker">YOUR STORY, IN YOUR HANDS</p><h2 id="future-heading">Today's reflections could shape tomorrow's tools.</h2></div>
-            <div><p>Over time, your goals and reflections can become useful context for a personal AI learning agent that understands your journey. That integration is a future direction; the first step is building a record that belongs to you.</p><a class="text-link" href="/page/signup">Begin with a goal <span aria-hidden="true">→</span></a></div>
-        </div>
-    </section>
-
-    <footer class="site-footer shell"><a class="brand footer-brand" href="/">L2E<span>Study</span>Link</a><p>Learn together. Grow with intention.</p><a href="/learn">Learning Hub</a><a class="guest-only" href="/page/login">Log in</a><a class="member-only" href="/dashboard">Dashboard</a></footer>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#08734d"><link rel="icon" href="/static/icons/icon-192.png"><link rel="manifest" href="/static/manifest.webmanifest"><script>if(localStorage.getItem('darkMode')!=='false')document.documentElement.classList.add('dark');</script><link rel="stylesheet" href="/static/redesign/tokens.css"><link rel="stylesheet" href="/static/css/reading.css"><link rel="stylesheet" href="/static/css/public-account.css"><script src="/static/js/reading-theme.js" defer></script><meta name="description" content="Plan your study time, learn with others, and reflect on what changed. A calm learning workspace for your next step."><title>L2EStudyLink · Make room for your learning</title><script src="/static/js/public-nav.js" defer></script><script src="/static/js/landing-journey.js" defer></script></head><body class="l2e-workspace l2e-reading landing-page"><a class="reading-skip" href="#main">Skip to content</a><header class="reading-header"><a class="reading-brand" href="/">L2EStudyLink</a><nav aria-label="Main navigation"><a href="/learn">Learning Hub</a><a class="guest-only" href="/page/login">Log in</a><a class="reading-button guest-only" href="/page/signup">Get started</a><a class="reading-button member-only" href="/dashboard">Open workspace</a><button id="readingTheme" type="button">Appearance</button></nav></header>
+<main id="main"><section class="landing-hero reading-shell" aria-labelledby="heroTitle"><div class="landing-copy"><p class="reading-eyebrow">A LEARNING RHYTHM THAT BELONGS TO YOU</p><h1 id="heroTitle">Make room<br>for your <em>next step.</em></h1><p>Turn a goal into time on your calendar. Learn alongside others. Keep a reflection of what actually changed.</p><div class="reading-actions"><a class="reading-button guest-only" href="/page/signup">Start with a goal</a><a class="reading-button member-only" href="/dashboard">Continue your learning</a><a href="#how-it-works">See the learning cycle</a></div><p class="reading-muted">Your timetable, study connections and reflections in one workspace.</p></div>
+<div class="journey-preview"><p class="reading-eyebrow">AN INTERACTIVE EXAMPLE · FICTIONAL DATA</p><div class="journey-tabs" role="tablist" aria-label="Explore the learning cycle"><button id="journey-plan-tab" type="button" role="tab" aria-selected="true" aria-controls="journey-plan" data-step="plan">Plan</button><button id="journey-study-tab" type="button" role="tab" aria-selected="false" aria-controls="journey-study" tabindex="-1" data-step="study">Study</button><button id="journey-reflect-tab" type="button" role="tab" aria-selected="false" aria-controls="journey-reflect" tabindex="-1" data-step="reflect">Reflect</button></div>
+<section id="journey-plan" role="tabpanel" aria-labelledby="journey-plan-tab"><p class="journey-day">THURSDAY · YOUR TIMETABLE</p><h2>One block. One clear goal.</h2><div class="journey-block"><time>07:00–08:00</time><div><strong>Build a small Go API</strong><p>Goal: write and test one endpoint.</p></div></div><p class="reading-muted">Give the work a place in your week.</p></section>
+<section id="journey-study" role="tabpanel" aria-labelledby="journey-study-tab" hidden><p class="journey-day">FOCUS TOGETHER</p><h2>Different goals. Shared rhythm.</h2><div class="journey-timer" aria-label="Example focus timer">25:00</div><p>Practice independently with a shared room timer, or request a tutoring session with a fellow.</p><p class="reading-muted">A timer is a prompt to focus, not a measure of work completed.</p></section>
+<section id="journey-reflect" role="tabpanel" aria-labelledby="journey-reflect-tab" hidden><p class="journey-day">YOUR PRIVATE REFLECTION</p><h2>Keep what you learned.</h2><blockquote>“I built my first endpoint. Validation was tricky; next time I’ll test the error cases first.”</blockquote><p class="reading-muted">Write or attach a voice reflection. Find it again in your history.</p></section>
+<div class="journey-path" aria-hidden="true"><span>Intention</span><i></i><span>Practice</span><i></i><span>Perspective</span></div></div></section>
+<section id="how-it-works" class="reading-shell landing-cycle" aria-labelledby="cycleTitle"><div><p class="reading-eyebrow">PLAN · STUDY · REFLECT</p><h2 id="cycleTitle">A useful week starts<br>with one doable thing.</h2><p>You do not need a perfect schedule. Start with a block you can show up for, and use reflection to choose what comes next.</p></div><ol class="cycle-list"><li><h3>Give your goal some time</h3><p>Create personal study blocks with a purpose. Keep tutoring availability separate, so others know when they can request your help.</p></li><li><h3>Find good company</h3><p>Discover fellows by skill, request a session, join a focus room or build a project with an agreed team.</p></li><li><h3>Look back, then adjust</h3><p>Save a reflection and review your weekly coverage. Optional coaching offers suggestions from your own selected-week records.</p></li></ol></section>
+<section class="reading-shell landing-together" aria-labelledby="togetherTitle"><div><p class="reading-eyebrow">LEARNING IS BETTER WITH CONTEXT</p><h2 id="togetherTitle">Your next question<br>has a place here.</h2><p>Read practical guides without an account. Sign in when you want to add a question or reply to the discussion.</p><a class="reading-button" href="/learn">Explore the Learning Hub</a></div><div class="landing-note"><p class="reading-eyebrow">YOUR SHARING CHOICES</p><h3>Keep the personal parts personal.</h3><p>Reflection text and audio stay account-scoped. A public learner portfolio is optional, with a clear preview of what will be shared.</p><p>Weekly coaching sends your selected week’s completed reflection text and metrics to Groq only when you request it.</p></div></section>
+<section class="reading-shell landing-final"><h2>What will you make time for?</h2><p>A small goal is enough to begin.</p><a class="reading-button guest-only" href="/page/signup">Create your account</a><a class="reading-button member-only" href="/dashboard">Open your workspace</a></section></main><footer class="reading-footer"><a class="reading-brand" href="/">L2EStudyLink</a><p>Make time. Learn together. Reflect with intention.</p><a href="/learn">Learning Hub</a></footer></body></html>

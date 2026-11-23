@@ -8,18 +8,19 @@ import (
 )
 
 func AdminStats(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     db := c.MustGet("db").(*sql.DB)
     
     var totalUsers, totalBookings, totalSkills int
     
     // Count ALL users (no filter)
-    db.QueryRow("SELECT COUNT(*) FROM users").Scan(&totalUsers)
+    if err:=db.QueryRowContext(c.Request.Context(),"SELECT COUNT(*) FROM users").Scan(&totalUsers);err!=nil {c.JSON(500,gin.H{"error":"Could not load account count"});return}
     
     // Count ALL bookings
-    db.QueryRow("SELECT COUNT(*) FROM bookings").Scan(&totalBookings)
+    if err:=db.QueryRowContext(c.Request.Context(),"SELECT COUNT(*) FROM bookings").Scan(&totalBookings);err!=nil {c.JSON(500,gin.H{"error":"Could not load booking count"});return}
     
     // Count ALL skills
-    db.QueryRow("SELECT COUNT(*) FROM skills").Scan(&totalSkills)
+    if err:=db.QueryRowContext(c.Request.Context(),"SELECT COUNT(*) FROM skills").Scan(&totalSkills);err!=nil {c.JSON(500,gin.H{"error":"Could not load skill count"});return}
     
     c.JSON(http.StatusOK, gin.H{
         "total_users": totalUsers,
@@ -29,6 +30,7 @@ func AdminStats(c *gin.Context) {
 }
 
 func AdminUsers(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     db := c.MustGet("db").(*sql.DB)
     
     rows, err := db.Query(`
@@ -41,7 +43,7 @@ func AdminUsers(c *gin.Context) {
     }
     defer rows.Close()
     
-    var users []gin.H
+    users := []gin.H{}
     for rows.Next() {
         var id int64
         var name, email string
@@ -66,10 +68,12 @@ func AdminUsers(c *gin.Context) {
         })
     }
     
+    if err:=rows.Err();err!=nil {c.JSON(500,gin.H{"error":"Could not load accounts"});return}
     c.JSON(http.StatusOK, users)
 }
 
 func AdminDeleteUser(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     db := c.MustGet("db").(*sql.DB)
     userID := c.Param("id")
     
@@ -83,6 +87,7 @@ func AdminDeleteUser(c *gin.Context) {
 }
 
 func AdminToggleSuspend(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     db := c.MustGet("db").(*sql.DB)
     userID := c.Param("id")
     
@@ -97,6 +102,13 @@ func AdminToggleSuspend(c *gin.Context) {
     }
     
     newStatus := !currentStatus
+    // Explicit desired state makes the redesigned confirmation safe to retry.
+    // An empty body retains the legacy toggle contract.
+    if c.Request.ContentLength != 0 {
+        var input struct {Suspended *bool `json:"suspended"`}
+        if err:=c.ShouldBindJSON(&input);err!=nil||input.Suspended==nil {c.JSON(400,gin.H{"error":"Choose suspended or active"});return}
+        newStatus=*input.Suspended
+    }
     _, err := db.Exec("UPDATE users SET is_suspended = $1 WHERE id = $2", newStatus, userID)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
@@ -107,6 +119,7 @@ func AdminToggleSuspend(c *gin.Context) {
 }
 
 func AdminBookings(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
     db := c.MustGet("db").(*sql.DB)
     
     rows, err := db.Query(`
@@ -123,12 +136,12 @@ func AdminBookings(c *gin.Context) {
     }
     defer rows.Close()
     
-    var bookings []gin.H
+    bookings := []gin.H{}
     for rows.Next() {
         var id int64
         var tutorName, studentName, sessionDate, startTime, status string
         
-        rows.Scan(&id, &tutorName, &studentName, &sessionDate, &startTime, &status)
+        if err:=rows.Scan(&id, &tutorName, &studentName, &sessionDate, &startTime, &status);err!=nil {c.JSON(500,gin.H{"error":"Could not read booking"});return}
         
         bookings = append(bookings, gin.H{
             "id": id,
@@ -140,5 +153,6 @@ func AdminBookings(c *gin.Context) {
         })
     }
     
+    if err:=rows.Err();err!=nil {c.JSON(500,gin.H{"error":"Could not load bookings"});return}
     c.JSON(http.StatusOK, bookings)
 }
