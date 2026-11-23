@@ -156,7 +156,7 @@ The owner selected this separate product batch after the redesign implementation
 - [x] Protect tutoring availability edits against stale-tab overwrites with account-scoped revisions.
 - [x] Warn before leaving unsaved profile, skill, availability, reflection, review, discussion, project, masterclass and guide-publishing work.
 
-**Evidence and remaining work:** [List and editing safety guide](docs/redesign/list-safety.md). Existing clients retain their response contracts; the redesigned lists opt in to bounded pages. Unsaved warnings do not store drafts or guarantee recovery after closing a tab. Hosting is restarted manually by the owner.
+**Evidence and remaining work:** [PR #76](https://github.com/eeyung1/L2EStudyLink/pull/76) and the [list and editing safety guide](docs/redesign/list-safety.md). Existing clients retain their response contracts; the redesigned lists opt in to bounded pages. Unsaved warnings do not store drafts or guarantee recovery after closing a tab. Hosting is restarted manually by the owner.
 
 ### Remaining features and acceptance
 

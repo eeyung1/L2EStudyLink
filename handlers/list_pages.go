@@ -14,7 +14,8 @@ func readListPage(c *gin.Context,states string)(listPage,bool){
  p:=listPage{Limit:20,Query:strings.TrimSpace(c.Query("q")),State:c.DefaultQuery("state","all")};var err error
  if value:=c.Query("limit");value!="" {p.Limit,err=strconv.Atoi(value);if err!=nil||p.Limit<1||p.Limit>100 {c.JSON(400,gin.H{"error":"Page size must be 1–100"});return p,false}}
  if value:=c.Query("after");value!="" {p.After,err=strconv.ParseInt(value,10,64);if err!=nil||p.After<=0 {c.JSON(400,gin.H{"error":"Invalid page cursor"});return p,false}}
- if len(p.Query)>120||!strings.Contains("|"+states+"|","|"+p.State+"|"){c.JSON(400,gin.H{"error":"Invalid search or status filter"});return p,false};return p,true
+ validState:=false;for _,value:=range strings.Split(states,"|"){if p.State==value{validState=true}}
+ if len(p.Query)>120||!validState{c.JSON(400,gin.H{"error":"Invalid search or status filter"});return p,false};return p,true
 }
 func sendListPage(c *gin.Context,key string,items []gin.H,p listPage){
  more:=len(items)>p.Limit;if more {items=items[:p.Limit]};next:="";if more {next=fmt.Sprint(items[len(items)-1]["id"])}
