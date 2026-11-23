@@ -10,6 +10,7 @@ import (
 // AdminRequired checks the user's current role in the database, so a
 // suspended or demoted account cannot retain admin access via an old JWT.
 func AdminRequired(c *gin.Context) {
+	c.Header("Cache-Control", "private, no-store")
 	db := c.MustGet("db").(*sql.DB)
 	var isAdmin, isSuspended bool
 	err := db.QueryRowContext(c.Request.Context(),

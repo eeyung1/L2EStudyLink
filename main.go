@@ -1,6 +1,7 @@
 package main
 
 import (
+    "database/sql"
     "log"
     "os"
 
@@ -22,10 +23,28 @@ func main() {
     }
     defer db.CloseDB()
 
+    router := newRouter(db.DB)
+
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = os.Getenv("SERVER_PORT")
+    }
+    if port == "" {
+        port = "8080"
+    }
+
+    log.Printf("Server starting on :%s", port)
+    if err := router.Run(":" + port); err != nil {
+        log.Fatal("Failed to start server:", err)
+    }
+}
+
+// The server and authorization tests use the same complete route registration.
+func newRouter(database *sql.DB) *gin.Engine {
     router := gin.Default()
 
     router.Use(func(c *gin.Context) {
-        c.Set("db", db.DB)
+        c.Set("db", database)
         c.Next()
     })
 
@@ -93,7 +112,12 @@ func main() {
     
     router.GET("/page/:name", func(c *gin.Context) {
         name := c.Param("name")
-        c.HTML(200, name+".html", nil)
+        switch name {
+        case "login", "signup", "forgot-password", "reset-password", "landing", "dashboard", "skills", "availability", "search-page", "my-bookings", "admin", "timetable", "reflections", "portfolio", "planner", "focus", "buddy", "masterclass", "projects", "learn", "article":
+            c.HTML(200, name+".html", nil)
+        default:
+            c.Status(404)
+        }
     })
 
     // API routes
@@ -190,16 +214,5 @@ func main() {
         }
     }
 
-    port := os.Getenv("PORT")
-    if port == "" {
-        port = os.Getenv("SERVER_PORT")
-    }
-    if port == "" {
-        port = "8080"
-    }
-
-    log.Printf("Server starting on :%s", port)
-    if err := router.Run(":" + port); err != nil {
-        log.Fatal("Failed to start server:", err)
-    }
+    return router
 }

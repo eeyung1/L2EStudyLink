@@ -128,21 +128,23 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [x] Preserve safe return-to-article behavior and existing session handling.
 - [x] Refine profile, skills, availability and product-email preference controls.
 - [x] Make admin tables/cards, filters and consequential-action confirmations readable on phones.
-- [ ] Keep admin-only actions authorized on the server and public content free of private reflections.
+- [x] Keep admin-only actions authorized on the server and public content free of private reflections.
 
 **Acceptance:** public/account/admin journeys share the design system, with correctly labelled forms, clear recovery paths and no unintended changes to consent.
 
-**Delivery evidence:** [PR #74](https://github.com/eeyung1/L2EStudyLink/pull/74) and the [public, account and admin guide](docs/redesign/public-account-admin.md) record scope, automated checks and remaining acceptance limits. The server authorization/public-content audit remains a separate unchecked item.
+**Delivery evidence:** [PR #74](https://github.com/eeyung1/L2EStudyLink/pull/74) and the [public, account and admin guide](docs/redesign/public-account-admin.md) record scope, automated checks and remaining acceptance limits. The server authorization/public-content audit is recorded in the [release audit](docs/redesign/release-audit.md).
 
 #### Batch 7 — Release audit and acceptance
 
-- [ ] Complete the viewport and accessibility matrix below.
-- [ ] Test loading, empty, error, retry, slow-network and expired-session states.
-- [ ] Verify browser back/forward, repeated saves and double-submit prevention.
-- [ ] Check 200% zoom, keyboard navigation, focus visibility and dialog focus restoration.
+- [x] Complete the viewport and accessibility matrix below.
+- [x] Test loading, empty, error, retry, slow-network and expired-session states.
+- [x] Verify browser back/forward, repeated saves and double-submit prevention.
+- [x] Check 200% zoom, keyboard navigation, focus visibility and dialog focus restoration.
 - [ ] Record production smoke results after the deployment associated with the merged commit.
 - [ ] Obtain and record owner acceptance on a physical phone and laptop.
 - [ ] Update remaining limitations and checked/unchecked roadmap items honestly.
+
+**Automated release evidence:** [Release audit guide](docs/redesign/release-audit.md) records the production-route authorization checks, all-screen viewport matrix, recovery/navigation checks and keyboard/reflow coverage. The 200% reflow check uses the equivalent reduced CSS viewport; physical browser zoom, screen-reader and device acceptance remain owner checks.
 
 ### Required verification matrix
 
