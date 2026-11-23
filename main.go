@@ -101,11 +101,11 @@ func newRouter(database *sql.DB) *gin.Engine {
     router.GET("/u/:handle", func(c *gin.Context) {
         c.HTML(200, "portfolio.html", nil)
     })
-    router.GET("/planner", middleware.AuthRequired, handlers.PlannerPage)
-    router.GET("/focus", middleware.AuthRequired, handlers.FocusPage)
-    router.GET("/buddies", middleware.AuthRequired, handlers.BuddyPage)
-    router.GET("/masterclasses", middleware.AuthRequired, handlers.MasterclassPage)
-    router.GET("/masterclass", middleware.AuthRequired, handlers.MasterclassPage)
+    router.GET("/planner", middleware.PageAuthRequired, handlers.PlannerPage)
+    router.GET("/focus", middleware.PageAuthRequired, handlers.FocusPage)
+    router.GET("/buddies", middleware.PageAuthRequired, handlers.BuddyPage)
+    router.GET("/masterclasses", middleware.PageAuthRequired, handlers.MasterclassPage)
+    router.GET("/masterclass", middleware.PageAuthRequired, handlers.MasterclassPage)
     router.GET("/projects", func(c *gin.Context) {
         c.HTML(200, "projects.html", nil)
     })

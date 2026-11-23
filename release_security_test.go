@@ -44,5 +44,6 @@ func TestReleaseAuthorizationAndPublicBoundary(t *testing.T) {
  other:=request("GET","/api/v1/reflections","",token(peer));if other.Code!=200||strings.Contains(other.Body.String(),canary){t.Fatal("Reflection crossed accounts")}
  if _,err:=db.Exec(`UPDATE users SET portfolio_public=FALSE WHERE id=$1`,member);err!=nil {t.Fatal(err)};if w:=request("GET","/api/v1/portfolio/audit_member","","");w.Code!=404 {t.Fatalf("Revoked portfolio stayed public: %d",w.Code)}
  for _,path:=range []string{"/api/v1/me","/api/v1/reflections","/api/v1/planner/week",audio}{if w:=request("GET",path,"","");w.Code!=401 {t.Fatalf("Private guest route %s: %d",path,w.Code)}}
+ for _,path:=range []string{"/planner","/focus","/buddies","/masterclasses","/masterclass"}{for _,bearer:=range []string{"","invalid.fixture.token"}{w:=request("GET",path,"",bearer);if w.Code!=303||w.Header().Get("Location")!="/page/login" {t.Fatalf("HTML sign-in recovery %s: %d",path,w.Code)}};if w:=request("GET",path,"",token(member));w.Code!=200 {t.Fatalf("Signed-in page %s: %d",path,w.Code)}}
  for _,name:=range []string{"does-not-exist","app-navigation","layout"}{if w:=request("GET","/page/"+name,"","");w.Code!=404 {t.Fatalf("Unknown/partial page %s: %d",name,w.Code)}}
 }

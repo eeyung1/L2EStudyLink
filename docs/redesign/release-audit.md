@@ -14,7 +14,9 @@ This batch completes the final Batch 6 server/public-boundary item and the first
 
 - Production route construction is now reusable by tests. The server still uses Gin, the same middleware/handlers and inline SQL; no API or schema is replaced.
 - The generic `/page/:name` route permits known page templates and returns 404 for unknown names and internal partials. It no longer attempts to render arbitrary/missing templates. HTML shells contain no private account records; API middleware is the data boundary.
+- Canonical planner/focus/buddy/masterclass HTML navigation with a missing or expired session now redirects to login instead of showing raw JSON. HTML and API guards share token validation; API authorization and same-origin cookie-write rules remain unchanged.
 - Admin middleware marks successful and denied responses `private, no-store`, including permission failures before handlers run.
+- Native confirmations now explicitly cycle Tab/Shift+Tab at their first/last controls, avoiding focus escaping to browser chrome. The shared behavior also covers focus, booking, portfolio and article moderation dialogs.
 - The expanded scan found low-contrast dashboard next-step captions and profile labels. They now use the shared theme-aware secondary-text token. Further corrections are recorded in the PR.
 
 ## Run and inspect
