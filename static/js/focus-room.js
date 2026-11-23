@@ -24,23 +24,25 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { focusRea
 if (typeof document !== 'undefined' && document.getElementById('focus-app')) {
     (() => {
         const el = id => document.getElementById(id);
-        const token = sessionToken();
+        const token = sessionToken(), initialScope=sessionScope();
+        const checkAccount=()=>{if(sessionScope()!==initialScope){stopStream();window.location.reload();throw Error("Your account changed. Reload this page.");}};
         let room = null, anchor = null, phase = null, stream = null, generation = 0, busy = false, disposed = false;
-        let audio = null, phaseKey = null;
+        let audio = null, phaseKey = null, loading=false, myID=0;
         const auth = () => ({ Authorization: 'Bearer ' + token });
         const status = (text, error = false) => { el('focus-status').textContent = text; el('focus-status').classList.toggle('error', error); };
         function setBusy(value) {
             busy = value;
-            for (const id of ['focus-create-button', 'focus-refresh', 'focus-leave', 'focus-save-target']) el(id).disabled = value;
+            for (const id of ['focus-create-button', 'focus-refresh', 'focus-leave', 'focus-save-target','focus-reflect','focus-goal','focus-room-title','focus-active-goal']) el(id).disabled = value;
             for (const button of el('focus-rooms').querySelectorAll('button')) button.disabled = value;
         }
         async function api(path, method = 'GET', body) {
+            checkAccount();
             const options = { method, credentials: 'same-origin', headers: auth(), cache: 'no-store' };
             if (body !== undefined) { options.headers['Content-Type'] = 'application/json'; options.body = JSON.stringify(body); }
-            const response = await fetch('/api/v1/focus/' + path, options);
+            const response = await fetch('/api/v1/focus/' + path, options);checkAccount();
             if (response.status === 204) return null;
             let value; try { value = await response.json(); } catch (_) { throw new Error('We could not load the room. Please try again.'); }
-            if (!response.ok) { const error = new Error(value.error || 'We could not load the room. Please try again.'); error.status = response.status; throw error; }
+            checkAccount();if (!response.ok) { const error = new Error(value.error || 'We could not load the room. Please try again.'); error.status = response.status; throw error; }
             return value;
         }
         function stopStream() { generation++; if (stream) stream.abort(); stream = null; }
@@ -76,7 +78,7 @@ if (typeof document !== 'undefined' && document.getElementById('focus-app')) {
             for (const person of value.participants) {
                 const item = document.createElement('li'); item.className = 'focus-person';
                 const name = document.createElement('strong'), target = document.createElement('p');
-                name.textContent = person.display_name; target.textContent = person.target; item.append(name, target); list.append(item);
+                name.textContent = person.display_name+(person.user_id===myID?' (you)':''); target.textContent = person.target; item.append(name, target); list.append(item);
             }
             renderClock(value.timer);
         }
@@ -92,7 +94,7 @@ if (typeof document !== 'undefined' && document.getElementById('focus-app')) {
                 let reader;
                 try {
                     const response = await fetch('/api/v1/focus/stream?' + new URLSearchParams({ room_id: id }), { headers: auth(), credentials: 'same-origin', cache: 'no-store', signal: controller.signal });
-                    if ([401, 403, 404].includes(response.status)) { resetRoom(); status('Your room membership ended. Join a room to continue.', true); refreshRooms(); return; }
+                    checkAccount();if ([401, 403, 404].includes(response.status)) { resetRoom(); status('Your room membership ended. Join a room to continue.', true); refreshRooms(); return; }
                     if (response.status === 429) { const data = await response.json().catch(() => ({})); status(data.error || 'Live rooms are busy. Close another focus tab or try again shortly.', true); }
                     if (!response.ok || !response.body || !response.headers.get('content-type')?.includes('text/event-stream')) throw new Error('Room connection interrupted');
                     el('focus-connection').textContent = 'Live · Your timer is synced with the room';
@@ -102,7 +104,7 @@ if (typeof document !== 'undefined' && document.getElementById('focus-app')) {
                     while (!controller.signal.aborted && current === generation) {
                         const { value, done } = await reader.read(); if (done) break;
                         buffer = focusReadEvents(buffer + decoder.decode(value, { stream: true }), (event, data) => {
-                            if (current !== generation) return;
+                            checkAccount();if (current !== generation) return;
                             if (event === 'presence') renderRoom(data);
                             if (event === 'clock') renderClock(data);
                             if (event === 'room_closed' || event === 'membership_expired') { resetRoom(); status('Your room membership ended. Join a room to continue.'); refreshRooms(); }
@@ -122,12 +124,12 @@ if (typeof document !== 'undefined' && document.getElementById('focus-app')) {
             try {
                 const value = id ? await api('rooms/' + id + '/join', 'POST', { target }) : await api('rooms', 'POST', { title: el('focus-room-title').value.trim(), target });
                 renderRoom(value); el('focus-active-goal').value = target; el('focus-session').hidden = false; el('focus-roster-panel').hidden = false;
-                el('focus-lobby').hidden = true; el('focus-discovery').hidden = true;
+                el('focus-lobby').hidden = true; el('focus-discovery').hidden = true;el('focus-finished').hidden=true;el('focus-active-title').focus();
                 status('You are in. Protect this one small intention.'); followRoom(value.id);
             } catch (error) { status(error.message, true); } finally { setBusy(false); }
         }
         async function refreshRooms() {
-            if (disposed || room) return;
+            if (disposed || room || loading) return;loading=true;el('focus-rooms').setAttribute('aria-busy','true');
             try {
                 const data = await api('rooms'); if (disposed || room) return;
                 const list = el('focus-rooms'); list.replaceChildren();
@@ -139,15 +141,19 @@ if (typeof document !== 'undefined' && document.getElementById('focus-app')) {
                     text.append(title, detail); button.type = 'button'; button.textContent = data.current_room_id === item.id ? 'Return to room' : 'Join room'; button.disabled = busy; button.addEventListener('click', () => enter(item.id)); row.append(text, button); list.append(row);
                 }
                 status('Choose your target, then join a room or create one.');
-            } catch (error) { status(error.message, true); }
+            } catch (error) { const list=el('focus-rooms');list.replaceChildren();const item=document.createElement('li');item.textContent='Rooms could not be loaded. Your target is kept; use Refresh rooms to retry.';list.append(item);status(error.message, true); }finally{loading=false;el('focus-rooms').setAttribute('aria-busy','false');}
         }
         el('focus-create').addEventListener('submit', event => { event.preventDefault(); enter(); });
         el('focus-refresh').addEventListener('click', refreshRooms);
-        el('focus-leave').addEventListener('click', async () => {
-            if (busy || !room) return; setBusy(true);
-            try { await api('rooms/' + room.id + '/membership', 'DELETE'); resetRoom(); status('Session complete. Take your progress with you.'); await refreshRooms(); }
-            catch (error) { if (error.status === 404) { resetRoom(); refreshRooms(); } else status(error.message, true); }
-            finally { setBusy(false); }
+        const leaveDialog=el('focus-leave-dialog');let leaveOpener=null,wantsReflection=false;
+        function askLeave(reflect){if(busy||!room)return;wantsReflection=reflect;leaveOpener=document.activeElement;el('focus-leave-title').textContent=reflect?'Leave and choose a reflection block?':'Leave this focus room?';el('focus-leave-error').textContent='';leaveDialog.showModal();el('focus-leave-cancel').focus();}
+        leaveDialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});leaveDialog.addEventListener('close',()=>{if(leaveOpener?.isConnected&&!leaveOpener.closest('[hidden]'))leaveOpener.focus();else el('focus-status').focus();});
+        el('focus-leave').addEventListener('click',()=>askLeave(false));el('focus-reflect').addEventListener('click',()=>askLeave(true));el('focus-leave-cancel').addEventListener('click',()=>{if(!busy)leaveDialog.close();});
+        el('focus-leave-confirm').addEventListener('click',async()=>{
+            if(busy||!room)return;setBusy(true);el('focus-leave-cancel').disabled=el('focus-leave-confirm').disabled=true;
+            try{await api('rooms/'+room.id+'/membership','DELETE');resetRoom();leaveDialog.close();await refreshRooms();status('You left the room. Nothing was recorded as study time.');el('focus-finished').hidden=false;if(wantsReflection)el('focus-reflection-link').focus();}
+            catch(error){if(error.status===404){resetRoom();leaveDialog.close();status('Your membership has already ended. You can choose a block to reflect.');el('focus-finished').hidden=false;refreshRooms();}else el('focus-leave-error').textContent=error.message+' Your membership is unchanged until leaving succeeds.';}
+            finally{setBusy(false);el('focus-leave-cancel').disabled=el('focus-leave-confirm').disabled=false;}
         });
         el('focus-target-form').addEventListener('submit', async event => {
             event.preventDefault(); if (busy || !room) return; setBusy(true);
@@ -164,6 +170,7 @@ if (typeof document !== 'undefined' && document.getElementById('focus-app')) {
         const clockInterval = setInterval(paintClock, 250), roomsInterval = setInterval(refreshRooms, 15000);
         window.addEventListener('pagehide', () => { disposed = true; stopStream(); clearInterval(clockInterval); clearInterval(roomsInterval); if (audio) audio.close().catch(() => {}); });
         window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        fetch('/api/v1/me',{headers:auth(),cache:'no-store'}).then(r=>r.ok?r.json():null).then(me=>{checkAccount();myID=me?.id||0;if(me?.is_admin)el('adminNavLink')?.classList.remove('hidden');}).catch(()=>{});
         refreshRooms();
     })();
 }

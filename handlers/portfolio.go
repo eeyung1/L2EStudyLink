@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/lib/pq"
+    "github.com/jackc/pgx/v5/pgconn"
 
 	"L2EStudyLink/config"
 	"L2EStudyLink/middleware"
@@ -76,7 +77,7 @@ func buildPortfolioPayload(db *sql.DB, ownerID, viewerID int64) (gin.H, bool, er
 	var portfolioPublic bool
 	err := db.QueryRow(`
 		SELECT COALESCE(public_handle,''), name, COALESCE(bio,''), rating, total_reviews, total_sessions, portfolio_public
-		FROM users WHERE id = $1`, ownerID).
+		FROM users WHERE id = $1 AND NOT COALESCE(is_suspended,FALSE)`, ownerID).
 		Scan(&handle, &name, &bio, &rating, &totalReviews, &totalSessions, &portfolioPublic)
 	if err != nil {
 		return nil, false, err
@@ -85,7 +86,8 @@ func buildPortfolioPayload(db *sql.DB, ownerID, viewerID int64) (gin.H, bool, er
 		return nil, false, nil // private: caller answers 404
 	}
 
-	// Verified hours come from mutually-completed bookings on either side.
+	// Scheduled durations of sessions marked completed by the tutor. These
+    // are not measured work hours or a mutually verified attendance record.
 	var completedSessions int
 	var verifiedMinutes float64
 	err = db.QueryRow(`
@@ -194,7 +196,9 @@ func buildPortfolioPayload(db *sql.DB, ownerID, viewerID int64) (gin.H, bool, er
 		"total_sessions":     totalSessions,
 		"portfolio_public":   portfolioPublic,
 		"is_owner":           ownerID == viewerID,
-		"verified_hours":     float64(int(verifiedMinutes/6+0.5)) / 10, // one decimal place
+		"scheduled_session_hours": float64(int(verifiedMinutes/6+0.5)) / 10,
+        "hours_basis": "scheduled_duration_of_completed_sessions",
+        "verified_hours":     float64(int(verifiedMinutes/6+0.5)) / 10, // legacy key retained for API compatibility; not verification
 		"completed_sessions": completedSessions,
 		"current_streak":     currentStreak,
 		"longest_streak":     longestStreak,
@@ -243,6 +247,7 @@ func portfolioStreaks(days []time.Time, today time.Time) (int, int) {
 
 // GetPublicPortfolio serves GET /api/v1/portfolio/:handle without auth.
 func GetPublicPortfolio(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
 	db := c.MustGet("db").(*sql.DB)
 	handle := strings.ToLower(strings.TrimSpace(c.Param("handle")))
 	if !portfolioHandlePattern.MatchString(handle) {
@@ -250,7 +255,7 @@ func GetPublicPortfolio(c *gin.Context) {
 		return
 	}
 	var ownerID int64
-	err := db.QueryRow(`SELECT id FROM users WHERE lower(public_handle) = $1`, handle).Scan(&ownerID)
+	err := db.QueryRow(`SELECT id FROM users WHERE lower(public_handle) = $1 AND NOT COALESCE(is_suspended,FALSE)`, handle).Scan(&ownerID)
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Portfolio not found"})
 		return
@@ -274,12 +279,15 @@ func GetPublicPortfolio(c *gin.Context) {
 // GetMyPortfolio serves the authenticated owner preview at
 // GET /api/v1/portfolio/me, available before a handle is claimed.
 func GetMyPortfolio(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
 	db := c.MustGet("db").(*sql.DB)
 	ownerID := c.GetInt64("user_id")
 	if ownerID <= 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Sign in required"})
 		return
 	}
+    if !portfolioActive(c, db, ownerID) {return}
+
 	payload, _, err := buildPortfolioPayload(db, ownerID, ownerID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not load portfolio"})
@@ -290,12 +298,15 @@ func GetMyPortfolio(c *gin.Context) {
 
 // ClaimPortfolioHandle serves PUT /api/v1/portfolio/handle {handle}.
 func ClaimPortfolioHandle(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
 	db := c.MustGet("db").(*sql.DB)
 	ownerID := c.GetInt64("user_id")
 	if ownerID <= 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Sign in required"})
 		return
 	}
+    if !portfolioActive(c, db, ownerID) {return}
+
 	var input struct {
 		Handle string `json:"handle"`
 	}
@@ -316,7 +327,8 @@ func ClaimPortfolioHandle(c *gin.Context) {
 	err := db.QueryRow(`UPDATE users SET public_handle = $1 WHERE id = $2 RETURNING public_handle`, handle, ownerID).Scan(&claimed)
 	if err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+		var pgErr *pgconn.PgError
+        if (errors.As(err, &pqErr) && pqErr.Code == "23505") || (errors.As(err, &pgErr) && pgErr.Code == "23505") {
 			c.JSON(http.StatusConflict, gin.H{"error": "That handle is already taken."})
 			return
 		}
@@ -328,12 +340,15 @@ func ClaimPortfolioHandle(c *gin.Context) {
 
 // SetPortfolioVisibility serves PUT /api/v1/portfolio/visibility {public}.
 func SetPortfolioVisibility(c *gin.Context) {
+    c.Header("Cache-Control", "private, no-store")
 	db := c.MustGet("db").(*sql.DB)
 	ownerID := c.GetInt64("user_id")
 	if ownerID <= 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Sign in required"})
 		return
 	}
+    if !portfolioActive(c, db, ownerID) {return}
+
 	var input struct {
 		Public bool `json:"public"`
 	}
@@ -359,4 +374,12 @@ func SetPortfolioVisibility(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"portfolio_public": isPublic})
+}
+
+func portfolioActive(c *gin.Context, db *sql.DB, ownerID int64) bool {
+    var active bool
+    if err:=db.QueryRowContext(c.Request.Context(),`SELECT NOT COALESCE(is_suspended,FALSE) FROM users WHERE id=$1`,ownerID).Scan(&active);err!=nil||!active {
+        c.JSON(http.StatusForbidden,gin.H{"error":"Account unavailable"});return false
+    }
+    return true
 }

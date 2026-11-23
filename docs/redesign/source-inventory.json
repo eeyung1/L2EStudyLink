@@ -792,17 +792,21 @@
         "/static/css/dark-mode.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/focus.css"
       ],
       "scripts": [
         "/static/js/session.js",
         "/static/js/mobile-nav.js",
-        "/static/js/focus-room.js"
+        "/static/js/focus-room.js",
+        "/static/js/dialog-viewport.js"
       ],
       "forms": 2,
-      "dialogs": [],
-      "controls": 11,
-      "inline_styles": 1
+      "dialogs": [
+        "focus-leave-dialog"
+      ],
+      "controls": 14,
+      "inline_styles": 0
     },
     "templates/forgot-password.html": {
       "links": [
@@ -1015,6 +1019,7 @@
         "/skills",
         "/availability",
         "/admin",
+        "/timetable",
         "/timetable"
       ],
       "styles": [
@@ -1040,25 +1045,27 @@
         "#main",
         "/",
         "/learn",
-        "/page/signup",
+        "/page/login",
         "/dashboard",
-        "/",
+        "/portfolio",
         "/learn"
       ],
       "styles": [
-        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
-        "/static/css/landing.css",
-        "/static/css/learn.css",
-        "/static/css/ui-polish.css"
+        "/static/redesign/tokens.css",
+        "/static/css/reading.css",
+        "/static/css/portfolio.css"
       ],
       "scripts": [
         "/static/js/public-nav.js",
-        "/static/js/heatmap.js"
+        "/static/js/reading-theme.js",
+        "/static/js/learner-portfolio.js"
       ],
       "forms": 1,
-      "dialogs": [],
-      "controls": 3,
-      "inline_styles": 1
+      "dialogs": [
+        "portfolio-confirm"
+      ],
+      "controls": 7,
+      "inline_styles": 0
     },
     "templates/projects.html": {
       "links": [
