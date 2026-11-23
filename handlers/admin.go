@@ -30,6 +30,7 @@ func AdminStats(c *gin.Context) {
 }
 
 func AdminUsers(c *gin.Context) {
+    if c.Query("paged")=="1" {c.Header("Cache-Control","private, no-store");pagedAdminUsers(c);return}
     c.Header("Cache-Control", "private, no-store")
     db := c.MustGet("db").(*sql.DB)
     
@@ -119,6 +120,7 @@ func AdminToggleSuspend(c *gin.Context) {
 }
 
 func AdminBookings(c *gin.Context) {
+    if c.Query("paged")=="1" {c.Header("Cache-Control","private, no-store");pagedAdminBookings(c);return}
     c.Header("Cache-Control", "private, no-store")
     db := c.MustGet("db").(*sql.DB)
     

@@ -17,6 +17,7 @@ import (
 var articleSlug = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 
 func ListLearningArticles(c *gin.Context) {
+    if c.Query("paged")=="1" {c.Header("Cache-Control","private, no-store");pagedLearningArticles(c);return}
     db := c.MustGet("db").(*sql.DB)
     rows, err := db.QueryContext(c.Request.Context(), `SELECT slug,title,summary,category,published_at FROM learning_articles ORDER BY published_at DESC,id DESC LIMIT 40`)
     if err != nil { c.JSON(500, gin.H{"error":"Could not load articles"}); return }
@@ -44,6 +45,7 @@ func GetLearningArticle(c *gin.Context) {
 }
 
 func ListLearningComments(c *gin.Context) {
+    if c.Query("paged")=="1" {c.Header("Cache-Control","private, no-store");pagedLearningComments(c);return}
     db:=c.MustGet("db").(*sql.DB)
     var articleID int64
     err:=db.QueryRowContext(c.Request.Context(),`SELECT id FROM learning_articles WHERE slug=$1`,c.Param("slug")).Scan(&articleID)

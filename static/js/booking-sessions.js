@@ -2,7 +2,7 @@
     const {node,time,api,configureDialog}=L2EBooking,list=document.getElementById('bookingsList'),notice=document.getElementById('bookingNotice');
     const names={pending:'Pending confirmation',confirmed:'Confirmed',cancelled:'Cancelled',completed:'Completed',no_show:'No-show'};
     const dialog=document.getElementById('bookingActionDialog');let rows=[],pending=null,busy=false;
-    const drafts=new Map();let reviewBusy=false,targetHandled=false;
+    const drafts=new Map();window.L2EUnsaved?.register('review-drafts',()=>[...drafts.values()].some(d=>d.rating||d.comment?.trim()||d.again));let reviewBusy=false,targetHandled=false;
     const open=configureDialog(dialog,()=>!busy);
     function tell(message,error=false){notice.textContent=message;notice.classList.toggle('is-error',error);}
     function describe(b){return `${String(b.date).slice(0,10)} · ${time(b.start_time)}–${time(b.end_time)} · ${b.timezone||'shared booking clock'}`;}

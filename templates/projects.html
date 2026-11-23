@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
     <link rel="stylesheet" href="/static/css/community.css">
-</head>
+<script src="/static/js/unsaved-work.js"></script></head>
 <body class="l2e-workspace bg-gray-100">
     <div class="app-shell">
         <aside class="sidebar">
@@ -63,7 +63,7 @@
 <section class="l2e-card" id="fellows"><h2>Fellows open to invitations</h2><p class="l2e-muted">Only opted-in fellows appear. Published tutoring hours are a guide; agree on project commitments together.</p><div id="fellowList" class="community-list" aria-busy="true">Loading fellows…</div></section>
 </div><div>
 <section class="l2e-card"><h2>Requests and invitations</h2><p class="l2e-muted">Owners decide applications. Invited fellows decide invitations. Acceptance adds the fellow to the team.</p><div id="requestInbox" class="community-list" aria-busy="true">Loading requests…</div></section>
-<details class="l2e-card" id="postProject"><summary>Post a project</summary><form id="projectForm" class="community-form">
+<details class="l2e-card" id="postProject"><summary>Post a project</summary><form data-unsaved-watch id="projectForm" class="community-form">
 <label for="projectTitle">Project title</label><input id="projectTitle" maxlength="120" required minlength="3">
 <label for="projectDescription">What are you building?</label><textarea id="projectDescription" required minlength="20" maxlength="3000" rows="4"></textarea>
 <label for="projectRoles">Roles needed</label><input id="projectRoles" required minlength="2" maxlength="240">

@@ -23,6 +23,7 @@ let loginRedirectPending=false;
 function redirectToLogin(){
     if(loginRedirectPending)return;
     loginRedirectPending=true;
+    window.L2EUnsaved?.allowLeave();
     window.location.href='/page/login';
 }
 
@@ -37,11 +38,14 @@ window.fetch = async function(input, options) {
 };
 
 async function endSession(token) {
+    if(window.L2EUnsaved&&!window.L2EUnsaved.confirmLeave())return;
+    window.L2EUnsaved?.allowLeave();
     if (typeof clearPlanningCache === 'function') await clearPlanningCache(token);
     try {
         const response = await fetch('/api/v1/logout', {method:'POST',credentials:'same-origin'});
         if (!response.ok) throw Error('Could not sign out');
     } catch (_) {
+        window.L2EUnsaved?.resume();
         alert('Could not sign out. Please try again.');
         return;
     }

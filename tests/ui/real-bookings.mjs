@@ -1,9 +1,10 @@
+import {launchWithLeaveDefaults} from './leave-defaults.mjs';
 import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 const origin=process.env.L2E_TEST_ORIGIN;assert.ok(origin?.startsWith('http://127.0.0.1:'));
-const output=resolve('../test-results/ui');await mkdir(output,{recursive:true});const browser=await chromium.launch();const evidence={realGin:true,isolatedPostgres:true,checks:[]};
+const output=resolve('../test-results/ui');await mkdir(output,{recursive:true});const browser=await launchWithLeaveDefaults(chromium);const evidence={realGin:true,isolatedPostgres:true,checks:[]};
 try{
     const make=async(token,scope)=>{const context=await browser.newContext({viewport:{width:390,height:844},timezoneId:'Africa/Lagos'});await context.addInitScript(()=>localStorage.setItem('darkMode','false'));await context.addCookies([{name:'l2e_session',value:token,url:origin,httpOnly:true,sameSite:'Lax'},{name:'l2e_scope',value:scope.repeat(32),url:origin,sameSite:'Lax'}]);return context;};
     const student=await make(process.env.L2E_STUDENT_TOKEN,'a'),tutor=await make(process.env.L2E_TUTOR_TOKEN,'b');const page=await student.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message));

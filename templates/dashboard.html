@@ -27,7 +27,7 @@
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
-</head>
+<script src="/static/js/unsaved-work.js"></script></head>
 <body class="l2e-workspace ">
     <div class="app-shell">
         <aside class="sidebar">
@@ -230,9 +230,11 @@
             document.getElementById('profileMessage').textContent = '';
             document.getElementById('profileView').hidden = true;
             document.getElementById('profileEditor').hidden = false;
+            window.L2EUnsaved?.saved(document.getElementById('profileEditor'));
             document.getElementById('profileDiscord').focus();
         }
         function cancelProfileEdit() {
+            window.L2EUnsaved?.saved(document.getElementById('profileEditor'));
             document.getElementById('profileEditor').hidden = true;
             document.getElementById('profileView').hidden = false;
         }

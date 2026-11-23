@@ -580,6 +580,7 @@
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/unsaved-work.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
         "/static/js/admin-workspace.js",
@@ -587,7 +588,7 @@
       ],
       "forms": 4,
       "dialogs": [],
-      "controls": 15,
+      "controls": 17,
       "inline_styles": 0
     },
     "templates/app-navigation.html": {
@@ -635,13 +636,14 @@
         "/static/js/reading-theme.js",
         "/static/js/public-nav.js",
         "/static/js/learn.js",
-        "/static/js/dialog-viewport.js"
+        "/static/js/dialog-viewport.js",
+        "/static/js/unsaved-work.js"
       ],
       "forms": 1,
       "dialogs": [
         "moderationDialog"
       ],
-      "controls": 7,
+      "controls": 8,
       "inline_styles": 0
     },
     "templates/availability.html": {
@@ -677,6 +679,7 @@
         "/static/js/pwa.js",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/unsaved-work.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
         "/static/js/settings.js",
@@ -770,6 +773,7 @@
         "/static/js/pwa.js",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/unsaved-work.js",
         "/static/js/read-api.js",
         "/static/js/heatmap.js",
         "/static/js/dashboard-daily.js"
@@ -907,7 +911,7 @@
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 4,
+      "controls": 5,
       "inline_styles": 0
     },
     "templates/login.html": {
@@ -968,6 +972,7 @@
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/unsaved-work.js",
         "/static/js/dialog-viewport.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
@@ -1012,6 +1017,7 @@
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/unsaved-work.js",
         "/static/js/booking-common.js",
         "/static/js/booking-sessions.js",
         "/static/js/dialog-viewport.js"
@@ -1122,6 +1128,7 @@
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/unsaved-work.js",
         "/static/js/dialog-viewport.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
@@ -1301,6 +1308,7 @@
         "/static/js/pwa.js",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/unsaved-work.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
         "/static/js/settings.js",
@@ -1343,6 +1351,7 @@
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/unsaved-work.js",
         "/static/js/read-api.js",
         "/static/js/voice-reflection.js",
         "/static/js/workspace-controls.js",

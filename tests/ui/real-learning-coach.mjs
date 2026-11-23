@@ -1,9 +1,10 @@
+import {launchWithLeaveDefaults} from './leave-defaults.mjs';
 import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 const origin=process.env.L2E_TEST_ORIGIN;assert.ok(origin?.startsWith('http://127.0.0.1:'));
-const output=resolve('../test-results/ui');await mkdir(output,{recursive:true});const browser=await chromium.launch(),evidence={realGin:true,isolatedPostgres:true,provider:'local fixture transport; no external AI calls',checks:[]};
+const output=resolve('../test-results/ui');await mkdir(output,{recursive:true});const browser=await launchWithLeaveDefaults(chromium),evidence={realGin:true,isolatedPostgres:true,provider:'local fixture transport; no external AI calls',checks:[]};
 try{
  const make=async(token,scope)=>{const c=await browser.newContext({viewport:{width:390,height:844},timezoneId:'Africa/Lagos'});await c.addInitScript(()=>localStorage.setItem('darkMode','false'));await c.addCookies([{name:'l2e_session',value:token,url:origin,httpOnly:true,sameSite:'Lax'},{name:'l2e_scope',value:scope.repeat(32),url:origin,sameSite:'Lax'}]);return c;};
  const admin=await make(process.env.L2E_ADMIN_TOKEN,'a'),member=await make(process.env.L2E_MEMBER_TOKEN,'b'),guest=await browser.newContext(),page=await member.newPage(),moderator=await admin.newPage(),publicPage=await guest.newPage(),errors=[];for(const p of [page,moderator,publicPage])p.on('pageerror',e=>errors.push(e.message));
