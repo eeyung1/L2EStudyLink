@@ -41,6 +41,9 @@ export async function verifyReleaseAudit(browser,origin,output,evidence){
  return r.fulfill({json:body});
  });
  async function geometry(view,width,zoom=false){
+ // Shortcut interactions may intentionally scroll to a field/section. Measure
+ // header clearance at the top of the page, not with its heading offscreen.
+ await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,`${view} ${theme} ${width} overflow`);
  const main=await page.locator('main').boundingBox();assert.ok(main&&main.width>0,view+' main visible');
  if(view==='/'){
