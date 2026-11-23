@@ -5,6 +5,7 @@ const widths=[320,360,375,390,412,480,768,820,1024,1280,1440,1920,2560,3840];
 const views=['/','/page/login','/page/signup','/page/forgot-password','/page/reset-password','/learn','/learn/audit-guide','/dashboard','/timetable','/reflections','/search-page','/my-bookings','/projects','/masterclasses','/buddies','/planner','/focus','/portfolio','/u/audit_learner','/skills','/availability','/admin'];
 const metrics={week_start:'2026-11-16',week_end:'2026-11-23',timezone:'UTC',as_of:'2026-11-23T12:00:00Z',scheduled_minutes:0,reflected_minutes:0,due_blocks:0,adherence_percent:0,missing_reflections:0,active_days:0,streak_change:0,streak_at_end:0,pending_reflections:0,unmatched_reflections:0,days:[]};
 export async function verifyReleaseAudit(browser,origin,output,evidence){
+ const findings=[];evidence.releaseFindings=findings;
  evidence.releaseMatrix=[];evidence.releaseStates=[];evidence.releaseInteractions=[];
  for(const theme of ['light','dark']){
  const context=await browser.newContext({viewport:{width:390,height:950},reducedMotion:'reduce'});await context.addInitScript(t=>localStorage.setItem('darkMode',String(t==='dark')),theme);const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -48,15 +49,16 @@ export async function verifyReleaseAudit(browser,origin,output,evidence){
  evidence.releaseMatrix.push({view,theme,width,zoom,overflow:false,headerClearance:true,inputSize:true});
  }
  for(const view of views){mode='ready';await page.goto(origin+view,{waitUntil:'networkidle'});
- for(const width of widths){await page.setViewportSize({width,height:950});await geometry(view,width);}
+ for(const width of widths){await page.setViewportSize({width,height:950});try{await geometry(view,width);}catch(e){findings.push({view,theme,width,error:e.message});}}
  await page.setViewportSize({width:390,height:950});
- const scan=await new AxeBuilder({page}).include('main').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();assert.deepEqual(scan.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})),[],view+' release accessibility '+theme);
+ const scan=await new AxeBuilder({page}).include('main').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();for(const v of scan.violations)findings.push({view,theme,rule:v.id,nodes:v.nodes.map(n=>n.target)});
  // 200% reflow: the 1440x1000 desktop content area becomes 720x500 CSS pixels.
- await page.setViewportSize({width:720,height:500});await geometry(view,720,true);
+ await page.setViewportSize({width:720,height:500});try{await geometry(view,720,true);}catch(e){findings.push({view,theme,width:720,reflow:true,error:e.message});}
  if(['/','/page/login','/admin'].includes(view)){const f=`release-${view==='/'?'landing':view.split('/').at(-1)}-${theme}-720.png`;await page.screenshot({path:output+'/'+f,fullPage:true});evidence.screenshots.push(f);}
  // Keyboard focus must remain visibly indicated on an actionable main control.
- const control=page.locator('main a[href]:visible,main button:visible:not([disabled]),main input:visible:not([disabled])').first();if(await control.count()){await control.focus();await page.keyboard.press('Tab');const focused=await page.evaluate(()=>{const n=document.activeElement,s=getComputedStyle(n);return {tag:n.tagName,visible:n.getClientRects().length>0,indicated:s.outlineStyle!=='none'&&parseFloat(s.outlineWidth)>0||s.boxShadow!=='none'};});assert.ok(focused.visible&&focused.indicated,view+' visible keyboard focus '+JSON.stringify(focused));}
+ const control=page.locator('main a[href]:visible,main button:visible:not([disabled]),main input:visible:not([disabled])').first();if(await control.count()){await control.focus();await page.keyboard.press('Shift+Tab');await page.keyboard.press('Tab');const focused=await page.evaluate(()=>{const n=document.activeElement,s=getComputedStyle(n);return {tag:n.tagName,visible:n.getClientRects().length>0,indicated:s.outlineStyle!=='none'&&parseFloat(s.outlineWidth)>0||s.boxShadow!=='none'};});if(!focused.visible||!focused.indicated)findings.push({view,theme,error:'Keyboard focus missing',focused});}
  }
+ console.log('Release matrix findings so far: '+JSON.stringify(findings));
  // Each settings read state must recover through an explicit retry without losing a draft.
  await page.setViewportSize({width:390,height:844});mode='error';await page.goto(origin+'/availability');await page.locator('#availability').getByRole('button',{name:'Try again'}).waitFor();assert.equal(await page.locator('#availDay').isDisabled(),true);mode='ready';await page.locator('#availability').getByRole('button',{name:'Try again'}).click();await page.locator('#availDay:enabled').waitFor();evidence.releaseStates.push({theme,state:'error → retry → empty',view:'availability'});
  mode='slow';await page.goto(origin+'/availability',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.querySelector('#availability').getAttribute('aria-busy')==='true');assert.equal(await page.locator('#availDay').isDisabled(),true);await page.waitForTimeout(100);mode='ready';holds.splice(0).forEach(resolve=>resolve());await page.locator('#availDay:enabled').waitFor();evidence.releaseStates.push({theme,state:'slow → ready',view:'availability'});
@@ -67,4 +69,5 @@ export async function verifyReleaseAudit(browser,origin,output,evidence){
  for(const view of ['/skills','/availability','/admin','/projects','/masterclasses','/buddies','/planner','/focus']){mode='expired';await page.goto(origin+view);await page.waitForURL('**/page/login');evidence.releaseStates.push({theme,state:'expired → login',view});}mode='ready';
  assert.deepEqual(errors,[],theme+' release page errors');await context.close();
  }
+ assert.deepEqual(findings,[],'Release geometry and accessibility findings');
 }
