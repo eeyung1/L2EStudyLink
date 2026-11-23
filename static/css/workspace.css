@@ -138,3 +138,6 @@
 /* Legacy dashboard detail text follows the shared contrast-tested palette. */
 .l2e-workspace .l2e-ui .dashboard-next-grid small,
 .l2e-workspace .l2e-ui .profile-row-label { color:var(--l2e-secondary)!important; }
+.l2e-workspace .l2e-ui .dashboard-next-grid span,
+.l2e-workspace .l2e-ui .dashboard-next-grid b { color:var(--l2e-accent)!important; }
+.l2e-workspace .l2e-ui .profile-rating { color:var(--l2e-warning)!important; }
