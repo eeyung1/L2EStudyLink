@@ -4,6 +4,7 @@
     const MAX_SECONDS=180, MAX_BYTES=5*1024*1024;
     const el=id=>document.getElementById(id);
     const drafts=new Map();
+    window.L2EUnsaved?.register('reflection-drafts',()=>saving||state==='recording'||[...drafts.values()].some(d=>d.summary?.trim()||d.challenges?.trim()||d.learnings?.trim()||d.blob||d.audioURL));
     let key=null,version=0,mode='write',state='ready',saving=false;
     let recorder=null,stream=null,timer=null,startedAt=0,seconds=0,blobSeconds=0;
     let blob=null,blobURL='',audioURL='',upload=null,requesting=false;

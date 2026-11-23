@@ -4,7 +4,7 @@ A peer tutoring / study-session booking platform (part of the Learn2Earn ecosyst
 
 ## Redesign roadmap — November 2026
 
-**Stage: foundation complete; shared navigation and the daily Dashboard/Timetable design are integrated in the application templates. Deployment and physical-device acceptance remain pending.** This roadmap follows the owner-supplied `frontend-engineer.md` guidance and the agreed redesign plan. Checkboxes below describe the new redesign, not whether an older version of a screen exists.
+**Stage: redesign implementation and automated release checks complete. Production smoke and physical-device acceptance remain pending.** This roadmap follows the owner-supplied `frontend-engineer.md` guidance and the agreed redesign plan. Checkboxes below describe the new redesign, not whether an older version of a screen exists.
 
 ### Product outcome
 
@@ -142,9 +142,45 @@ Use short hover, focus, save and loading transitions with reduced-motion alterna
 - [x] Check 200% zoom, keyboard navigation, focus visibility and dialog focus restoration.
 - [ ] Record production smoke results after the deployment associated with the merged commit.
 - [ ] Obtain and record owner acceptance on a physical phone and laptop.
-- [ ] Update remaining limitations and checked/unchecked roadmap items honestly.
+- [x] Update remaining limitations and checked/unchecked roadmap items honestly.
 
 **Automated release evidence:** [PR #75](https://github.com/eeyung1/L2EStudyLink/pull/75) and the [release audit guide](docs/redesign/release-audit.md) records the production-route authorization checks, all-screen viewport matrix, recovery/navigation checks and keyboard/reflow coverage. The 200% reflow check uses the equivalent reduced CSS viewport; physical browser zoom, screen-reader and device acceptance remain owner checks.
+
+### Post-redesign improvement batch 1
+
+The owner selected this separate product batch after the redesign implementation checklist was exhausted.
+
+- [x] Add bounded admin account pages with server search/status filters and load-more recovery.
+- [x] Add bounded admin booking pages with server search/status filters and load-more recovery.
+- [x] Paginate Learning Hub guides and discussion, including discovery across the full guide collection.
+- [x] Protect tutoring availability edits against stale-tab overwrites with account-scoped revisions.
+- [x] Warn before leaving unsaved profile, skill, availability, reflection, review, discussion, project, masterclass and guide-publishing work.
+
+**Evidence and remaining work:** [List and editing safety guide](docs/redesign/list-safety.md). Existing clients retain their response contracts; the redesigned lists opt in to bounded pages. Unsaved warnings do not store drafts or guarantee recovery after closing a tab. Hosting is restarted manually by the owner.
+
+### Remaining features and acceptance
+
+Only these two release acceptance tasks remain from the redesign checklist:
+
+1. Record a production smoke check against the deployed merged commit, including account and mail behavior.
+2. Record owner phone/laptop acceptance, with actual browser zoom and screen-reader review; record Safari/iPhone coverage where available.
+
+The following are **separate future product proposals**, not unfinished redesign screens and not included in this batch:
+
+| Proposal | Current boundary |
+| --- | --- |
+| Saved coaching analyses/history | Coaching is generated on demand and is not saved. |
+| Long-term learning trends | The weekly view uses current timetable estimates; a historical model needs its own design. |
+| Personalized coaching memory | Each request uses the selected week's own completed reflections; no long-term model memory. |
+| Automated opt-in buddy matching | Requests and accepted connections exist; discovery is currently manual. |
+| Scheduled accountability nudges and external milestone alerts | In-app activity events exist; no automatic missed-reflection scheduling or outbound buddy campaign. |
+| More notification events | Booking, buddy and reflection events exist; project requests, tutor reviews and guide comments need additional event coverage. |
+| Durable private draft recovery | In-page drafts and leave warnings exist; no automatic browser/database draft persistence. |
+| Selected reflection publishing | Reflections remain private. Public stories need explicit selection, preview, revocation and moderation design. |
+| Automated product email campaigns/synchronization | Explicit opt-in audience export exists; campaigns remain a separate manual Brevo process. |
+| Aggregate network/IP abuse controls | Account-specific login throttling exists; broader traffic controls need deployment-aware design. |
+
+Legacy proposal sections later in this README are historical context. This table and the delivered batch evidence take precedence when deciding what remains.
 
 ### Required verification matrix
 
@@ -203,7 +239,7 @@ Related implementation, interface and meaningful tests can be delivered together
 - `handlers/` — one file per feature area (`auth.go`, `booking.go`, `search.go`, `profile.go`, `availability.go`, `timetable.go`, `admin.go`, `password_reset.go`). Handlers read `db := c.MustGet("db").(*sql.DB)` and write raw SQL inline — no repository layer.
 - `middleware/` — `AuthRequired` (JWT verification) and `AdminRequired` (checks the current database role and suspension status).
 - `config/` — `JWTSecret()`, read from the `JWT_SECRET` env var; the app refuses to start if it's unset or still the old placeholder value.
-- `templates/` — one `.html` file per page, with inline `<script>` blocks calling the JSON API. `static/js/read-api.js` handles retries for timetable and reflections GET requests; `static/js/mobile-nav.js` controls the signed-in mobile menu. Account pages share `static/css/login.css`.
+- `templates/` — one `.html` file per page, with inline `<script>` blocks calling the JSON API. `static/js/read-api.js` handles retries for timetable and reflections GET requests; `static/js/mobile-nav.js` controls the signed-in mobile menu. Account pages share `static/css/public-account.css` and the reading design system.
 - `db/postgres.go` — connection setup and repeatable startup table creation for password recovery and project collaboration, plus an existing-user product-email preference column.
 - `email/`, `notifications/` — Brevo email and Discord webhook integrations.
 - `schema.sql` / `schema.sqlite` — hand-written schema, no migration tool; Postgres and SQLite dialects kept in sync. Existing PostgreSQL databases automatically create the missing `password_reset_tokens` table and index at startup. Other existing schema changes still need manual migration (see Known Issues).
@@ -264,7 +300,7 @@ PostgreSQL creates the two new tables and seeds the first guide on startup throu
 - Voice reflection recording & uploads: audio recordings can be uploaded (`POST /api/v1/voice/upload`) and saved to `uploads/voice/`, storing an `audio_url` reference on `activity_logs` with audio player preview support.
 - Habit consistency heatmap & streak tracking: `GET /api/v1/me/streaks` computes the user's active daily streak, longest streak, and total active reflection days, powering an interactive GitHub-style contribution heatmap on both Dashboard and Reflections pages.
 - Saving a reflection from the timetable shows a styled, accessible confirmation with a link to the Reflections page; validation and save errors appear within the form instead of browser alert dialogs.
-- Deleting a timetable block currently cascades to its reflections in PostgreSQL; a styled confirmation dialog now explains this explicitly before deletion. Timetable creation feedback and validation appear in the page and form instead of browser popups. Recovering deleted entries requires a backup or another saved copy. Retaining reflections independently of a block remains a follow-up data-model change.
+- Deleting a timetable block retains saved reflections and their activity snapshot. Private history remains account-scoped, including audio access. The confirmation explains retention before deletion; see the reflection reliability/privacy guides.
 - Both pages retry transient network or server failures on GET requests up to three attempts, redirect to login on an expired session, and show a **Try again** control for errors. The timetable remains viewable when its separate reflections request fails. Database query and scan failures are logged on the server rather than silently dropping rows.
 
 ### Admin
@@ -348,7 +384,7 @@ Timetable and Reflections use a short (20 second) browser session cache of succe
 
 ## Skills and availability refinement — Implemented
 
-Skills have clear Edit and Remove controls with accessible labels and a responsive action layout. The Availability page shows weekly slots in a day-by-day presentation with a slot count, clearer Remove actions and an encouraging empty state. Availability reads retry briefly if the server is temporarily unavailable and offer an in-page retry when they still fail; writes are never automatically retried. The availability API now checks row scan and iteration errors and returns time values consistently as `HH:MM`.
+Skills have clear Edit and Remove controls with accessible labels and a responsive action layout. The Availability page shows weekly slots in a day-by-day presentation with a slot count, clearer Remove actions and an encouraging empty state. Availability reads offer explicit retry on failure; writes are never automatically retried. The redesigned editor uses a saved revision to reject conflicting writes from stale tabs. The availability API now checks row scan and iteration errors and returns time values consistently as `HH:MM`.
 
 ---
 
@@ -467,13 +503,11 @@ Ranked roughly by how much they'd block real usage:
 
 1. **Account-specific login throttle is in place; broader IP-based abuse controls are still possible.** Shared or rotating identities can still generate aggregate load.
 
-## Suggested Next Steps (in priority order)
+## Suggested Next Steps
 
-1. The owner confirmed hands-on mobile accessibility and UI/UX review on 2026-09-24. If a device-specific defect appears later, fix it on a focused branch. Recheck reset with a fresh code when account behavior changes.
-2. Monitor Projects, Collaborators, Timetable, and Reflections for any recurrence of production query errors.
-3. Build and test deterministic weekly metrics from the current user’s data; document the week/timezone and missing-reflection rules.
-4. Obtain the planner reference prompt, choose a provider and budget, then deliver the scoped weekly planner API and mobile page in reviewable steps above.
-5. Confirm cookie sign-in, password reset, logout, and legacy-session migration in the deployed browser; consider network-level rate limits for aggregate abuse.
+1. Manually redeploy/restart the merged commit and record production smoke results.
+2. Complete the current release's physical phone/laptop and assistive-browser acceptance.
+3. Choose the next scoped product batch from the **Remaining features and acceptance** table above. Existing weekly metrics, Groq coaching, focus rooms, portfolios, notifications, buddies and group masterclasses already exist and must not be reimplemented from the historical proposals.
 
 ## Running Locally
 

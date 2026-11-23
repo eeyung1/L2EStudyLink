@@ -2,6 +2,11 @@ package handlers
 
 import (
     "database/sql"
+    "context"
+    "crypto/sha256"
+    "encoding/json"
+    "fmt"
+    "sort"
     "net/http"
     "log"
     "time"
@@ -35,6 +40,13 @@ func SetAvailability(c *gin.Context) {
     tx, err := db.BeginTx(c.Request.Context(),nil)
     if err != nil {c.JSON(500,gin.H{"error":"Failed to save availability"});return}
     defer tx.Rollback()
+    c.Header("Cache-Control","private, no-store")
+    var account int64
+    if err:=tx.QueryRowContext(c.Request.Context(),"SELECT id FROM users WHERE id=$1 FOR UPDATE",userID).Scan(&account);err!=nil {c.JSON(500,gin.H{"error":"Could not lock your hours"});return}
+    current,err:=availabilitySnapshot(c.Request.Context(),tx,userID)
+    if err!=nil {c.JSON(500,gin.H{"error":"Could not read saved hours"});return}
+    if match:=c.GetHeader("If-Match");match!=""&&match!=availabilityRevision(userID,current){c.JSON(412,gin.H{"error":"Your tutoring hours changed in another tab. Reload saved hours before trying again. Your form entries are kept."});return}
+
     _, err = tx.ExecContext(c.Request.Context(),"DELETE FROM availability WHERE user_id = $1", userID)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clear availability"})
@@ -68,48 +80,26 @@ func SetAvailability(c *gin.Context) {
     }
 
     if err:=tx.Commit();err!=nil {c.JSON(500,gin.H{"error":"Failed to save availability"});return}
-    c.JSON(http.StatusOK, gin.H{"message": "Availability saved successfully", "slots": slots})
+    c.JSON(http.StatusOK, gin.H{"message": "Availability saved successfully", "slots": slots, "revision":availabilityRevision(userID,slots)})
 }
 
 func GetAvailability(c *gin.Context) {
-    userID := c.GetInt64("user_id")
-    db := c.MustGet("db").(*sql.DB)
+    c.Header("Cache-Control","private, no-store")
+    userID:=c.GetInt64("user_id")
+    slots,err:=availabilitySnapshot(c.Request.Context(),c.MustGet("db").(*sql.DB),userID)
+    if err!=nil {log.Printf("read availability: %v",err);c.JSON(500,gin.H{"error":"Availability is temporarily unavailable"});return}
+    revision:=availabilityRevision(userID,slots);c.Header("ETag",revision)
+    if c.Query("revision")=="1" {c.JSON(200,gin.H{"slots":slots,"revision":revision});return}
+    c.JSON(200,slots)
+}
 
-    rows, err := db.QueryContext(c.Request.Context(), `
-        SELECT day_of_week, CAST(start_time AS TEXT), CAST(end_time AS TEXT)
-        FROM availability
-        WHERE user_id = $1
-        ORDER BY day_of_week, start_time
-    `, userID)
-    if err != nil {
-        log.Printf("fetch availability for user %d: %v", userID, err)
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Availability is temporarily unavailable"})
-        return
-    }
-    defer rows.Close()
-
-    slots := []AvailabilitySlot{}
-    for rows.Next() {
-        var slot AvailabilitySlot
-        var startTime, endTime string
-        if err := rows.Scan(&slot.DayOfWeek, &startTime, &endTime); err != nil {
-            log.Printf("scan availability for user %d: %v", userID, err)
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read availability"})
-            return
-        }
-        if len(startTime) < 5 || len(endTime) < 5 {
-            log.Printf("invalid availability time for user %d", userID)
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read availability"})
-            return
-        }
-        slot.StartTime = startTime[:5]
-        slot.EndTime = endTime[:5]
-        slots = append(slots, slot)
-    }
-    if err := rows.Err(); err != nil {
-        log.Printf("iterate availability for user %d: %v", userID, err)
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read availability"})
-        return
-    }
-    c.JSON(http.StatusOK, slots)
+type availabilityReader interface {QueryContext(context.Context,string,...any)(*sql.Rows,error)}
+func availabilitySnapshot(ctx context.Context,db availabilityReader,user int64)([]AvailabilitySlot,error){
+    rows,err:=db.QueryContext(ctx,`SELECT day_of_week,CAST(start_time AS TEXT),CAST(end_time AS TEXT) FROM availability WHERE user_id=$1 ORDER BY day_of_week,start_time,end_time`,user)
+    if err!=nil {return nil,err};defer rows.Close();slots:=[]AvailabilitySlot{}
+    for rows.Next(){var slot AvailabilitySlot;var start,end string;if err:=rows.Scan(&slot.DayOfWeek,&start,&end);err!=nil{return nil,err};if len(start)<5||len(end)<5{return nil,fmt.Errorf("invalid stored time")};slot.StartTime=start[:5];slot.EndTime=end[:5];slots=append(slots,slot)};return slots,rows.Err()
+}
+func availabilityRevision(user int64,slots []AvailabilitySlot)string{
+    ordered:=append([]AvailabilitySlot{},slots...);sort.Slice(ordered,func(i,j int)bool{a,b:=ordered[i],ordered[j];if a.DayOfWeek!=b.DayOfWeek{return a.DayOfWeek<b.DayOfWeek};if a.StartTime!=b.StartTime{return a.StartTime<b.StartTime};return a.EndTime<b.EndTime})
+    value,_:=json.Marshal(ordered);return fmt.Sprintf("\"%x\"",sha256.Sum256([]byte(fmt.Sprint(user)+":"+string(value))))
 }

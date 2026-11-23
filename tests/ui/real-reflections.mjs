@@ -1,3 +1,4 @@
+import {launchWithLeaveDefaults} from './leave-defaults.mjs';
 import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
 import {mediaFixture} from './reflections.mjs';
@@ -6,7 +7,7 @@ import {resolve} from 'node:path';
 const origin=process.env.L2E_TEST_ORIGIN,block=Number(process.env.L2E_TEST_BLOCK);
 assert.ok(origin?.startsWith('http://127.0.0.1:'));
 const output=resolve('../test-results/ui');await mkdir(output,{recursive:true});
-const browser=await chromium.launch();
+const browser=await launchWithLeaveDefaults(chromium);
 const evidence={realGin:true,isolatedPostgres:true,realFileStorageInTemporaryDirectory:true,checks:[]};
 try {
     const context=await browser.newContext({viewport:{width:390,height:844},timezoneId:'Africa/Lagos'});

@@ -1,3 +1,4 @@
+import {launchWithLeaveDefaults} from './leave-defaults.mjs';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
@@ -36,7 +37,7 @@ const server = createServer(async (req,res) => {
 });
 await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
-const browser=await chromium.launch();
+const browser=await launchWithLeaveDefaults(chromium);
 const evidence={fixtureOnly:true,sourceCommit:process.env.GITHUB_SHA || 'local',screenshots:[],appObservations:[],previewChecks:[],accessibility:[],externalAssetFailures:[]};
 try {
   if(process.env.L2E_UI_SUITE!=='release'){

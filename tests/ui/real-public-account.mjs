@@ -1,6 +1,7 @@
+import {launchWithLeaveDefaults} from './leave-defaults.mjs';
 import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
-const origin=process.env.L2E_TEST_ORIGIN,browser=await chromium.launch();
+const origin=process.env.L2E_TEST_ORIGIN,browser=await launchWithLeaveDefaults(chromium);
 try{
  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage();
  await page.goto(origin+'/page/signup?next=%2Flearn%2Fagentic-workflow');await page.locator('#name').fill('Browser learner');await page.locator('#email').fill('browser-new@example.invalid');await page.locator('#password').fill('fixture-password-one');assert.equal(await page.locator('#productEmails').isChecked(),false);await page.locator('#accountSubmit').click();await page.locator('#accountSuccess').waitFor();await page.locator('#accountContinue').click();await page.locator('#email').fill('browser-new@example.invalid');await page.locator('#password').fill('fixture-password-one');await page.locator('#accountSubmit').click();await page.waitForURL('**/learn/agentic-workflow');assert.ok((await context.cookies()).some(c=>c.name==='l2e_session'&&c.httpOnly));assert.equal(await page.evaluate(()=>localStorage.getItem('token')),null);
