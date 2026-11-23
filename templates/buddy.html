@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#172537">
   <title>Accountability buddies · L2EStudyLink</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>(function(){if(localStorage.getItem('darkMode')!=='false')document.documentElement.classList.add('dark')})()</script>
+  <script>(function(){if((localStorage.getItem('darkMode')==='true'||(localStorage.getItem('darkMode')===null&&matchMedia('(prefers-color-scheme: dark)').matches)))document.documentElement.classList.add('dark')})()</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;family=Fraunces:wght@600;700&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/dark-mode.css">
@@ -19,11 +19,11 @@
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css">
     <link rel="stylesheet" href="/static/css/community.css">
-</head>
+<link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
 <div class="app-shell">
   <aside class="sidebar">
-    <div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard">L2E<span>Study</span>Link</a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span></button></div>
+    <div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard"><span class="experience-brand-mark" aria-hidden="true">L2E<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></span><span>StudyLink</span></a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span></button></div>
     {{template "app-navigation" .}}
     <div class="sidebar-foot"><button class="logout-link" id="logoutButton">↪ Logout</button><button id="darkToggle" class="icon-btn" type="button" title="Toggle dark mode">🌙</button></div>
   </aside>

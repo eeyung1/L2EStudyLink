@@ -560,6 +560,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "/api/v1/admin/product-email-audience.csv",
@@ -573,7 +574,8 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/community.css",
-        "/static/css/account-admin.css"
+        "/static/css/account-admin.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -581,6 +583,7 @@
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
+        "/static/js/experience.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
         "/static/js/admin-workspace.js",
@@ -605,6 +608,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin"
       ],
@@ -630,14 +634,16 @@
       ],
       "styles": [
         "/static/redesign/tokens.css",
-        "/static/css/reading.css"
+        "/static/css/reading.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
         "/static/js/public-nav.js",
         "/static/js/learn.js",
         "/static/js/dialog-viewport.js",
-        "/static/js/unsaved-work.js"
+        "/static/js/unsaved-work.js",
+        "/static/js/experience.js"
       ],
       "forms": 1,
       "dialogs": [
@@ -661,6 +667,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "/timetable"
@@ -673,13 +680,15 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/community.css",
-        "/static/css/account-admin.css"
+        "/static/css/account-admin.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
+        "/static/js/experience.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
         "/static/js/settings.js",
@@ -705,6 +714,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin"
       ],
@@ -715,12 +725,14 @@
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
-        "/static/css/community.css"
+        "/static/css/community.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/experience.js",
         "/static/js/dialog-viewport.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
@@ -746,6 +758,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "/timetable?reflect=today",
@@ -767,13 +780,15 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
+        "/static/js/experience.js",
         "/static/js/read-api.js",
         "/static/js/heatmap.js",
         "/static/js/dashboard-daily.js"
@@ -798,6 +813,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "/timetable"
@@ -808,13 +824,15 @@
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
-        "/static/css/focus.css"
+        "/static/css/focus.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/session.js",
         "/static/js/mobile-nav.js",
         "/static/js/focus-room.js",
-        "/static/js/dialog-viewport.js"
+        "/static/js/dialog-viewport.js",
+        "/static/js/experience.js"
       ],
       "forms": 2,
       "dialogs": [
@@ -835,12 +853,14 @@
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
-        "/static/css/public-account.css"
+        "/static/css/public-account.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
         "/static/js/learning-return.js",
-        "/static/js/account-auth.js"
+        "/static/js/account-auth.js",
+        "/static/js/experience.js"
       ],
       "forms": 1,
       "dialogs": [],
@@ -868,12 +888,14 @@
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
         "/static/css/public-account.css",
-        "/static/css/landing.css"
+        "/static/css/landing.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
         "/static/js/public-nav.js",
-        "/static/js/landing-journey.js"
+        "/static/js/landing-journey.js",
+        "/static/js/experience.js"
       ],
       "forms": 0,
       "dialogs": [],
@@ -903,12 +925,14 @@
       ],
       "styles": [
         "/static/redesign/tokens.css",
-        "/static/css/reading.css"
+        "/static/css/reading.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
         "/static/js/public-nav.js",
-        "/static/js/learn.js"
+        "/static/js/learn.js",
+        "/static/js/experience.js"
       ],
       "forms": 1,
       "dialogs": [],
@@ -928,12 +952,14 @@
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
-        "/static/css/public-account.css"
+        "/static/css/public-account.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
         "/static/js/learning-return.js",
-        "/static/js/account-auth.js"
+        "/static/js/account-auth.js",
+        "/static/js/experience.js"
       ],
       "forms": 1,
       "dialogs": [],
@@ -955,6 +981,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "/search-page"
@@ -966,7 +993,8 @@
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
-        "/static/css/community.css"
+        "/static/css/community.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -974,6 +1002,7 @@
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
+        "/static/js/experience.js",
         "/static/js/dialog-viewport.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
@@ -999,6 +1028,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "/search-page",
@@ -1011,7 +1041,8 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1019,6 +1050,7 @@
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
+        "/static/js/experience.js",
         "/static/js/booking-common.js",
         "/static/js/booking-sessions.js",
         "/static/js/dialog-viewport.js"
@@ -1045,6 +1077,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "/timetable",
@@ -1056,11 +1089,13 @@
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
-        "/static/css/coach.css"
+        "/static/css/coach.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/session.js",
         "/static/js/mobile-nav.js",
+        "/static/js/experience.js",
         "/static/js/weekly-coach.js"
       ],
       "forms": 1,
@@ -1081,13 +1116,15 @@
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
-        "/static/css/portfolio.css"
+        "/static/css/portfolio.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/public-nav.js",
         "/static/js/reading-theme.js",
         "/static/js/learner-portfolio.js",
-        "/static/js/dialog-viewport.js"
+        "/static/js/dialog-viewport.js",
+        "/static/js/experience.js"
       ],
       "forms": 1,
       "dialogs": [
@@ -1111,6 +1148,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "#postProject"
@@ -1122,7 +1160,8 @@
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
-        "/static/css/community.css"
+        "/static/css/community.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1130,6 +1169,7 @@
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
+        "/static/js/experience.js",
         "/static/js/dialog-viewport.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
@@ -1155,6 +1195,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "/timetable"
@@ -1165,13 +1206,15 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/experience.js",
         "/static/js/read-api.js",
         "/static/js/heatmap.js",
         "/static/js/reflection-history.js"
@@ -1194,12 +1237,14 @@
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
-        "/static/css/public-account.css"
+        "/static/css/public-account.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
         "/static/js/learning-return.js",
-        "/static/js/account-auth.js"
+        "/static/js/account-auth.js",
+        "/static/js/experience.js"
       ],
       "forms": 1,
       "dialogs": [],
@@ -1221,6 +1266,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "/masterclass",
@@ -1232,13 +1278,15 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "https://cdn.tailwindcss.com",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
+        "/static/js/experience.js",
         "/static/js/booking-common.js",
         "/static/js/tutor-search.js",
         "/static/js/dialog-viewport.js"
@@ -1264,12 +1312,14 @@
       "styles": [
         "/static/redesign/tokens.css",
         "/static/css/reading.css",
-        "/static/css/public-account.css"
+        "/static/css/public-account.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/reading-theme.js",
         "/static/js/learning-return.js",
-        "/static/js/account-auth.js"
+        "/static/js/account-auth.js",
+        "/static/js/experience.js"
       ],
       "forms": 1,
       "dialogs": [],
@@ -1291,8 +1341,10 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
+        "/portfolio",
         "/portfolio"
       ],
       "styles": [
@@ -1303,13 +1355,15 @@
         "/static/redesign/tokens.css",
         "/static/css/workspace.css",
         "/static/css/community.css",
-        "/static/css/account-admin.css"
+        "/static/css/account-admin.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
+        "/static/js/experience.js",
         "/static/js/booking-common.js",
         "/static/js/community-common.js",
         "/static/js/settings.js",
@@ -1335,6 +1389,7 @@
         "/masterclass",
         "/learn",
         "/skills",
+        "/portfolio",
         "/availability",
         "/admin",
         "/reflections"
@@ -1345,7 +1400,8 @@
         "/static/css/dashboard.css",
         "/static/css/ui-polish.css",
         "/static/redesign/tokens.css",
-        "/static/css/workspace.css"
+        "/static/css/workspace.css",
+        "/static/css/experience.css"
       ],
       "scripts": [
         "/static/js/pwa.js",
@@ -1353,6 +1409,7 @@
         "/static/js/mobile-nav.js",
         "/static/js/session.js",
         "/static/js/unsaved-work.js",
+        "/static/js/experience.js",
         "/static/js/read-api.js",
         "/static/js/voice-reflection.js",
         "/static/js/workspace-controls.js",
