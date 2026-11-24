@@ -3,7 +3,7 @@
     "repository_id": "local-git:/home/recoding/Projects/L2EStudyLink#/home/recoding/Projects/L2EStudyLink/.git",
     "protocol": "orchestrator/v1",
     "schema": 4,
-    "generation": 22,
+    "generation": 29,
     "enrollment": "NATIVE",
     "provenance": "Human operator initialized project coordination",
     "enrolled_utc": "2026-10-27T21:28:20Z"
@@ -69,6 +69,12 @@
       "state": "ACTIVE",
       "generation": 10
     },
+    "Worker-1-20261124-8d779132": {
+      "id": "Worker-1-20261124-8d779132",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 23
+    },
     "Worker-1-20261124-97724ed2": {
       "id": "Worker-1-20261124-97724ed2",
       "role": "frontend",
@@ -81,17 +87,47 @@
       "state": "ACTIVE",
       "generation": 20
     },
+    "Worker-2-20261124-9a1c06bc": {
+      "id": "Worker-2-20261124-9a1c06bc",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 28
+    },
+    "Worker-2-20261124-c3590f6a": {
+      "id": "Worker-2-20261124-c3590f6a",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 26
+    },
     "Worker-3-20261124-65ad9d3f": {
       "id": "Worker-3-20261124-65ad9d3f",
       "role": "frontend",
       "state": "ACTIVE",
       "generation": 17
     },
+    "Worker-3-20261124-a5341495": {
+      "id": "Worker-3-20261124-a5341495",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 27
+    },
+    "Worker-3-20261124-e6f80fb6": {
+      "id": "Worker-3-20261124-e6f80fb6",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 24
+    },
     "Worker-4-20261124-620ecc57": {
       "id": "Worker-4-20261124-620ecc57",
       "role": "frontend",
       "state": "ACTIVE",
       "generation": 18
+    },
+    "Worker-4-20261124-bc8d9fe1": {
+      "id": "Worker-4-20261124-bc8d9fe1",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 25
     },
     "Worker-5-20261124-02b8434c": {
       "id": "Worker-5-20261124-02b8434c",
@@ -110,6 +146,12 @@
       "role": "coding-agent",
       "state": "ACTIVE",
       "generation": 21
+    },
+    "planner-agent-20261124-b-audit": {
+      "id": "planner-agent-20261124-b-audit",
+      "role": "coding-agent",
+      "state": "COMPLETE",
+      "generation": 29
     }
   },
   "claims": {},
@@ -264,6 +306,55 @@
       "operation": "register-session",
       "generation": 22,
       "utc": "2026-11-24T12:18:35Z"
+    },
+    {
+      "id": "23-register-session",
+      "actor": "Worker-1-20261124-8d779132",
+      "operation": "register-session",
+      "generation": 23,
+      "utc": "2026-11-24T13:35:52Z"
+    },
+    {
+      "id": "24-register-session",
+      "actor": "Worker-3-20261124-e6f80fb6",
+      "operation": "register-session",
+      "generation": 24,
+      "utc": "2026-11-24T13:35:53Z"
+    },
+    {
+      "id": "25-register-session",
+      "actor": "Worker-4-20261124-bc8d9fe1",
+      "operation": "register-session",
+      "generation": 25,
+      "utc": "2026-11-24T13:35:54Z"
+    },
+    {
+      "id": "26-register-session",
+      "actor": "Worker-2-20261124-c3590f6a",
+      "operation": "register-session",
+      "generation": 26,
+      "utc": "2026-11-24T13:36:00Z"
+    },
+    {
+      "id": "27-register-session",
+      "actor": "Worker-3-20261124-a5341495",
+      "operation": "register-session",
+      "generation": 27,
+      "utc": "2026-11-24T13:49:53Z"
+    },
+    {
+      "id": "28-register-session",
+      "actor": "Worker-2-20261124-9a1c06bc",
+      "operation": "register-session",
+      "generation": 28,
+      "utc": "2026-11-24T13:51:36Z"
+    },
+    {
+      "id": "29-complete-batch-b",
+      "actor": "planner-agent-20261124-b-audit",
+      "operation": "complete-batch-b-release-audit",
+      "generation": 29,
+      "utc": "2026-11-24T14:38:00Z"
     }
   ]
 }

@@ -178,3 +178,188 @@ Append-only completed-work evidence.
     - 10 screenshots captured in `test-results/ui/release/`.
 - Status: Batch A (W01–W10: Shared navigation & workspace structure) is fully verified and complete.
 - Recorded UTC: 2026-11-24T12:17:01Z
+
+## task-reflection-modes-entry — claim-worker3-reflection-20261124
+- Session: Worker-3-20261124-e6f80fb6
+- State: COMPLETE
+- Feature: task-reflection-modes-entry
+- Token: claim-worker3-reflection-20261124
+- Branch: agent/task-reflection-modes-entry
+- Worktree: /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-reflection-modes-entry
+- Commit: bbd1ee4f1637b1cd82c4027ae57dd6f4894558a2
+- Scoped files:
+  * static/js/voice-reflection.js
+  * static/css/ui-polish.css
+- Deliverable details:
+  * Unified Write/Speak reflection entry: Switching tabs (`#modeWriteTab` vs `#modeSpeakTab`) preserves draft text and attached voice recording in memory without loss. Drafts are safely partitioned and scoped by `sessionScope` (`l2e_scope` cookie / token) to ensure no crossing accounts on session logout or account switch.
+  * Recording feedback & controls: Tactile recording button with pulsing waveform animation (`#voiceWaveform`), recording duration timer capped at 00:00/03:00 (`#voiceTimer`), in-modal instant playback preview with scrubber (`#voicePreviewAudio`, `#voicePlayBtn`, `#voiceScrubber`), one-tap re-record (`#voiceRerecord`) retaining previous take until replacement stops, and one-tap delete (`#voiceDelete`) preserving written reflection.
+  * Robust failure recovery: Graceful handling of microphone permission denial (`NotAllowedError`), upload failure retry (`#voiceRetryUpload`) without discarding written reflections, atomic save lock (`aria-busy="true"` on modal, disabled buttons, Escape key lock) preventing duplicate submissions, and return to correct timetable block/day after save.
+  * Direct payload upload: Audio uploaded directly to `/api/v1/voice/upload` with `same-origin` credentials, attaching returned audio URL (`#url-summary`) to activity reflection payload.
+  * Preserved all existing IDs, functions, and event bindings (`setReflectionMode`, `toggleVoiceRecording`, `#voiceRecordBtn`, `#voiceTimer`, `#voiceWaveform`, `#voicePreview`, `#voicePlayBtn`, `#voiceScrubber`, `#voiceRerecord`, `#voiceDelete`, `#saveReflectionButton`, `#cancelReflectionButton`).
+- Validation evidence:
+  * PASS: `node --check static/js/voice-reflection.js`
+  * PASS: `node --test static/js/*.test.cjs` (17/17 tests passing)
+  * PASS: `go test ./...` (all Go packages pass cleanly)
+  * PASS: `python3 scripts/audit-ui.py --check` (23 templates, 92 main routes, 15 handler routes)
+- Status: Ready for Planner publication.
+- Recorded UTC: 2026-11-24T13:47:52Z
+
+## task-timetable-day-week — claim-worker2-timetable-20261124
+- Session: Worker-2-20261124-c3590f6a
+- State: COMPLETE
+- Validation: sh -c go test ./... && node --test static/js/*.test.cjs && python3 scripts/audit-ui.py --check
+- Evidence: ok  	L2EStudyLink	(cached); ?   	L2EStudyLink/config	[no test files]; ?   	L2EStudyLink/db	[no test files]; ok  	L2EStudyLink/email	(cached); ok  	L2EStudyLink/focus	(cached); ok  	L2EStudyLink/handlers	(cached); ?   	L2EStudyLink/internal/models	[no test files]; ok  	L2EStudyLink/middleware	(cached); ?   	L2EStudyLink/notifications	[no test files]; ✔ renderHeatmap renders grid with correct activity level classes (12.511527ms); ✔ renderHeatmap renders legend and footer with configured weeks (10.666756ms); ✔ returns a reader to the guide they opened (6.237734ms); ✔ rejects external and non-learning return URLs (10.042256ms); ✔ concurrent reads share one request and return cached results (74.997904ms); ✔ invalidation refetches changes without crossing accounts (63.718555ms); ✔ invalidation during an in-flight read does not store stale results (40.447889ms); ✔ simultaneous account scopes stay separate (29.412584ms); ✔ cookie scope is a non-secret cache key (13.422993ms); ✔ legacy bearer token is exchanged and removed from storage (29.112791ms); ✔ logout clears cookie through the server before redirecting (2.768186ms); ✔ concurrent expired reads trigger only one login navigation (5.939928ms); ✔ defaults to device weekday including Sunday and Monday mapping (21.67816ms); ✔ another day and All update cards and selected controls without fetching (3.267322ms); ✔ desktop defaults to week and an explicit selection survives resizing (3.058281ms); ✔ independent unsaved sources survive saving one entry and can be discarded (40.110741ms); ✔ registering a source again replaces its previous state (0.511101ms); ℹ tests 17; ℹ suites 0; ℹ pass 17; ℹ fail 0; ℹ cancelled 0; ℹ skipped 0; ℹ todo 0; ℹ duration_ms 3485.427081; Inventoried 23 templates, 92 main route declarations and 15 grouped handler routes.
+- Worktree: /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-timetable-day-week
+- Commit: 09b9a57135e92edf4d3b79f1a61588eaf4614083
+- Scoped files:
+  * templates/timetable.html
+- Deliverable details:
+  * Responsive day/week experience: 7-day responsive layout on desktop (>1100px), single-day with week overview on tablet/mobile (<1100px); day filtering and week overview toggling without unnecessary network calls; viewport resize adaptivity; day selection preservation across data refetches.
+  * Time block cards & goal badges: Clean, readable time block cards with start/end time, activity text, and goal badges (`.l2e-badge.timetable-goal-badge`); primary `+ Add time block` button (`#addBlockBtn`) with clear visual hierarchy and visible focus.
+  * Time block creation & deletion lifecycle: Accessible modal dialog with day picker chips (`#dayPicker`) with `aria-pressed` synchronization, start/end time inputs, validation feedback (`#blockFormError`), draft preservation across save failures; safe deletion confirmation dialog (`#deleteBlockDialog`) with database retention check (`/api/v1/reflections/retention`).
+  * Constraints & accessibility: Preserved existing API contract without fake block editing; ensured visible keyboard focus rings on all interactive actions; preserved all existing IDs, classes, and dialog hooks (`#addModal`, `#dayPicker`, `#blockStart`, `#blockEnd`, `#blockActivity`, `#blockGoal`, `#saveBlockButton`, `#deleteBlockDialog`, `#confirmDeleteBlock`, `#cancelDeleteBlock`, `#reflectionModal`, `#modeWriteTab`, `#modeSpeakTab`, `#voiceRecordBtn`, `.timetable-day-nav`, `selectTimetableDay`).
+- Validation evidence:
+  * PASS: `go test ./...`
+  * PASS: `node --test static/js/*.test.cjs` (17/17 tests passing)
+  * PASS: `python3 scripts/audit-ui.py --check` (23 templates, 92 main routes, 15 handler routes)
+  * PASS: `node tests/ui/workspace.mjs`
+  * PASS: `node tests/ui/history.mjs`
+  * PASS: `node tests/ui/reflections.mjs`
+  * PASS: `node tests/ui/release-audit.mjs`
+- Status: Ready for Planner publication.
+- Recorded UTC: 2026-11-24T13:49:46Z
+
+## task-learner-profile-skills — claim-worker3-profile-20261124
+- Session: Worker-3-20261124-a5341495
+- State: COMPLETE
+- Feature: task-learner-profile-skills
+- Token: claim-worker3-profile-20261124
+- Branch: agent/task-learner-profile-skills
+- Worktree: /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-learner-profile-skills
+- Commit: 34f5c042bbe8ebe97ad49cc42699c0215592138e
+- Scoped files:
+  * templates/skills.html
+  * static/js/settings.js
+  * static/js/unsaved-work.js
+- Deliverable details:
+  * Simplified identity, bio, skills proficiency, and learning preferences editor:
+    Clean responsive layout across desktop, tablet, and mobile; live bio character counter (`#bioCount`), self-reported skill proficiency levels (`beginner`, `intermediate`, `advanced`) with inline editing and modal removal confirmation dialog, and search filtering (`#skillListSearch`, `#skillListCount`).
+  * Privacy disclosure & public portfolio consent:
+    Prominent privacy disclosure distinguishing strictly private personal data (emails, timetable blocks, study reflections, personal notes) from public proof-of-work records; explicit public portfolio consent link (`#settingsPortfolioConsent`) to `/portfolio`.
+  * Duplicate submit locks & visible feedback:
+    Atomic submit lock flags (`profileSaving`, `skillSaving`, `emailSaving`), immediate visual button locking/text update (`Saving…`), feedback messages (`tell('accountProfileStatus', ...)`, `tell('emailPreferenceStatus', ...)`), and safe failure retention preserving user inputs on error.
+  * Preserved all existing data bindings and forms in `templates/skills.html` (`#accountProfileForm`, `#accountDiscord`, `#accountBio`, `#accountProfileStatus`, `#accountProfileSave`, `#retryProfile`, `#settingsProductEmails`, `#emailPreferenceStatus`, `#skillListSearch`, `#skillListCount`, `#skills`, `#skillForm`, `#newSkillName`, `#newSkillProficiency`, `#skillSubmit`, `#cancelSkillEdit`).
+- Validation evidence:
+  * PASS: `node --check static/js/settings.js`
+  * PASS: `node --check static/js/unsaved-work.js`
+  * PASS: `node --test static/js/*.test.cjs` (17/17 tests passing)
+  * PASS: `go test ./...` (all Go packages pass cleanly)
+  * PASS: `python3 scripts/audit-ui.py --check` (23 templates, 92 main routes, 15 handler routes)
+- Status: Ready for Planner publication.
+- Recorded UTC: 2026-11-24T13:58:32Z
+
+## task-tutoring-availability — claim-worker2-availability-20261124
+- Session: Worker-2-20261124-9a1c06bc
+- State: COMPLETE
+- Validation: sh -c go test ./... && node --test static/js/*.test.cjs && python3 scripts/audit-ui.py --check
+- Evidence: ok  	L2EStudyLink	(cached); ?   	L2EStudyLink/config	[no test files]; ?   	L2EStudyLink/db	[no test files]; ok  	L2EStudyLink/email	(cached); ok  	L2EStudyLink/focus	(cached); ok  	L2EStudyLink/handlers	(cached); ?   	L2EStudyLink/internal/models	[no test files]; ok  	L2EStudyLink/middleware	(cached); ?   	L2EStudyLink/notifications	[no test files]; ✔ renderHeatmap renders grid with correct activity level classes (45.112947ms); ✔ renderHeatmap renders legend and footer with configured weeks (38.559915ms); ✔ returns a reader to the guide they opened (36.995951ms); ✔ rejects external and non-learning return URLs (33.672128ms); ✔ concurrent reads share one request and return cached results (142.224954ms); ✔ invalidation refetches changes without crossing accounts (87.57773ms); ✔ invalidation during an in-flight read does not store stale results (73.219565ms); ✔ simultaneous account scopes stay separate (122.494568ms); ✔ cookie scope is a non-secret cache key (5.1228ms); ✔ legacy bearer token is exchanged and removed from storage (12.370851ms); ✔ logout clears cookie through the server before redirecting (21.499862ms); ✔ concurrent expired reads trigger only one login navigation (11.143928ms); ✔ defaults to device weekday including Sunday and Monday mapping (58.278276ms); ✔ another day and All update cards and selected controls without fetching (15.31341ms); ✔ desktop defaults to week and an explicit selection survives resizing (16.11384ms); ✔ independent unsaved sources survive saving one entry and can be discarded (5.914682ms); ✔ registering a source again replaces its previous state (0.509556ms); ℹ tests 17; ℹ suites 0; ℹ pass 17; ℹ fail 0; ℹ cancelled 0; ℹ skipped 0; ℹ todo 0; ℹ duration_ms 5399.519769; Inventoried 23 templates, 92 main route declarations and 15 grouped handler routes.
+- Worktree: /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-tutoring-availability
+- Commit: cdb05a06385c0f61dd5ceadde12f1eaae5c28a6d
+- Scoped files:
+  * templates/availability.html
+- Deliverable details:
+  * Tutoring availability management: Responsive weekly overview grid layout with auto-filling day/time slot cards; interactive day tabs (`.learning-days button[data-availability-day]`) with `aria-pressed` synchronization and clear active indicators; slot creation and removal lifecycle.
+  * Revision-conflict handling and form draft preservation: 412 Precondition Failed handling when hours are modified in another tab; locked form state with actionable retry mechanism; form input preservation (`#availStartTime`, `#availEndTime`, `#availDay`) across load/save errors and retry workflows.
+  * Timetable distinction: Prominent visual notice card and badge clearly differentiating public tutoring availability in the peer directory from private personal study blocks on `/timetable`.
+  * Preserved data bindings and hooks: Kept all required element IDs, classes, and form hooks (`#settingsNotice`, `#bookingClock`, `#availabilitySection`, `#weeklyCount`, `#availability`, `#availabilityForm`, `#availDay`, `#availStartTime`, `#availEndTime`, `[data-availability-day]`).
+- Validation evidence:
+  * PASS: `go test ./...`
+  * PASS: `node --test static/js/*.test.cjs` (17/17 tests passing)
+  * PASS: `python3 scripts/audit-ui.py --check` (23 templates, 92 main routes, 15 handler routes)
+  * PASS: `node tests/ui/public-account-admin.mjs`
+  * PASS: `node tests/ui/release-audit.mjs`
+- Status: Ready for Planner publication.
+- Recorded UTC: 2026-11-24T13:59:08Z
+
+## task-dashboard-daily-hierarchy — claim-worker1-dashboard-20261124
+- Session: Worker-1-20261124-8d779132
+- State: COMPLETE
+- Validation: sh -c go test ./... && node --test static/js/*.test.cjs && python3 scripts/audit-ui.py && python3 scripts/audit-ui.py --check
+- Evidence: ok  	L2EStudyLink	(cached); ?   	L2EStudyLink/config	[no test files]; ?   	L2EStudyLink/db	[no test files]; ok  	L2EStudyLink/email	(cached); ok  	L2EStudyLink/focus	(cached); ok  	L2EStudyLink/handlers	(cached); ?   	L2EStudyLink/internal/models	[no test files]; ok  	L2EStudyLink/middleware	(cached); ?   	L2EStudyLink/notifications	[no test files]; ✔ renderHeatmap renders grid with correct activity level classes (4.631778ms); ✔ renderHeatmap renders legend and footer with configured weeks (5.165213ms); ✔ returns a reader to the guide they opened (5.920911ms); ✔ rejects external and non-learning return URLs (7.846537ms); ✔ concurrent reads share one request and return cached results (20.525242ms); ✔ invalidation refetches changes without crossing accounts (26.882718ms); ✔ invalidation during an in-flight read does not store stale results (16.109174ms); ✔ simultaneous account scopes stay separate (12.332652ms); ✔ cookie scope is a non-secret cache key (8.717053ms); ✔ legacy bearer token is exchanged and removed from storage (17.954164ms); ✔ logout clears cookie through the server before redirecting (3.992091ms); ✔ concurrent expired reads trigger only one login navigation (2.594663ms); ✔ defaults to device weekday including Sunday and Monday mapping (17.263812ms); ✔ another day and All update cards and selected controls without fetching (2.083124ms); ✔ desktop defaults to week and an explicit selection survives resizing (1.99324ms); ✔ independent unsaved sources survive saving one entry and can be discarded (6.158435ms); ✔ registering a source again replaces its previous state (3.821994ms); ℹ tests 17; ℹ suites 0; ℹ pass 17; ℹ fail 0; ℹ cancelled 0; ℹ skipped 0; ℹ todo 0; ℹ duration_ms 999.076059; Inventoried 23 templates, 92 main route declarations and 15 grouped handler routes.; Inventoried 23 templates, 92 main route declarations and 15 grouped handler routes.
+- Worktree: /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-dashboard-daily-hierarchy
+- Commit: 6609b25c9ed7126331a5aa2b520d192814491f2b
+- Scoped files:
+  * templates/dashboard.html
+  * static/js/dashboard-daily.js
+  * static/css/dashboard.css
+- Deliverable details:
+  * Streamlined dashboard hierarchy (W11):
+    Removed repeated setup/activation banners (`.activation-banner`) and duplicate profile stats cards from above the fold. Established `.daily-workspace` as the clear primary focus of the page. Preserved `.activation-banner` and `<details class="workspace-details" id="profileStats">` neatly below the daily fold inside `.dashboard-bottom` / `.dashboard-account-overview` alongside `#profile`.
+  * Today's plan interactions (W12):
+    Prominent block and reflection shortcuts (`.agenda-reflect-btn`, `.badge-reflected`), seamless deep links to timetable (`/timetable?reflect=today&block=...`), and partial-load recovery for failed fetches with `data-daily-retry="agenda"` without breaking other cards.
+  * Next-session context & status distinction (W13):
+    Clear visual status badges (`.badge-confirmed` and `.badge-pending`) distinguishing confirmed sessions from pending booking requests across light and dark modes, with direct action link to `/my-bookings` (`.next-session-direct-btn`) and partial-load retry recovery (`data-daily-retry="bookings"`).
+  * Secondary sections & phone viewport optimization (W14):
+    Neatly positioned weekly reflection coverage (`#weeklyCoverage`), focus room shortcut (`.focus-card`), learning habit streaks (`#streakSection`), and people/project discovery (`#discoveryTitle`, `#discoveryProjects`, `#discoveryPeople`) below the daily fold; eliminated vertical inflation with compact phone layouts (<=768px and <=480px) and guaranteed touch targets (>=44x44px) across all interactive elements.
+  * Preserved all 23 DOM IDs and test hooks:
+    `#todayWorkspace`, `#todayAgenda`, `#nextSession`, `#weeklyCoverage`, `#dailyDate`, `#dailyTitle`, `#dailyReflection`, `#greeting`, `#streakSection`, `#statCurrentStreak`, `#statLongestStreak`, `#statTotalActiveDays`, `#activityHeatmap`, `#profileStats`, `#statRating`, `#statReviews`, `#statSkills`, `#statAvailability`, `#discoveryProjects`, `#discoveryPeople`, `#profile`, `#profileView`, and `#profileEditor`.
+- Validation evidence:
+  * PASS: `go test ./...` (all Go packages pass cleanly)
+  * PASS: `node --test static/js/*.test.cjs` (17/17 tests passing)
+  * PASS: `python3 scripts/audit-ui.py --check` (23 templates, 92 main routes, 15 handler routes)
+  * PASS: `node tests/ui/workspace.mjs` (0 accessibility violations, full viewport matrix verified)
+  * PASS: `node tests/ui/release-audit.mjs` (dashboard actions, stats summary toggle, and escape navigation verified)
+  * PASS: `npm run test:ui` (0 release matrix findings across all viewports 320px–4K and themes)
+- Status: Ready for Planner publication.
+- Recorded UTC: 2026-11-24T14:19:38Z
+
+## task-reflection-history-reading — claim-worker4-history-20261124
+- Session: Worker-4-20261124-bc8d9fe1
+- State: COMPLETE
+- Validation: sh -c go test ./... && node --test static/js/*.test.cjs && python3 scripts/audit-ui.py
+- Evidence: ok  	L2EStudyLink	(cached); ?   	L2EStudyLink/config	[no test files]; ?   	L2EStudyLink/db	[no test files]; ok  	L2EStudyLink/email	(cached); ok  	L2EStudyLink/focus	(cached); ok  	L2EStudyLink/handlers	(cached); ?   	L2EStudyLink/internal/models	[no test files]; ok  	L2EStudyLink/middleware	(cached); ?   	L2EStudyLink/notifications	[no test files]; ✔ renderHeatmap renders grid with correct activity level classes (5.123529ms); ✔ renderHeatmap renders legend and footer with configured weeks (4.934444ms); ✔ returns a reader to the guide they opened (9.836174ms); ✔ rejects external and non-learning return URLs (9.024287ms); ✔ concurrent reads share one request and return cached results (25.091832ms); ✔ invalidation refetches changes without crossing accounts (21.566467ms); ✔ invalidation during an in-flight read does not store stale results (20.392104ms); ✔ simultaneous account scopes stay separate (10.466149ms); ✔ cookie scope is a non-secret cache key (4.715676ms); ✔ legacy bearer token is exchanged and removed from storage (12.945034ms); ✔ logout clears cookie through the server before redirecting (2.226481ms); ✔ concurrent expired reads trigger only one login navigation (2.531545ms); ✔ defaults to device weekday including Sunday and Monday mapping (19.34866ms); ✔ another day and All update cards and selected controls without fetching (2.381891ms); ✔ desktop defaults to week and an explicit selection survives resizing (5.556145ms); ✔ independent unsaved sources survive saving one entry and can be discarded (2.112103ms); ✔ registering a source again replaces its previous state (0.352187ms); ℹ tests 17; ℹ suites 0; ℹ pass 17; ℹ fail 0; ℹ cancelled 0; ℹ skipped 0; ℹ todo 0; ℹ duration_ms 1120.611398; Inventoried 23 templates, 92 main route declarations and 15 grouped handler routes.
+- Worktree: /home/recoding/Projects/L2EStudyLink/.agent-worktrees/task-reflection-history-reading
+- Branch: agent/task-reflection-history-reading
+- Commit: d094c18062650b901d348c009315e5e3e0a59d9b
+- Scoped files:
+  * templates/reflections.html
+  * static/js/reflection-history.js
+- Deliverable details:
+  * Reflection history reading layout:
+    Clean reading hierarchy with coherent combined search (`#reflectionSearch`), date filter (`#reflectionDateFilter`), and format filters (`[data-reflection-format="all"]`, `[data-reflection-format="voice"]`, `[data-reflection-format="audio"]`, `[data-reflection-format="text"]`) with synchronized state across input controls, select dropdown (`#reflectionMediaFilter`), and quick-filter button chips.
+  * Ordering options & density toggle:
+    Ordering by date (newest/oldest via `#reflectionOrder`) with stable secondary id sorting; reading density toggle (`#reflectionDensity`) toggling `.history-compact` on `#reflectionsList` and updating `aria-pressed` and text label for compact vs detailed viewing.
+  * Private audio playback:
+    Same-origin audio controls (`.reflection-voice-preview`, `.reflection-scrubber`) with accessible play/pause toggle (`.reflection-play-btn`), live time display (`.reflection-scrub-time`), range scrubber (`.reflection-scrubber-range`), and same-origin URL validation (`audioPath()`). Ensures older unsafe URLs are blocked while private recordings are protected. Pauses other playing audio when a track starts.
+  * Error and empty states:
+    Distinct empty state (`#emptyHistoryState`) prompting the learner to plan a study block on the timetable (`/timetable`); error state (`#historyErrorState`, `role="alert"`) with accessible retry button (`Try again`) on fetch failure; and dedicated no-match search feedback (`#noMatchState`) with 'Clear filters' button when filters exclude all records.
+  * Preserved all 10 existing IDs and hooks:
+    `#reflectionStreakSection`, `#reflectionFilters`, `#reflectionSearch`, `#reflectionDateFilter`, `#reflectionMediaFilter`, `#clearReflectionFilter`, `#reflectionDensity`, `#reflectionOrder`, `#historyCount`, `#reflectionsList`.
+- Validation evidence:
+  * PASS: `node --check static/js/reflection-history.js`
+  * PASS: `go test ./...` (all Go packages pass cleanly)
+  * PASS: `node --test static/js/*.test.cjs` (17/17 tests passing)
+  * PASS: `python3 scripts/audit-ui.py` (23 templates, 92 main routes, 15 handler routes)
+  * PASS: `npm run test:ui` (0 release matrix findings across 320px–4K, WCAG 2.1 AA scans passed)
+- Status: Ready for Planner publication.
+- Recorded UTC: 2026-11-24T14:27:46Z
+
+## task-batch-b-audit-evidence — Batch B Release Gate
+- Session: planner-agent-20261124-b-audit
+- State: COMPLETE
+- Validation: python3 scripts/audit-ui.py --check && go test ./... && node --test static/js/*.test.cjs && npm run test:ui
+- Deliverable details:
+  * Complete Batch B (W11–W20: Daily planning, reflection, and learner settings redesign) publication pipeline verification:
+    1. Task 17 (W11–W14: Dashboard daily hierarchy): PR #94 merged to main as `97feed0a1d16b16150a3427ddaee53df2b7f6651`
+    2. Task 18 (W15–W16: Timetable day/week experience & block lifecycle): PR #91 merged to main as `d710bae5f9b8af4a62f8cca52ed5c819337a1817`
+    3. Task 19 (W17: Reflection write/speak entry & audio reliability): PR #90 merged to main as `d5ddaa0b0cc4dd6c3a3dff174d9dbef5f960495b`
+    4. Task 20 (W18: Reflection history reading & media controls): PR #95 merged to main as `07a686c535fa1dba009e09c2584ab981a0f9fa30`
+    5. Task 21 (W19: Learner profile, skills & preferences): PR #92 merged to main as `4ac14e73ad9b1f6ed85d809a3ad92dc367304cf6`
+    6. Task 22 (W20: Tutoring availability management): PR #93 merged to main as `b23ac0870ec227f913f2253355701d376ff536f2`
+  * Release Verification Evidence:
+    - UI Source Inventory: `python3 scripts/audit-ui.py --check` passed cleanly (23 templates, 92 main routes, 15 handler routes)
+    - Go Test Suite: `go test ./...` passed across all packages
+    - JavaScript Node Suite: `node --test static/js/*.test.cjs` passed (17/17 tests passing)
+    - Playwright Responsive & Accessibility Matrix: `npm run test:ui` passed across 320px–4K, dark/light themes, and 200% zoom with 0 release findings and 0 WCAG 2.1 AA violations.
+- Status: Merged & Released.
+- Recorded UTC: 2026-11-24T14:38:00Z
