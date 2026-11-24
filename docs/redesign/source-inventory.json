@@ -817,7 +817,7 @@
       ],
       "forms": 0,
       "dialogs": [],
-      "controls": 15,
+      "controls": 12,
       "inline_styles": 1
     },
     "templates/focus.html": {
@@ -1273,7 +1273,7 @@
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 23,
+      "controls": 20,
       "inline_styles": 0
     },
     "templates/reset-password.html": {
@@ -1492,7 +1492,7 @@
         "reflectionModal",
         "unnamed"
       ],
-      "controls": 53,
+      "controls": 50,
       "inline_styles": 0
     }
   }
