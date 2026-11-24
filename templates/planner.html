@@ -18,11 +18,11 @@
 <link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
 <body class="l2e-workspace ">
 <div class="app-shell">
-  <aside class="sidebar">
-    <div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard"><span class="experience-brand-mark" aria-hidden="true">L2E<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></span><span>StudyLink</span></a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span></button></div>
+  <header class="sidebar">
+    <div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard" aria-label="L2EStudyLink dashboard"><span class="experience-brand-mark" aria-hidden="true">L2E<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></span><span>StudyLink</span></a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span></button></div>
     {{template "app-navigation" .}}
     <div class="sidebar-foot"><button class="logout-link" onclick="logout()">Log out</button><button id="darkToggle" class="icon-btn" onclick="toggleDark()" aria-label="Toggle dark mode">◐</button></div>
-  </aside>
+  </header>
   <main data-learning-page="planner" class="main-content l2e-ui">
     <div class="coach-page">
       <header class="workspace-header"><div><p class="workspace-eyebrow">REFLECT. REFOCUS. GROW.</p><h1 class="workspace-title">Your week, with perspective.</h1><p class="workspace-subtitle">Review your plan and reflection coverage, then choose a clearer next step.</p></div><a href="/timetable" class="l2e-button secondary">Open timetable</a></header>
