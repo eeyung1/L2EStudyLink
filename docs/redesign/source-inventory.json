@@ -1271,7 +1271,7 @@
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 20,
+      "controls": 21,
       "inline_styles": 0
     },
     "templates/reset-password.html": {
