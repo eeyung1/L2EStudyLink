@@ -862,7 +862,7 @@
       "dialogs": [
         "focus-leave-dialog"
       ],
-      "controls": 26,
+      "controls": 29,
       "inline_styles": 0
     },
     "templates/forgot-password.html": {
