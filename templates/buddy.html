@@ -22,13 +22,13 @@
 <link rel="stylesheet" href="/static/css/experience.css"><script src="/static/js/experience.js" defer></script><link rel="stylesheet" href="/static/css/learning-pages.css"><script src="/static/js/learning-pages.js" defer></script></head>
 <body class="l2e-workspace bg-gray-100">
 <div class="app-shell">
-  <aside class="sidebar">
+  <header class="sidebar">
     <div class="sidebar-heading"><a class="sidebar-brand" href="/dashboard"><span class="experience-brand-mark" aria-hidden="true">L2E<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></span><span>StudyLink</span></a><button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false"><span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span></button></div>
     {{template "app-navigation" .}}
     <div class="sidebar-foot"><button class="logout-link" id="logoutButton">↪ Logout</button><button id="darkToggle" class="icon-btn" type="button" title="Toggle dark mode">🌙</button></div>
-  </aside>
+  </header>
 
-  <main data-learning-page="buddy" class="main-content l2e-ui">
+  <main data-learning-page="buddy" class="main-content workspace-page l2e-ui">
     <div class="community-page">
       <header class="workspace-header"><div><p class="workspace-eyebrow">CONSISTENCY, TOGETHER</p><h1 class="workspace-title">Accountability buddies</h1><p class="workspace-subtitle">Pair with fellow learners, encourage steady progress, and compare activity streaks after you both agree. These counts reflect saved reflections and completed sessions, not verified hours worked.</p></div><button id="refreshButton" class="l2e-button secondary" type="button">Refresh</button></header>
       <p id="buddyMessage" class="l2e-feedback" role="status" aria-live="polite"></p>
