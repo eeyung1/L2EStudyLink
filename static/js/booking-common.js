@@ -4,7 +4,7 @@ window.L2EBooking=(function(){
     function day(date){return (new Date(date+'T12:00:00').getDay()+6)%7;}
     async function api(path,options={}){
         const response=await fetch('/api/v1'+path,{...options,headers:{Authorization:'Bearer '+sessionToken(),...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}});
-        const value=await response.json().catch(()=>({}));if(!response.ok){const error=Error(value.error||'Request unavailable. Please try again.');error.status=response.status;throw error;}return value;
+        const value=await response.json().catch(()=>({}));if(!response.ok){const error=Error(value.error||'Request unavailable. Please try again.');error.status=response.status;error.isConflict=response.status===409;error.isValidation=response.status===400;throw error;}return value;
     }
     async function clock(){const value=await api('/booking-clock');if(!value.timezone||!value.today)throw Error('Booking clock unavailable');return value;}
     function labelled(parent,label,value){parent.append(node('dt',label),node('dd',value));}

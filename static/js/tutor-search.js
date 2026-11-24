@@ -20,6 +20,10 @@
     }
     function openTutor(tutor){
         if(!bookingClock){feedback.textContent='The shared booking clock is unavailable. Try searching again.';return;}
+        if(window.bookingUser && tutor.id===window.bookingUser.id){
+            feedback.textContent='You cannot book a session with yourself. Manage your tutoring hours in Settings.';
+            return;
+        }
         current=tutor;document.getElementById('modalTitle').textContent='Study with '+tutor.name;
         const content=document.getElementById('modalContent');content.replaceChildren(node('p',tutor.bio||'No introduction added yet.'));
         if(tutor.discord_username)content.append(node('p','Discord: '+tutor.discord_username));
@@ -29,9 +33,27 @@
         results.replaceChildren();const selectedDay=day(date.value),only=document.getElementById('availableOnly').checked;
         const visible=tutors.filter(t=>!only||(t.availability||[]).some(a=>a.day_of_week===selectedDay));
         feedback.textContent=visible.length?`${visible.length} tutor${visible.length===1?'':'s'} found. Times use ${bookingClock.timezone}.`:'No matching tutors for these filters. Try another skill/date or include tutors without hours on this date.';
-        const order=document.getElementById('tutorOrder')?.value;if(order==='rating')visible.sort((a,b)=>(Number(b.rating)||0)-(Number(a.rating)||0)||String(a.name).localeCompare(String(b.name)));if(order==='name')visible.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+        const order=document.getElementById('tutorOrder')?.value||'recommended';
+        if(order==='rating'){
+            visible.sort((a,b)=>(Number(b.rating)||0)-(Number(a.rating)||0)||(Number(b.total_reviews)||0)-(Number(a.total_reviews)||0)||String(a.name).localeCompare(String(b.name)));
+        }else if(order==='name'){
+            visible.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+        }else if(order==='availability'){
+            visible.sort((a,b)=>{
+                const aDay=(a.availability||[]).filter(s=>s.day_of_week===selectedDay).length;
+                const bDay=(b.availability||[]).filter(s=>s.day_of_week===selectedDay).length;
+                if(bDay!==aDay)return bDay-aDay;
+                const aTotal=(a.availability||[]).length;
+                const bTotal=(b.availability||[]).length;
+                if(bTotal!==aTotal)return bTotal-aTotal;
+                return String(a.name).localeCompare(String(b.name));
+            });
+        }else if(order==='price'){
+            visible.sort((a,b)=>(Number(a.hourly_rate)||0)-(Number(b.hourly_rate)||0)||String(a.name).localeCompare(String(b.name)));
+        }
         visible.forEach(t=>{
             const card=node('article',undefined,'tutor-card');card.append(node('h2',t.name),node('p',`${Number(t.rating)||0} / 5 · ${Number(t.total_reviews)||0} reviews`),node('p',t.bio||'No introduction added yet.'));
+            if(t.discord_username){card.append(node('p','Discord: '+t.discord_username,'l2e-muted'));}
             const selected=(t.availability||[]).filter(a=>a.day_of_week===selectedDay);card.append(node('p',selected.length?'Tutoring hours: '+selected.map(a=>time(a.start_time)+'–'+time(a.end_time)).join(' · '):'No published tutoring hours for this date.','l2e-muted'));
             if(t.id===window.bookingUser?.id){const link=node('a','This is your profile · manage tutoring hours');link.href='/availability';card.append(link);}else{const button=node('button','View and request session');button.type='button';button.addEventListener('click',()=>openTutor(t));card.append(button);}results.append(card);
         });
@@ -47,15 +69,18 @@
         finally{if(version===searchVersion){button.disabled=false;if(order)order.disabled=false;results.setAttribute('aria-busy','false');}}
     }
     document.getElementById('tutorOrder')?.addEventListener('change',()=>{if(bookingClock)render();});
+    document.getElementById('clearTutorSearch')?.addEventListener('click',()=>{skill.value='';document.getElementById('availableOnly').checked=false;if(bookingClock)render();});
     form.addEventListener('submit',search);document.getElementById('availableOnly').addEventListener('change',()=>{if(bookingClock)render();});
     bookingDate.addEventListener('change',updateSlots);for(const id of ['timeSlot','topic','meetingType'])document.getElementById(id).addEventListener(id==='topic'?'input':'change',review);
     for(const id of ['closeTutor','cancelTutor'])document.getElementById(id).addEventListener('click',()=>{if(!sending)dialog.close();});
     document.getElementById('bookingForm').addEventListener('submit',async event=>{
-        event.preventDefault();if(sending||!current||!slot.value)return;const topic=document.getElementById('topic').value.trim();if(!topic){error.textContent='Add the topic you would like help with.';error.hidden=false;document.getElementById('topic').focus();return;}
+        event.preventDefault();if(sending||!current||!slot.value)return;
+        if(window.bookingUser && current.id===window.bookingUser.id){error.textContent='You cannot book a session with yourself.';error.hidden=false;return;}
+        const topic=document.getElementById('topic').value.trim();if(!topic){error.textContent='Add the topic you would like help with.';error.hidden=false;document.getElementById('topic').focus();return;}
         sending=true;error.hidden=true;const button=document.getElementById('confirmBookingButton');button.disabled=true;button.textContent='Sending request…';for(const field of document.getElementById('bookingForm').elements)field.disabled=true;document.getElementById('cancelTutor').disabled=true;document.getElementById('closeTutor').disabled=true;
         const [start_time,end_time]=slot.value.split('|');
         try {await api('/bookings',{method:'POST',body:JSON.stringify({tutor_id:current.id,date:bookingDate.value,start_time,end_time,topic,meeting_type:document.getElementById('meetingType').value})});dialog.close();feedback.textContent='Request sent. It is pending tutor confirmation. View it in My study sessions.';const link=node('a','View study sessions →');link.href='/my-bookings';feedback.append(' ',link);}
-        catch(e){error.textContent=e.message+' Your selections are kept. Choose another slot or try again.';error.hidden=false;}
+        catch(e){const msg=e.message||'Request unavailable';error.textContent=msg+(msg.endsWith('.')?' ':'. ')+'Your selections are kept. Choose another slot or try again.';error.hidden=false;}
         finally {sending=false;for(const field of document.getElementById('bookingForm').elements)field.disabled=false;button.textContent='Send booking request';document.getElementById('cancelTutor').disabled=false;document.getElementById('closeTutor').disabled=false;button.disabled=!slot.options.length;}
     });
     clock().then(value=>{bookingClock=value;date.min=value.today;if(!date.value)date.value=value.today;document.getElementById('bookingClock').textContent='Shared booking clock: '+value.timezone+'. Tutoring availability is separate from your personal timetable.';if(requested)search();}).catch(()=>{date.value=new Date().toLocaleDateString('en-CA');document.getElementById('bookingClock').textContent='Booking clock unavailable. Search will retry it before offering a session.';});
