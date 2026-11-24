@@ -363,3 +363,23 @@ Append-only completed-work evidence.
     - Playwright Responsive & Accessibility Matrix: `npm run test:ui` passed across 320px–4K, dark/light themes, and 200% zoom with 0 release findings and 0 WCAG 2.1 AA violations.
 - Status: Merged & Released.
 - Recorded UTC: 2026-11-24T14:38:00Z
+
+## task-batch-c-audit-evidence — Batch C Release Gate
+- Session: planner-agent-20261124-c-audit
+- State: COMPLETE
+- Validation: python3 scripts/audit-ui.py --check && go test ./... && node --test static/js/*.test.cjs && npm run test:ui
+- Deliverable details:
+  * Complete Batch C (W21–W30: Learning connections and collaboration redesign) publication pipeline verification:
+    1. Task 26 (W25: Buddy workspace): PR #97 merged to main as `25f5282b66c798d1e6f6dc65c65a4c91d9dc69ba`
+    2. Task 25 (W23–W24: Session collections & reviews): PR #98 merged to main as `797de4fed7fa011fd80b5070ed5bdd32f303ceb7`
+    3. Task 27 (W26–W27: Masterclass participation & hosting): PR #99 merged to main as `a31b46552314ee33dc57f73cb8ab495c2f3c2851`
+    4. Task 24 (W21–W22: Tutor discovery & booking request): PR #100 merged to main as `eaa9d77a2d33790ad149ab78dc808ee42a5ccc14`
+    5. Task 28 (W28–W29: Project discovery & team invitations): PR #101 merged to main as `ad214da9af7129297eda43dd322bb51b3a57e540`
+    6. Task 29 (W30: Focus room discovery): PR #102 merged to main as `90244c6814b0df85958b798bbb7667807ce6fa88`
+  * Release Verification Evidence:
+    - UI Source Inventory: `python3 scripts/audit-ui.py --check` passed cleanly (23 templates, 92 main routes, 15 handler routes)
+    - Go Test Suite: `go test ./...` passed across all packages
+    - JavaScript Node Suite: `node --test static/js/*.test.cjs` passed (17/17 tests passing)
+    - Playwright Responsive & Accessibility Matrix: `npm run test:ui` passed across 320px–4K, dark/light themes, and 200% zoom with 0 release findings and 0 WCAG 2.1 AA violations.
+- Status: Merged & Released.
+- Recorded UTC: 2026-11-24T19:18:00Z
