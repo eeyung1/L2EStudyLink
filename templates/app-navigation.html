@@ -1,25 +1,94 @@
 {{define "app-navigation"}}
+<button class="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false">
+  <span class="menu-icon" aria-hidden="true">☰</span>
+  <span class="menu-label">Menu</span>
+</button>
 <nav class="sidebar-nav" id="mobile-navigation" aria-label="Main navigation">
-<div class="workspace-nav-find"><label for="workspaceNavSearch">Find a page</label><input id="workspaceNavSearch" type="search" placeholder="Timetable, sessions…" aria-controls="mobile-navigation" autocomplete="off"><p id="workspaceNavCount" role="status" aria-live="polite" hidden></p><button id="workspaceNavClear" type="button" hidden>Show all pages</button></div><div class="workspace-nav-group" role="group" aria-label="My learning"><span class="nav-kicker">My learning</span>
-<a class="sidebar-link" href="/dashboard">Today</a>
-<a class="sidebar-link" href="/timetable">Timetable</a>
-<a class="sidebar-link" href="/reflections">Reflections</a>
-<a class="sidebar-link" href="/planner">Weekly coach</a>
-<a class="sidebar-link" href="/focus">Focus room</a>
-</div>
-<div class="workspace-nav-group" role="group" aria-label="Learn together"><span class="nav-kicker">Learn together</span>
-<a class="sidebar-link" href="/search-page">Find study partners</a>
-<a class="sidebar-link" href="/my-bookings">Study sessions</a>
-<a class="sidebar-link" href="/buddies">Accountability buddies</a>
-<a class="sidebar-link" href="/projects">Projects</a>
-<a class="sidebar-link" href="/masterclass">Masterclass</a>
-<a class="sidebar-link" href="/learn">Learning Hub</a>
-</div>
-<div class="workspace-nav-group" role="group" aria-label="My profile"><span class="nav-kicker">My profile</span>
-<a class="sidebar-link" href="/skills">Profile &amp; skills</a>
-<a class="sidebar-link" href="/portfolio">Learner portfolio</a>
-<a class="sidebar-link" href="/availability">Tutoring availability</a>
-</div>
-<div id="adminNavLink" class="hidden"><a class="sidebar-link" href="/admin">Admin</a></div>
+  <div class="workspace-nav-find">
+    <label for="workspaceNavSearch">Find a page</label>
+    <input id="workspaceNavSearch" type="search" placeholder="Timetable, sessions…" aria-controls="mobile-navigation" autocomplete="off">
+    <p id="workspaceNavCount" role="status" aria-live="polite" hidden></p>
+    <button id="workspaceNavClear" type="button" hidden>Show all pages</button>
+  </div>
+
+  <div class="workspace-nav-group nav-group-plan" role="group" aria-label="My learning">
+    <span class="nav-kicker">Plan &amp; reflect</span>
+    <a class="sidebar-link nav-today-link" href="/dashboard">Today</a>
+    <div class="nav-dropdown" data-nav-dropdown="plan">
+      <button type="button" class="nav-dropdown-trigger" id="planDropdownTrigger" aria-expanded="false" aria-haspopup="true" aria-controls="planDropdownMenu">
+        <span>Plan &amp; reflect</span>
+        <svg class="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="nav-dropdown-menu" id="planDropdownMenu" role="menu" aria-labelledby="planDropdownTrigger">
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/timetable">Timetable</a>
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/reflections">Reflections</a>
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/planner">Weekly coach</a>
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/focus">Focus room</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="workspace-nav-group nav-group-together" role="group" aria-label="Learn together">
+    <span class="nav-kicker">Learn together</span>
+    <div class="nav-dropdown" data-nav-dropdown="together">
+      <button type="button" class="nav-dropdown-trigger" id="togetherDropdownTrigger" aria-expanded="false" aria-haspopup="true" aria-controls="togetherDropdownMenu">
+        <span>Learn together</span>
+        <svg class="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="nav-dropdown-menu" id="togetherDropdownMenu" role="menu" aria-labelledby="togetherDropdownTrigger">
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/search-page">Find study partners</a>
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/my-bookings">Study sessions</a>
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/buddies">Accountability buddies</a>
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/projects">Projects</a>
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/masterclass">Masterclass</a>
+      </div>
+    </div>
+    <a class="sidebar-link nav-library-link" href="/learn">Library</a>
+  </div>
+
+  <div class="workspace-nav-group nav-group-account" role="group" aria-label="My profile">
+    <span class="nav-kicker">My profile</span>
+    <div class="nav-dropdown" data-nav-dropdown="account">
+      <button type="button" class="nav-dropdown-trigger nav-account-trigger" id="accountDropdownTrigger" aria-expanded="false" aria-haspopup="true" aria-controls="accountDropdownMenu">
+        <span class="account-avatar" aria-hidden="true">👤</span>
+        <span>Account</span>
+        <svg class="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="nav-dropdown-menu" id="accountDropdownMenu" role="menu" aria-labelledby="accountDropdownTrigger">
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/skills">Profile &amp; skills</a>
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/portfolio">Learner portfolio</a>
+        <a class="sidebar-link dropdown-item" role="menuitem" href="/availability">Tutoring availability</a>
+        <div id="adminNavLink" class="hidden"><a class="sidebar-link dropdown-item" role="menuitem" href="/admin">Admin</a></div>
+        <div class="nav-dropdown-divider" role="separator" aria-hidden="true"></div>
+        <button type="button" class="nav-dropdown-action nav-appearance-toggle" id="accountThemeToggle" onclick="toggleDark()">
+          <span class="theme-icon" aria-hidden="true">🌙</span>
+          <span>Appearance</span>
+        </button>
+        <button type="button" class="nav-dropdown-action nav-logout-action" onclick="logout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+          <span>Sign out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<nav class="phone-bottom-nav" aria-label="Bottom quick navigation">
+  <a href="/dashboard" class="bottom-action-btn" data-bottom-action="today">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+    <span>Today</span>
+  </a>
+  <button type="button" class="bottom-action-btn" data-bottom-action="plan" aria-expanded="false" aria-controls="mobile-navigation" aria-label="Plan and reflect">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+    <span>Plan</span>
+  </button>
+  <button type="button" class="bottom-action-btn" data-bottom-action="together" aria-expanded="false" aria-controls="mobile-navigation" aria-label="Learn together">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+    <span>Together</span>
+  </button>
+  <button type="button" class="bottom-action-btn" data-bottom-action="more" aria-expanded="false" aria-controls="mobile-navigation" aria-label="More destinations and account">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+    <span>More</span>
+  </button>
 </nav>
 {{end}}
