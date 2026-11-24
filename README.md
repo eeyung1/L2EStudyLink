@@ -1,5 +1,180 @@
 # L2EStudyLink
 
+## Current implementation plan — responsive workspace redesign
+
+**Authoritative roadmap, revised 24 November 2026.** The owner accepts the landing and login pages, but does not accept the current dashboard/sidebar experience. This section supersedes the earlier frontend checklists as the implementation queue. Previously checked items record code delivered; they do not establish design acceptance. **Current workspace redesign: 0/40 items implemented under this revised roadmap; owner acceptance pending.** Do not continue the historical checklist at item 21.
+
+### Outcome and scope
+
+Make the signed-in experience as clear, responsive and interactive as the accepted landing page. Start with navigation and page structure, then improve complete user journeys. A color change, another card border or another duplicate filter is not sufficient completion.
+
+- Keep the landing and login layouts, copy, illustration, demo and responsive behavior as accepted baselines. Do not redesign them in this workstream.
+- Retain the light-blue/white/navy visual identity and the user's saved appearance choice. Keep a coherent dark theme.
+- Rebuild the signed-in navigation rather than adding more controls to the current long sidebar.
+- Apply the new workspace shell consistently to all thirteen sidebar-based page templates. Give the three reading/portfolio templates consistent signed-in entry points without forcing a public visitor through a private workspace.
+- Signup and recovery remain functional companion flows. Change them only if a verified shared-shell regression or essential consistency issue requires it; they are not a fresh redesign priority.
+- Preserve Go/Gin, server-rendered shells, vanilla JavaScript and established API controllers. No framework rewrite, authentication migration or database expansion is required by this plan.
+- No implementation changes are included in this README revision. New checklist items remain unchecked until their implementation and verification are complete; owner acceptance is recorded separately.
+
+### Reanalysis of the current implementation
+
+The review uses repository source at `7f8751cbbecfc2b9b282fc36fddcd0dade8fa90f`, route registration, all 21 page templates, shared navigation/styles/controllers and the existing browser audit. It is a source review, not a new authenticated production usability test. The owner's assessment that the sidebar and workspace are unsatisfactory takes precedence over earlier automated passes.
+
+| Finding | Evidence in the current source | Consequence and implementation response |
+|---|---|---|
+| Too many destinations compete at once | `templates/app-navigation.html` lists fourteen regular links across three groups, plus conditional administration | Replace the permanent full-height destination list with a small, task-based top navigation and contextual menus. |
+| Navigation search treats a symptom | `mobile-nav.js` filters links but leaves the same information architecture and sidebar layout | Keep optional quick finding as a secondary aid; common destinations must be obvious without searching. |
+| Mobile navigation exposes the whole directory | `dashboard.css` switches the sidebar to an expanded menu below 860px; the controller makes main content inert | Replace this with compact navigation and focused sheets. Preserve Escape, focus containment, restoration and background isolation. |
+| Layout remains tied to the sidebar | `dashboard.css` fixes the sidebar at 248px and reserves a 248px main-content margin; later workspace styles override parts of the layout | Remove sidebar offsets in the new shell and define bounded, centered content layouts per task. Do not simply hide the sidebar and leave its spacing. |
+| Dashboard is still a long collection of sections | Today cards, setup banner, three quick links, statistics disclosure, habit heatmap, project/fellow discovery, setup links and profile coexist | Make today's next action the primary workspace. Move secondary discovery/profile/setup work to compact sections or their own destinations. Avoid repeating the same CTA in several places. |
+| Earlier refinements are uneven | Six everyday pages load `blue-workspace.css`; other workspace templates use older community, learning, account/admin or focus compositions | Migrate all workspace shells, then give each page a deliberate content layout. Shared color tokens alone do not complete a page. |
+| CSS ownership is fragmented | Templates combine dashboard, dark-mode, polish, workspace, experience and feature-specific layers; many rules override prior rules | Assign one owner for tokens, shell, controls and each feature layout. Remove superseded rules as pages migrate; do not append another general override layer. |
+| Several filters duplicate one another | Reflection format chips mirror a select; session status chips mirror a select | Prefer one obvious primary control, with advanced options disclosed only when useful. Keep accessible alternatives and one underlying state owner. |
+| Interaction quality differs between pages | Forms, list controls, native details, dialogs, pagination and retries use different compositions | Standardize behavior and feedback while retaining feature-specific actions and server authority. |
+| Automated passing is not design acceptance | Existing audits cover responsive geometry, contrast, keyboard and fixtures; owner still rejects the navigation | Continue those checks, add task-based visual/journey review, and record owner acceptance separately. |
+
+### Navigation decision: replace the long left list
+
+**Implementation direction:** no permanent fourteen-link left sidebar. Use a shared top workspace header with four primary destinations/groups and a separate account menu. Show the current page and its primary action in the page header, not in a second competing global toolbar.
+
+| Primary entry | Destinations | Behavior |
+|---|---|---|
+| Today | `/dashboard` | Direct link to the daily workspace. |
+| Plan & reflect | `/timetable`, `/reflections`, `/planner`, `/focus` | Labeled menu on desktop; focused navigation sheet on smaller screens. |
+| Learn together | `/search-page`, `/my-bookings`, `/buddies`, `/masterclasses`, `/projects` | Group tutoring, booked sessions and collaboration without listing them permanently beside the dashboard. |
+| Library | `/learn` and article routes | Direct public learning destination; signed-in return navigation stays available. |
+| Account menu | `/skills`, `/portfolio`, `/availability`, appearance and sign out | Keep identity, sharing and tutoring configuration out of the main learning navigation. |
+| Administration | `/admin` | Conditional privileged entry in the account/tools menu. Navigation visibility never substitutes for API authorization. |
+
+Use `/masterclasses` as the canonical navigation destination; preserve the existing `/masterclass` alias and deep links. Do not rename other routes just to match new labels. Preserve project/session/reflection deep-link query parameters and the safe return behavior already enforced by account flows; do not expand redirect permissions casually.
+
+#### Desktop, tablet and phone behavior
+
+- **Desktop, initially 1100px and above:** horizontal header with brand, Today, Plan & reflect, Learn together, Library and account controls. Menus open on click/keyboard, never hover alone. Only one menu opens at a time. No sidebar width or margin-left reservation remains. Use a centered content container around 1200–1360px; allow wider timetable/admin work only where it helps.
+- **Tablet, initially 768–1099px:** compact header with current page, a labeled workspace menu and account control. Use a bounded side sheet or dialog for grouped destinations, not a wrapped row of tiny links. Content remains usable in portrait and landscape.
+- **Phone, initially below 768px:** short top header plus four labeled bottom navigation actions: Today, Plan, Together and More. Today navigates directly; Plan/Together open their focused destination sheets; More exposes Library and account/settings destinations. Indicate the active group and the exact current page. Account access must remain easy without duplicating a second full menu.
+- These breakpoints are starting specifications, not device assumptions. Reflow earlier if labels or 200% text sizing cannot fit. At very short viewport heights, compact or relocate persistent navigation so it does not crowd out forms or the focus timer.
+- Reserve space for fixed navigation and device safe areas. The phone keyboard must not cover save/cancel controls. Do not turn a navigation sheet into an unnecessary mandatory modal step on every page load.
+- Close menus on Escape, destination selection and outside interaction; restore focus appropriately. Trap focus only while a modal sheet is open. Never leave the background inert after closing, resizing, signing out or navigating.
+- Show text labels alongside meaningful icons. Icons alone, hidden labels and horizontal overflow are not the phone navigation solution.
+
+### Shared page design and interaction contract
+
+Every migrated page must have a clear title, one short purpose statement, a primary action where appropriate, compact secondary tools and a readable content area. Reuse the accepted landing page's spacing, blue accents, rounded surfaces, expressive hierarchy and purposeful feedback; do not copy its marketing hero onto every workspace page.
+
+1. **Task hierarchy:** one dominant action per section. Separate daily work from configuration and discovery. Do not put every feature on the dashboard.
+2. **Responsive composition:** cards stack deliberately; filters become an understandable form or filter sheet; data-heavy tables gain meaningful phone cards. Maintain content order across layouts.
+3. **Useful interaction:** selection changes content or context, forms show progress and actionable outcomes, empty states provide a next step, and retries preserve user input. Decorative hover effects do not count as the page's interaction work.
+4. **One state owner:** do not create parallel save, booking, role-filter, timer or consent logic. New controls call the existing controller. Remove or synchronize obsolete controls during migration.
+5. **Accessible behavior:** visible keyboard focus, semantic headings/labels, at least 44px targets, at least 16px form text, WCAG AA text contrast, reduced-motion support and status announcements without excessive repetition.
+6. **Stable feedback:** show loading, empty, no-match, error, expired-session and success states. Never show old counts as current after a failed refresh. Prevent double submissions and preserve drafts on recoverable failures.
+7. **Honest progress:** distinguish scheduled blocks, reflections and confirmed sessions from verified learning time. Do not add fabricated testimonials, fake live activity, invented progress or reward totals.
+8. **Performance:** avoid blocking third-party runtime styling for critical shell/dialog geometry. Retain the project's existing frontend stack; produce local CSS using existing approved tooling where needed. Audit external fonts and fallback layout before removing dependencies.
+
+### Page-by-page implementation brief
+
+All rows below are pending under this revised plan, including pages that received earlier refinements. The table describes the intended experience, not functionality newly claimed as implemented.
+
+| Page / surface | Main task and proposed composition | Required interaction / acceptance evidence |
+|---|---|---|
+| Dashboard | Daily workspace: today's plan first, next session and one helpful next action; compact weekly context; secondary discovery below | Clear populated/empty/error states; direct links preserve relevant context; less repeated setup/profile content; phone screenshot shows a useful task before secondary discovery. |
+| Timetable | Day/week switcher, selected-day context, readable time blocks and a clear add-block action | Select day/week; create through existing controls; validation keeps entered data; reflect on the correct block/date; delete retains historic reflections. Do not imply drag/drop exists unless separately implemented and tested. |
+| Reflections | Reading-first history with concise search/date/format controls and optional density setting | Search/filter/reset/order; accessible private audio; empty versus no-match distinction; long text wraps; failed loads retain filters; text/audio remain private. |
+| Profile & skills | Identity editor, skills and preferences as distinct sections; portfolio controls linked explicitly | Search/edit/remove saved skills; save/retry feedback; dirty-state protection; no accidental email opt-in or public sharing. |
+| Tutoring availability | Weekly published-hours overview, add/edit controls and a save/review area | Day/time selection; overlap/range errors; load-before-edit; revision/If-Match conflict recovery; existing bookings keep their own status. |
+| Tutor discovery | Skill/date search, compact tutor cards, truthful availability and clear ordering | Filters/sorting use the correct loaded results; selected date retained; shared booking clock shown; self-profile cannot be booked; slot/topic review and server conflict recovery remain explicit. |
+| Study sessions | Clear active requests/confirmed sessions versus outcome history; concise role/status filtering | Pending/confirmed/completed/cancelled/no-show states understandable; accept/decline/cancel/outcome controls respect server permissions and time rules; reset/filter does not lose review drafts. |
+| Weekly coach | Selected week and timezone above a compact summary, followed by requested insights | Previous/next week, loading/retry, meaningful empty week; explicit analysis action only; selected-week consent context and AI data disclosure remain visible; no automatic inference call on navigation. |
+| Focus discovery | Goal entry and room discovery as the primary surface before joining | Read room purpose/participants/timer state, create/join only deliberately, show loading/full/unavailable states as supported by existing APIs. |
+| Active focus room | Timer, personal goal and essential session actions; optional participant/detail view | Join/leave and supported room controls remain server-authoritative; never simulate a shared-room pause with a local-only timer; leave confirmation, reconnect handling and reflection handoff preserve the correct learner/block context. |
+| Buddies | Separate current connections, discovery and requests using clearly labeled sections/views | Search loaded suggestions honestly; send/accept/decline/cancel with busy/error feedback; distinguish sent versus received; no silent social actions. |
+| Masterclasses | Discover classes first; hosting tools separated from browsing | Search/filter/load more; seat/time/cancellation context; deliberate join/leave; hosting validation and unsaved protection; local filters must say when they apply only to loaded classes. |
+| Projects | Discovery, project detail and invitations/team activity as distinct contexts | Open details/back/forward/deep links; search/load more; invite/request/accept actions as supported; preserve opted-in invitation preferences, owner/member permissions and drafts. |
+| Learning Hub | Public reading library with clear search/categories and responsive cards | Public browsing without forced sign-in; load-more/retry; truthful empty/no-match states; signed-in users can get back to the workspace. |
+| Article / discussion | Comfortable reading width and structured questions/replies below the article | Comments/replies/moderation where permitted; pagination and retry; retained drafts; safe rendering; account sign-in preserves an approved return route. |
+| Learner portfolio | Separate public presentation from the owner's sharing editor | Owner preview and explicit visibility confirmation; clear public/private boundary; public visitors see only permitted fields; no exposure of reflection text/audio. |
+| Administration | Compact overview, account/booking lists and contextual privileged actions | Responsive rows/cards, pagination/search, explicit confirmations, recovery after errors; no action enabled solely because a link is visible. |
+
+There are **16 affected page templates**: thirteen workspace templates plus Learning Hub, article and portfolio. Focus discovery/active-room and portfolio owner/public are separate states of shared templates, not extra templates. Administration includes multiple privileged subviews. All require representative coverage.
+
+### Active 40-item implementation checklist
+
+Use the following four batches of ten. The first batch addresses the navigation complaint before more page-specific decoration. Items are deliberately reviewable units, not counts of every button or every screen state.
+
+#### Batch A — shared navigation and workspace structure (implement first)
+
+- [ ] **W01 — Layout specification and visual prototype:** review dashboard, timetable and reflections at 390px, 820px and 1440px with the proposed shell; record content order, navigation behavior and page actions before rolling the shell across all templates.
+- [ ] **W02 — Navigation map and labels:** implement the canonical destination/group mapping above in a shared source; preserve route aliases, role-based visibility and direct links.
+- [ ] **W03 — Desktop top navigation:** replace the long left list with labeled top-level navigation, click/keyboard menus and an account menu; remove old sidebar offsets.
+- [ ] **W04 — Tablet workspace menu:** build a compact grouped menu/sheet with current-page context; verify portrait, landscape and long labels.
+- [ ] **W05 — Phone navigation:** implement the four labeled actions and destination sheets, active-group feedback and bottom safe-area spacing; no hidden destinations.
+- [ ] **W06 — Navigation keyboard and focus behavior:** verify Escape, outside dismissal, one-open-menu policy, focus restoration, modal containment and cleanup after resize/navigation.
+- [ ] **W07 — Shared page headers and action placement:** adopt consistent title/purpose/primary-action patterns; keep page filters distinct from global navigation.
+- [ ] **W08 — CSS ownership and critical layout:** consolidate shell/control rules, remove migrated sidebar declarations and ensure critical navigation/dialog positioning survives unavailable external styling.
+- [ ] **W09 — Shell migration across templates:** migrate all thirteen workspace templates, with role/account controls and unsaved-work safeguards intact; add appropriate return links on the three public reading/portfolio templates without changing accepted landing/login layouts.
+- [ ] **W10 — Shell acceptance evidence:** complete both-theme keyboard, 320px–4K, 200% reflow, short-height, safe-area and open-menu checks; publish representative screenshots and list any physical-device checks still awaiting the owner.
+
+#### Batch B — daily planning, reflection and learner settings
+
+- [ ] **W11 — Dashboard hierarchy:** remove repeated setup/profile actions and create a focused daily-first composition with useful empty states.
+- [ ] **W12 — Today's plan interactions:** make block/reflection actions obvious and preserve correct block/date deep links and partial-load recovery.
+- [ ] **W13 — Next-session context:** distinguish pending requests from confirmed bookings and lead to the correct session details.
+- [ ] **W14 — Weekly context and secondary dashboard sections:** show concise, honest progress with optional habit/discovery sections; do not inflate the first phone screen.
+- [ ] **W15 — Timetable day/week experience:** responsive selectors, selected context, readable time/goal cards and one clear add-block entry.
+- [ ] **W16 — Time-block creation/deletion and draft editing:** preserve add/delete behavior, validation/draft recovery and historical reflection retention; verify keyboard-visible actions. Saved-block editing has no current update route and must not be faked by delete/recreate. Scope a separate authorized API change if saved-block editing is later required.
+- [ ] **W17 — Reflection entry:** improve text/voice modes, feedback, recording failure recovery and return to the right block without mixing accounts or dates.
+- [ ] **W18 — Reflection history:** reading layout, coherent filters/order/density, private audio controls and distinct empty/error/no-match states.
+- [ ] **W19 — Profile and skills:** simplify identity/skill/preference sections and preserve safe sharing, deliberate consent and unsaved edits.
+- [ ] **W20 — Tutoring availability:** responsive weekly overview and deliberate edits with revision-conflict handling and retained form entries.
+
+#### Batch C — learning connections and collaboration
+
+- [ ] **W21 — Tutor discovery:** responsive search/results, clear skill/profile information, honest rating/availability context and appropriate ordering.
+- [ ] **W22 — Booking request journey:** visible date/timezone/slot/topic review, no self-booking, controlled submission and actionable server-conflict recovery.
+- [ ] **W23 — Session collections and status:** understandable active/history views and concise role/status filters, with loading/error totals that cannot mislead.
+- [ ] **W24 — Session actions and reviews:** permission/time-aware actions, clear confirmations and review drafts retained across filtering and failures.
+- [ ] **W25 — Buddy workspace:** distinct connections/discovery/requests views with accessible search and reliable request feedback.
+- [ ] **W26 — Masterclass discovery and participation:** readable classes/seats/times, filter/pagination clarity and deliberate join/leave/cancel flows.
+- [ ] **W27 — Masterclass hosting:** separate host tools, field validation, busy/retry feedback and draft protection.
+- [ ] **W28 — Project discovery and detail:** responsive listing/detail composition, meaningful empty states and working deep-link/back/forward navigation.
+- [ ] **W29 — Project team and invitations:** clear owner/member/requester contexts, opted-in invitations, actionable feedback and no lost drafts.
+- [ ] **W30 — Focus room discovery:** goal-first entry, readable room information and explicit create/join behavior.
+
+#### Batch D — focus, coaching, reading, administration and release
+
+- [ ] **W31 — Active focus room:** uncluttered timer/goal/action surface with truthful clock state, accessible participant view, reconnect/leave handling and reflection handoff.
+- [ ] **W32 — Weekly coach:** readable selected-week metrics/insights, timezone-aware navigation, explicit AI request and useful retry/empty states.
+- [ ] **W33 — Learning Hub:** responsive library/search/category/pagination interactions with clear workspace entry for members.
+- [ ] **W34 — Article and discussion:** reading hierarchy, comments/replies, safe rendering, draft retention and permitted account-return behavior.
+- [ ] **W35 — Learner portfolio:** polished public presentation and owner preview/sharing flow with strict private-field boundaries.
+- [ ] **W36 — Administration:** responsive operational overview, searchable/paginated records and safe, recoverable privileged actions.
+- [ ] **W37 — Cross-page state consistency:** check loading/empty/no-match/error/offline/expired/success states, retry retention and double-submit protections throughout the migrated app.
+- [ ] **W38 — Whole-app accessibility and responsiveness:** extend the existing matrix to the new navigation and complete keyboard, focus, contrast, touch, long-content, zoom, phone-keyboard and reduced-motion checks.
+- [ ] **W39 — Performance and dependency pass:** measure asset/layout/animation impact, remove superseded CSS, validate local critical styles and external-font fallbacks, and avoid unnecessary API refetching.
+- [ ] **W40 — Coordinated release and acceptance record:** all required CI green, merged README checklist, matching Render/Vercel sources, production smoke checks and separate owner phone/laptop usability acceptance with remaining limitations documented.
+
+### Definition of done and evidence
+
+For each batch:
+
+- Use a feature branch and PR; keep commits free of co-authored trailers. Update the active checklist with the actual delivered scope, verification and remaining limitations. Mark implementation complete only when its checks pass; record owner usability acceptance separately.
+- Run the existing Go tests/build/vet, JavaScript tests, schema/container checks and browser suites appropriate to the change. A documentation-only change needs source/Markdown/diff validation; the current repository workflow may still run the broader CI gates.
+- Keep the four existing CI gates for implementation: application tests, browser regressions with real-server journeys, responsive/accessibility release audit and container startup. Do not weaken assertions merely to pass a redesign; update obsolete layout expectations with equally explicit tests of the new behavior.
+- Verify at least 320, 360, 390, 412, 768, 820, 1024, 1440, 1920 and 3840 CSS pixels; include intermediate breakpoint widths, 200% reflow, a short landscape viewport, both themes and reduced motion. No horizontal page overflow or obscured primary action.
+- Add tests for new top menus, phone sheets/bottom navigation, current-page indication and keyboard cleanup. Replace obsolete sidebar geometry assertions. Test destination discovery without relying on navigation search.
+- Exercise long names, long goals/reflections, empty collections, slow responses, failed refreshes, expired sessions, save conflicts and repeated taps. Do not replace populated evidence with empty fixture pages only.
+- Capture representative dashboard/timetable/reflection screenshots at phone/tablet/desktop sizes and both themes. Additional screenshots must demonstrate the affected page's primary task and relevant open dialog/sheet, not just its top heading.
+- Keep mutation and authorization tests: cross-account access, reflection/audio privacy, review draft retention, project permissions, availability revisions, booking-clock rules, opt-in choices and explicit coaching requests.
+- After merge, coordinate the Render page shells and Vercel assets/account exports; verify the deployed commit, matching sources, custom-domain routes and health. Do not claim authenticated production or physical-device testing unless performed.
+- Owner acceptance asks whether common destinations are obvious, the left-side clutter is gone, the current page is clear and primary tasks are easy on the owner's phone/laptop. Passing automated checks alone is insufficient acceptance.
+
+### Immediate implementation handoff
+
+Start with **Batch A, W01–W10**. Produce the shared shell and representative dashboard/timetable/reflection layouts first, then migrate the remaining workspace shells. Keep page-specific feature controllers stable during this migration. Continue with Batch B only after the shared navigation is demonstrably usable and its remaining acceptance limitations are clearly recorded. The accepted landing and login pages stay the reference, not the next redesign target.
+
+---
+
+
 A peer tutoring / study-session booking platform (part of the Learn2Earn ecosystem) where students and tutors list skills and availability, search each other, book sessions, and track personal study timetables and reflections.
 
 ## Redesign roadmap — November 2026
@@ -619,9 +794,9 @@ Remaining items: 11 Dashboard; 12 Timetable; 13 Reflections; 14 Tutor discovery;
 
 All shortcuts delegate to existing form/controller events; they do not create alternative mutation paths. Existing permissions, account scoping, clock validation, unsaved warnings and availability revisions remain authoritative. The release browser suite exercises the new shortcuts alongside the 320px–4K theme/geometry/accessibility matrix; existing real-server journeys verify mutations and permissions. Remaining optimization items: 21 Projects, 22 Learning Hub, 23 Article/discussion, 24 Portfolio, 25 Administration.
 
-### Light-blue redesign — current 40-item implementation checklist
+### Historical light-blue delivery checklist — superseded by W01–W40
 
-This supersedes the earlier visual refinement queue. Items 1–10 establish the new light-blue foundation and rebuild the landing experience; later items cover individual account, learning, community and administration workflows. Existing API authorization, private reflections, consent, booking rules and edit-conflict protections remain authoritative.
+Historical delivery record from PRs #81–#82. The active workspace redesign above supersedes this queue; these ticks do not indicate owner acceptance of the sidebar or signed-in layouts. Items 1–10 establish the new light-blue foundation and rebuild the landing experience; later items cover individual account, learning, community and administration workflows. Existing API authorization, private reflections, consent, booking rules and edit-conflict protections remain authoritative.
 
 - [x] 1. Unified light-blue semantic tokens: pale-blue canvas, white cards, navy text, readable stronger-blue actions and coordinated dark appearance.
 - [x] 2. Stylesheet consolidation: replace the previous landing override stack with one scoped composition using shared tokens/reading controls; migrate exact green brand values and shared shadow accents. Legacy page-specific layout cleanup continues in later page batches.
