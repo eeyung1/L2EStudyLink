@@ -7,24 +7,51 @@
     function tell(message,error=false){notice.textContent=message;notice.classList.toggle('is-error',error);}
     function describe(b){return `${String(b.date).slice(0,10)} · ${time(b.start_time)}–${time(b.end_time)} · ${b.timezone||'shared booking clock'}`;}
     function action(b,label,kind){const button=node('button',label);button.type='button';button.addEventListener('click',()=>{
-        pending={b,kind,label};document.getElementById('bookingActionTitle').textContent=label+'?';document.getElementById('bookingActionDescription').textContent=`${b.topic} · ${describe(b)}. ${kind==='no_show'?'Confirm that the learner did not attend.':kind==='completed'?'Confirm that the session took place.':'The participants will see the updated session status.'}`;document.getElementById('bookingActionError').hidden=true;open();document.getElementById('bookingActionCancel').focus();
+        pending={b,kind,label};document.getElementById('bookingActionTitle').textContent=label+'?';
+        let desc=`${b.topic} · ${describe(b)}. `;
+        if(kind==='cancel'){desc+='Are you sure you want to cancel? Both participants will be notified and this timeslot will be released.';}
+        else if(kind==='decline'){desc+='Decline this session request? The learner will be notified and the timeslot will be released.';}
+        else if(kind==='confirmed'){desc+='Accept this session request to confirm your participation with the learner.';}
+        else if(kind==='no_show'){desc+='Confirm that the learner did not attend.';}
+        else if(kind==='completed'){desc+='Confirm that the session took place.';}
+        else{desc+='The participants will see the updated session status.';}
+        document.getElementById('bookingActionDescription').textContent=desc;
+        document.getElementById('bookingActionError').hidden=true;open();document.getElementById('bookingActionCancel').focus();
     });return button;}
     function render(){
         list.replaceChildren();const status=document.getElementById('sessionStatus').value,role=document.getElementById('sessionRole').value;
         const visible=rows.filter(b=>(status==='all'||b.status===status)&&(role==='all'||b.role===role));
-        const count=document.getElementById('sessionCount');if(count)count.textContent=visible.length+' of '+rows.length+' sessions shown · '+(role==='all'?'learning and tutoring':role==='student'?'learning':'tutoring');
+        const upcomingCount=rows.filter(b=>b.status==='pending'||b.status==='confirmed').length;
+        const completedCount=rows.filter(b=>b.status==='completed').length;
+        const cancelledCount=rows.filter(b=>b.status==='cancelled'||b.status==='no_show').length;
+        const roleLabel=role==='all'?'learning and tutoring':role==='student'?'learning':'tutoring';
+        const count=document.getElementById('sessionCount');
+        if(count){
+            if(!rows.length){count.textContent='No study sessions booked yet · Find a study partner to get started';}
+            else{count.textContent=`${visible.length} of ${rows.length} sessions shown · ${upcomingCount} upcoming · ${completedCount} completed · ${cancelledCount} cancelled · ${roleLabel}`;}
+        }
         if(!visible.length){const section=node('section',undefined,'workspace-empty');section.append(node('h2',rows.length?'No sessions match these filters':'Your first session is waiting'),node('p','Find a study partner or change the status and role filters.'));const link=node('a','Find a study partner →');link.href='/search-page';section.append(link);list.append(section);return;}
         visible.sort((a,b)=>Number(!!b.can_cancel)-Number(!!a.can_cancel)|| (a.can_cancel?(String(a.date)+a.start_time).localeCompare(String(b.date)+b.start_time):(String(b.date)+b.start_time).localeCompare(String(a.date)+a.start_time))).forEach(b=>{
+            const isActive=b.status==='pending'||b.status==='confirmed';
             const card=node('article',undefined,'session-card');card.dataset.session=String(b.id);
-            card.append(node('p',b.role==='tutor'?'You are tutoring':'You are learning','workspace-eyebrow'),node('h2',b.role==='tutor'?b.student_name:b.tutor_name),node('p',b.topic),node('p',describe(b),'l2e-muted'),node('p',b.meeting_type==='in_person'?'In person':'Online'),node('span',names[b.status]||'Status unavailable','session-status status-'+b.status));
+            const eyebrowText=`${isActive?'Active session':'Session history'} · ${b.role==='tutor'?'You are tutoring':'You are learning'}`;
+            card.append(node('p',eyebrowText,'workspace-eyebrow'),node('h2',b.role==='tutor'?b.student_name:b.tutor_name),node('p',b.topic),node('p',describe(b),'l2e-muted'),node('p',b.meeting_type==='in_person'?'In person':'Online'),node('span',names[b.status]||'Status unavailable','session-status status-'+b.status));
             if(b.status==='pending')card.append(node('p',b.role==='tutor'?'Review this request, then accept or decline.':'Waiting for the tutor to accept this request.','l2e-muted'));
-            if(b.status==='confirmed'&&b.role==='tutor'&&!b.can_complete)card.append(node('p','Completion and no-show actions become available after the session ends.','l2e-muted'));
+            else if(b.status==='confirmed'&&b.role==='tutor'&&!b.can_complete)card.append(node('p','Completion and no-show actions become available after the session ends.','l2e-muted'));
+            else if(b.status==='cancelled')card.append(node('p','This session was cancelled.','l2e-muted'));
+            else if(b.status==='no_show')card.append(node('p','This session was recorded as a learner no-show.','l2e-muted'));
             const actions=node('div',undefined,'session-actions');
             if(b.can_accept)actions.append(action(b,'Accept request','confirmed'));
             if(b.can_decline)actions.append(action(b,'Decline request','decline'));
             else if(b.can_cancel)actions.append(action(b,'Cancel session','cancel'));
             if(b.can_complete)actions.append(action(b,'Mark completed','completed'));
             if(b.can_no_show)actions.append(action(b,'Report no-show','no_show'));
+            if(b.status==='confirmed'&&b.meeting_type==='online'){
+                const joinLink=node('a','Join online session →','session-join-link');
+                joinLink.href='/focus';
+                joinLink.setAttribute('aria-label',`Join online session for ${b.topic}`);
+                actions.append(joinLink);
+            }
             card.append(actions);
             if(b.can_review){const draft=drafts.get(b.id)||{rating:'',comment:'',again:''};drafts.set(b.id,draft);
                 const form=node('form',undefined,'booking-review-form');const heading=node('h3','Review this completed session');form.append(heading,node('p','Your rating contributes to the tutor’s profile. Write about the session and avoid personal or sensitive information.'));
@@ -32,7 +59,8 @@
                 const commentLabel=node('label','Your review (10–1000 characters)'),comment=node('textarea');comment.name='comment';comment.minLength=10;comment.maxLength=1000;comment.required=true;comment.rows=4;comment.value=draft.comment;commentLabel.append(comment);
                 const againLabel=node('label','Would you book again? (optional)'),again=node('select');again.name='would_book_again';for(const [value,text] of [['','Prefer not to say'],['yes','Yes'],['no','No']]){const o=node('option',text);o.value=value;again.append(o);}again.value=draft.again;againLabel.append(again);
                 const feedback=node('p',undefined,'l2e-feedback');feedback.setAttribute('role','status');const button=node('button','Publish review');button.type='submit';button.disabled=reviewBusy;
-                for(const input of [rating,comment,again])input.addEventListener('input',()=>{draft.rating=rating.value;draft.comment=comment.value;draft.again=again.value;});
+                function syncDraft(){draft.rating=rating.value;draft.comment=comment.value;draft.again=again.value;}
+                for(const input of [rating,comment,again]){input.addEventListener('input',syncDraft);input.addEventListener('change',syncDraft);}
                 form.append(ratingLabel,commentLabel,againLabel,feedback,button);form.addEventListener('submit',async event=>{event.preventDefault();if(reviewBusy)return;const text=comment.value.trim();if(text.length<10){feedback.textContent='Write at least 10 characters about the session.';comment.focus();return;}reviewBusy=true;form.querySelectorAll('input,textarea,select,button').forEach(n=>n.disabled=true);button.textContent='Publishing…';feedback.textContent='';
                     const body={rating:Number(rating.value),comment:text};if(again.value)body.would_book_again=again.value==='yes';
                     try{await api(`/bookings/${b.id}/reviews`,{method:'POST',body:JSON.stringify(body)});drafts.delete(b.id);b.can_review=false;reviewBusy=false;tell('Review published. Thank you for sharing your experience.');render();}

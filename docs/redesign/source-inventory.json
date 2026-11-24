@@ -1101,7 +1101,7 @@
       "dialogs": [
         "bookingActionDialog"
       ],
-      "controls": 26,
+      "controls": 27,
       "inline_styles": 0
     },
     "templates/planner.html": {
