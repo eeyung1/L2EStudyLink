@@ -760,8 +760,9 @@ html.dark [data-learning-page="dashboard"] .next-session-with { color: #94a3b8; 
 [data-learning-page="dashboard"] .next-session-footnote { font-size: 12px; color: #94a3b8; margin: 0; }
 
 [data-learning-page="dashboard"] .dashboard-bottom { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr); gap: 20px; align-items: start; margin-top: 24px; }
-[data-learning-page="dashboard"] .dashboard-account-overview { display: flex; flex-direction: column; gap: 16px; }
-[data-learning-page="dashboard"] .dashboard-account-overview .activation-banner { margin-bottom: 0; border-radius: 16px; }
+[data-learning-page="dashboard"] .dashboard-account-overview { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+[data-learning-page="dashboard"] .dashboard-account-overview .activation-banner { margin-bottom: 0; border-radius: 16px; flex-direction: column; align-items: flex-start; gap: 16px; }
+[data-learning-page="dashboard"] .dashboard-account-overview .activation-actions { flex-wrap: wrap; flex-shrink: 1; }
 [data-learning-page="dashboard"] .dashboard-account-overview .workspace-details { margin: 0; }
 [data-learning-page="dashboard"] [data-daily-retry] { min-height: 44px; min-width: 44px; font-weight: 700; }
 
