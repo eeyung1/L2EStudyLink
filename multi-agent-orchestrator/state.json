@@ -3,9 +3,9 @@
     "repository_id": "local-git:/home/recoding/Projects/L2EStudyLink#/home/recoding/Projects/L2EStudyLink/.git",
     "protocol": "orchestrator/v1",
     "schema": 4,
-    "generation": 14,
+    "generation": 22,
     "enrollment": "NATIVE",
-    "provenance": "Human authorized project coordination",
+    "provenance": "Human operator initialized project coordination",
     "enrolled_utc": "2026-10-27T21:28:20Z"
   },
   "sessions": {
@@ -33,6 +33,12 @@
       "state": "ACTIVE",
       "generation": 8
     },
+    "Codex-20261028-20b45355": {
+      "id": "Codex-20261028-20b45355",
+      "role": "worker",
+      "state": "COMPLETE",
+      "generation": 14
+    },
     "Codex-20261028-233f55b6": {
       "id": "Codex-20261028-233f55b6",
       "role": "worker",
@@ -44,12 +50,6 @@
       "role": "worker",
       "state": "COMPLETE",
       "generation": 13
-    },
-    "Codex-20261028-20b45355": {
-      "id": "Codex-20261028-20b45355",
-      "role": "worker",
-      "state": "COMPLETE",
-      "generation": 14
     },
     "MiMo-20261027-186ff181-20261027-32e4ac47": {
       "id": "MiMo-20261027-186ff181-20261027-32e4ac47",
@@ -68,6 +68,48 @@
       "role": "worker",
       "state": "ACTIVE",
       "generation": 10
+    },
+    "Worker-1-20261124-97724ed2": {
+      "id": "Worker-1-20261124-97724ed2",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 16
+    },
+    "Worker-2-20261124-81879947": {
+      "id": "Worker-2-20261124-81879947",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 20
+    },
+    "Worker-3-20261124-65ad9d3f": {
+      "id": "Worker-3-20261124-65ad9d3f",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 17
+    },
+    "Worker-4-20261124-620ecc57": {
+      "id": "Worker-4-20261124-620ecc57",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 18
+    },
+    "Worker-5-20261124-02b8434c": {
+      "id": "Worker-5-20261124-02b8434c",
+      "role": "frontend",
+      "state": "ACTIVE",
+      "generation": 19
+    },
+    "planner-agent-20261124-48201e8c": {
+      "id": "planner-agent-20261124-48201e8c",
+      "role": "coding-agent",
+      "state": "ACTIVE",
+      "generation": 22
+    },
+    "planner-agent-20261124-f3f715c1": {
+      "id": "planner-agent-20261124-f3f715c1",
+      "role": "coding-agent",
+      "state": "ACTIVE",
+      "generation": 21
     }
   },
   "claims": {},
@@ -166,6 +208,62 @@
       "operation": "release-claim",
       "generation": 14,
       "utc": "2026-10-28T14:19:00Z"
+    },
+    {
+      "id": "15-authority-enrollment",
+      "actor": "ORCHESTRATOR",
+      "operation": "authority-enrollment",
+      "generation": 15,
+      "utc": "2026-11-24T09:26:17Z"
+    },
+    {
+      "id": "16-register-session",
+      "actor": "Worker-1-20261124-97724ed2",
+      "operation": "register-session",
+      "generation": 16,
+      "utc": "2026-11-24T09:44:14Z"
+    },
+    {
+      "id": "17-register-session",
+      "actor": "Worker-3-20261124-65ad9d3f",
+      "operation": "register-session",
+      "generation": 17,
+      "utc": "2026-11-24T10:08:09Z"
+    },
+    {
+      "id": "18-register-session",
+      "actor": "Worker-4-20261124-620ecc57",
+      "operation": "register-session",
+      "generation": 18,
+      "utc": "2026-11-24T10:08:09Z"
+    },
+    {
+      "id": "19-register-session",
+      "actor": "Worker-5-20261124-02b8434c",
+      "operation": "register-session",
+      "generation": 19,
+      "utc": "2026-11-24T10:08:14Z"
+    },
+    {
+      "id": "20-register-session",
+      "actor": "Worker-2-20261124-81879947",
+      "operation": "register-session",
+      "generation": 20,
+      "utc": "2026-11-24T10:08:22Z"
+    },
+    {
+      "id": "21-register-session",
+      "actor": "planner-agent-20261124-f3f715c1",
+      "operation": "register-session",
+      "generation": 21,
+      "utc": "2026-11-24T12:18:05Z"
+    },
+    {
+      "id": "22-register-session",
+      "actor": "planner-agent-20261124-48201e8c",
+      "operation": "register-session",
+      "generation": 22,
+      "utc": "2026-11-24T12:18:35Z"
     }
   ]
 }
