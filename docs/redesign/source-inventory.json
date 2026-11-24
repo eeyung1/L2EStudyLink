@@ -725,7 +725,8 @@
         "/dashboard",
         "#activeHeading",
         "#incomingHeading",
-        "#discoverHeading"
+        "#discoverHeading",
+        "#outgoingHeading"
       ],
       "styles": [
         "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap",
@@ -751,7 +752,7 @@
       ],
       "forms": 0,
       "dialogs": [],
-      "controls": 17,
+      "controls": 21,
       "inline_styles": 0
     },
     "templates/dashboard.html": {

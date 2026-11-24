@@ -3,7 +3,7 @@ window.L2ECommunity=(()=>{
     function checkAccount(){if(sessionScope()!==scope){location.reload();throw Error('Your account changed. Reload this page.');}}
     async function api(path,options={}){checkAccount();const response=await fetch('/api/v1'+path,{...options,credentials:'same-origin',cache:'no-store',headers:{Authorization:'Bearer '+sessionToken(),...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}});checkAccount();if(response.status===401){redirectToLogin();throw Error('Your session expired. Sign in again.');}const data=await response.json().catch(()=>null);if(!response.ok){const error=Error(data?.error||'Service unavailable. Please try again.');error.status=response.status;throw error;}if(data===null)throw Error('Unexpected response. Please try again.');return data;}
     const el=id=>document.getElementById(id),json=data=>JSON.stringify(data);
-    function tell(id,copy,error=false){const n=el(id);n.textContent=copy;n.classList.toggle('is-error',error);}
+    function tell(id,copy,error=false){const n=el(id);if(n){n.textContent=copy;n.classList.toggle('is-error',error);}}
     function button(label,run,secondary=false){const b=node('button',label,secondary?'secondary':'');b.type='button';b.addEventListener('click',()=>run(b));return b;}
     function state(box,copy,retry){const section=node('div',undefined,'community-state');section.append(node('p',copy));if(retry)section.append(button('Try again',retry));box.replaceChildren(section);}
     function card(title){const c=node('article',undefined,'community-item');c.append(node('h3',title));return c;}
