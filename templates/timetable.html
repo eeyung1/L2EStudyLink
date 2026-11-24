@@ -47,7 +47,7 @@
 
 
 
-            <button onclick="showAddBlock()" class="workspace-primary mb-6">+ Add time block</button>
+            <button type="button" id="addBlockBtn" onclick="showAddBlock()" class="workspace-primary mb-6 inline-flex items-center gap-2">+ Add time block</button>
             <div class="learning-toolbar"><button type="button" class="secondary" id="showToday">Jump to today</button><a href="/reflections">Reflection history</a><p class="learning-hint">Choose a day to plan; choose a block to reflect.</p></div><div id="timetableNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden></div>
             <div id="reflectionSavedNotice" class="reflection-feedback reflection-feedback-success" role="status" aria-live="polite" hidden>
                 <span class="reflection-feedback-icon" aria-hidden="true">✓</span>
@@ -78,13 +78,13 @@
 
             <p class="block text-sm font-medium mb-2 text-gray-700" id="repeatLabel">Repeat on</p>
             <div id="dayPicker" role="group" aria-labelledby="repeatLabel" class="day-picker mb-1">
-                <button type="button" class="day-chip" data-day="0">Mon</button>
-                <button type="button" class="day-chip" data-day="1">Tue</button>
-                <button type="button" class="day-chip" data-day="2">Wed</button>
-                <button type="button" class="day-chip" data-day="3">Thu</button>
-                <button type="button" class="day-chip" data-day="4">Fri</button>
-                <button type="button" class="day-chip" data-day="5">Sat</button>
-                <button type="button" class="day-chip" data-day="6">Sun</button>
+                <button type="button" class="day-chip" data-day="0" aria-pressed="false">Mon</button>
+                <button type="button" class="day-chip" data-day="1" aria-pressed="false">Tue</button>
+                <button type="button" class="day-chip" data-day="2" aria-pressed="false">Wed</button>
+                <button type="button" class="day-chip" data-day="3" aria-pressed="false">Thu</button>
+                <button type="button" class="day-chip" data-day="4" aria-pressed="false">Fri</button>
+                <button type="button" class="day-chip" data-day="5" aria-pressed="false">Sat</button>
+                <button type="button" class="day-chip" data-day="6" aria-pressed="false">Sun</button>
             </div>
             <p class="text-xs text-gray-500 mb-3">Select one day, or several to add the same block to each at once.</p>
 
@@ -98,8 +98,8 @@
             <textarea id="blockGoal" rows="2" placeholder="Goal (optional)" class="timetable-form-field w-full p-2 border rounded mb-3"></textarea>
             <div id="blockFormError" class="reflection-feedback reflection-feedback-error" role="alert" hidden></div>
             </div><footer class="dialog-footer">
-            <button id="saveBlockButton" onclick="saveTimeBlock()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save time block</button>
-            <button onclick="closeAddModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button></footer>
+            <button type="button" id="saveBlockButton" onclick="saveTimeBlock()" class="timetable-form-action bg-blue-600 text-white px-4 py-2 rounded w-full">Save time block</button>
+            <button type="button" onclick="closeAddModal()" class="timetable-form-action bg-gray-300 text-gray-700 px-4 py-2 rounded w-full mt-2">Cancel</button></footer>
         </div>
     </div>
 
@@ -270,17 +270,25 @@
                             if (!hasReflection) {
                                 reflectionButton = `<button type="button" data-reflect="${block.id}" aria-label="Add reflection" class="l2e-button">Reflect</button>`;
                             } else {
-                                reflectionButton = `<span class="text-green-600 text-sm">✅ Reflection added</span>`;
+                                reflectionButton = `<span class="text-green-600 text-sm font-semibold flex items-center gap-1">✅ Reflection added</span>`;
                             }
 
+                            const goalBadge = block.goal ? `
+                                <div class="timetable-block-goal mt-2">
+                                    <span class="l2e-badge timetable-goal-badge text-xs" title="Goal">
+                                        <span aria-hidden="true">🎯 </span><strong>Goal:</strong> ${escapeHtml(block.goal)}
+                                    </span>
+                                </div>
+                            ` : '';
+
                             html += `
-                                <div class="bg-gray-50 p-3 rounded mb-2">
-                                    <p><span class="font-bold block-time">${block.start_time} - ${block.end_time}</span></p>
-                                    <p><strong>Activity:</strong> ${escapeHtml(block.activity)}</p>
-                                    ${block.goal ? `<p class="text-gray-600"><strong>Goal:</strong> ${escapeHtml(block.goal)}</p>` : ''}
-                                    <div class="flex gap-2 mt-2">
+                                <div class="bg-gray-50 p-3 rounded mb-2 timetable-block-card">
+                                    <p class="timetable-block-time text-xs font-bold text-gray-500 uppercase tracking-wider mb-1"><span class="font-bold block-time">${block.start_time} - ${block.end_time}</span></p>
+                                    <p class="timetable-block-activity font-semibold text-base mb-1"><strong>Activity:</strong> ${escapeHtml(block.activity)}</p>
+                                    ${goalBadge}
+                                    <div class="flex gap-2 mt-3 items-center flex-wrap">
                                         ${reflectionButton}
-                                        <button onclick="deleteBlock(${block.id}, this)" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Delete</button>
+                                        <button type="button" onclick="deleteBlock(${block.id}, this)" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Delete</button>
                                     </div>
                                 </div>
                             `;
@@ -332,9 +340,11 @@
             if (selectedDays.has(day)) {
                 selectedDays.delete(day);
                 chip.classList.remove('selected');
+                chip.setAttribute('aria-pressed', 'false');
             } else {
                 selectedDays.add(day);
                 chip.classList.add('selected');
+                chip.setAttribute('aria-pressed', 'true');
             }
         });
 
@@ -349,7 +359,10 @@
             document.getElementById('blockActivity').value = '';
             document.getElementById('blockGoal').value = '';
             selectedDays.clear();
-            document.querySelectorAll('#dayPicker .day-chip').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('#dayPicker .day-chip').forEach(c => {
+                c.classList.remove('selected');
+                c.setAttribute('aria-pressed', 'false');
+            });
         };
 
         window.closeAddModal = function() {
@@ -401,7 +414,10 @@
                         goal
                     })
                 });
-                if (!res.ok) throw Error('Could not save ' + days[day]);
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw Error(data.error || ('Could not save ' + days[day]));
+                }
             }));
             button.disabled = false;
             button.textContent = 'Save time block';
@@ -414,7 +430,11 @@
                 selectedDaysArr.forEach((day, index) => {
                     if (outcomes[index].status === 'fulfilled') {
                         selectedDays.delete(day);
-                        document.querySelector(`#dayPicker .day-chip[data-day="${day}"]`).classList.remove('selected');
+                        const chip = document.querySelector(`#dayPicker .day-chip[data-day="${day}"]`);
+                        if (chip) {
+                            chip.classList.remove('selected');
+                            chip.setAttribute('aria-pressed', 'false');
+                        }
                     }
                 });
                 error.textContent = successCount
