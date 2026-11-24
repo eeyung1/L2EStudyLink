@@ -144,3 +144,79 @@
 
 /* Searchable grouped navigation, shared by signed-in shells. */
 .l2e-workspace .workspace-nav-find{padding:8px 12px 18px;border-bottom:1px solid var(--l2e-border);margin-bottom:18px}.l2e-workspace .workspace-nav-find label{display:block;font-size:11px;font-weight:650;color:var(--l2e-secondary);margin-bottom:8px}.l2e-workspace .workspace-nav-find input{box-sizing:border-box;width:100%;min-width:0;min-height:44px;font:16px var(--l2e-font);padding:10px;border:1px solid var(--l2e-border);border-radius:10px;color:var(--l2e-text);background:var(--l2e-canvas)}.l2e-workspace .workspace-nav-find p{font-size:11px;line-height:1.6;color:var(--l2e-secondary);margin:10px 0}.l2e-workspace .workspace-nav-find button{min-width:44px;min-height:44px;border:1px solid var(--l2e-border);background:var(--l2e-subtle);color:var(--l2e-text);padding:10px;border-radius:10px;font-size:11px}.l2e-workspace .sidebar-nav [hidden]{display:none!important}.l2e-workspace .sidebar-link[aria-current=page]{border-left:3px solid var(--l2e-accent);background:var(--l2e-accent-soft)!important;color:var(--l2e-accent)!important}.l2e-workspace .sidebar-nav .workspace-nav-group{scroll-margin-top:16px}
+
+/* Responsive Workspace Navigation Foundation (Batch A / Task 11) */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+.l2e-workspace .nav-dropdown { position: relative; }
+.l2e-workspace .nav-dropdown-trigger { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 8px 14px; border-radius: var(--l2e-radius-sm, 8px); font: 600 0.92rem/1.4 var(--l2e-font); color: var(--l2e-secondary) !important; background: transparent !important; border: 1px solid transparent !important; cursor: pointer; transition: background-color var(--l2e-duration, 0.15s) ease, color var(--l2e-duration, 0.15s) ease; }
+.l2e-workspace .nav-dropdown-trigger:hover, .l2e-workspace .nav-dropdown.is-open .nav-dropdown-trigger { background: var(--l2e-accent-soft) !important; color: var(--l2e-accent) !important; }
+.l2e-workspace .nav-dropdown-trigger.has-active { background: var(--l2e-accent-soft) !important; color: var(--l2e-accent) !important; font-weight: 700; }
+.l2e-workspace .nav-chevron { transition: transform 0.2s ease; flex-shrink: 0; }
+.l2e-workspace .nav-dropdown.is-open .nav-chevron { transform: rotate(180deg); }
+.l2e-workspace .nav-dropdown-menu { background: var(--l2e-surface) !important; color: var(--l2e-text) !important; }
+.l2e-workspace .nav-dropdown-action { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; min-width: 44px; padding: 8px 14px; border-radius: var(--l2e-radius-sm, 8px); font: 500 0.9rem/1.4 var(--l2e-font); color: var(--l2e-text) !important; background: transparent !important; border: none !important; cursor: pointer; text-align: left; }
+.l2e-workspace .nav-dropdown-action:hover { background: var(--l2e-accent-soft) !important; color: var(--l2e-accent) !important; }
+.l2e-workspace .nav-dropdown-action.nav-logout-action:hover { background: var(--l2e-error-soft, #fef2f2) !important; color: var(--l2e-error, #dc2626) !important; }
+.l2e-workspace .nav-dropdown-divider { height: 1px; background: var(--l2e-border); margin: 6px 0; }
+
+/* 1. Desktop (>=1100px): Horizontal top workspace navigation */
+@media (min-width: 1100px) {
+  .l2e-workspace .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+  .l2e-workspace .sidebar { position: sticky !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: auto !important; width: 100% !important; max-width: 100% !important; height: 64px !important; min-height: 64px !important; max-height: 64px !important; border-right: none !important; border-bottom: 1px solid var(--l2e-border) !important; background: var(--l2e-surface) !important; display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; padding: 0 max(24px, calc((100% - 1360px) / 2 + 24px)) !important; z-index: 50 !important; box-shadow: var(--l2e-shadow) !important; overflow: visible !important; }
+  .l2e-workspace .sidebar-heading { display: flex !important; align-items: center !important; height: 100% !important; flex-shrink: 0 !important; margin: 0 !important; padding: 0 !important; }
+  .l2e-workspace .sidebar-heading .mobile-menu-toggle { display: none !important; }
+  .l2e-workspace .workspace-current-title, .l2e-workspace .tablet-account-btn { display: none !important; }
+  .l2e-workspace .sidebar-foot { display: none !important; }
+  .l2e-workspace .phone-bottom-nav { display: none !important; }
+  .l2e-workspace .sidebar-nav { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 8px !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; flex: 1 1 auto !important; justify-content: flex-end !important; }
+  .l2e-workspace .workspace-nav-find { display: none !important; }
+  .l2e-workspace .workspace-nav-group { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 6px !important; margin: 0 !important; padding: 0 !important; position: relative !important; }
+  .l2e-workspace .workspace-nav-group .nav-kicker { display: none !important; }
+  .l2e-workspace .sidebar-link.nav-today-link, .l2e-workspace .sidebar-link.nav-library-link { display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 44px !important; min-width: 44px !important; padding: 8px 14px !important; border-radius: var(--l2e-radius-sm, 8px) !important; font: 600 0.92rem/1.4 var(--l2e-font) !important; color: var(--l2e-secondary) !important; text-decoration: none !important; background: transparent !important; border: 1px solid transparent !important; }
+  .l2e-workspace .sidebar-link.nav-today-link:hover, .l2e-workspace .sidebar-link.nav-library-link:hover { background: var(--l2e-accent-soft) !important; color: var(--l2e-accent) !important; }
+  .l2e-workspace .sidebar-link.nav-today-link[aria-current="page"], .l2e-workspace .sidebar-link.nav-library-link[aria-current="page"] { background: var(--l2e-accent-soft) !important; color: var(--l2e-accent) !important; font-weight: 700 !important; border-left: none !important; }
+  .l2e-workspace .nav-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); left: 0; min-width: 220px; border: 1px solid var(--l2e-border) !important; border-radius: var(--l2e-radius-md, 12px) !important; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important; padding: 8px; z-index: 100; flex-direction: column; gap: 2px; }
+  .l2e-workspace .nav-group-account .nav-dropdown-menu { left: auto; right: 0; }
+  .l2e-workspace .nav-dropdown.is-open .nav-dropdown-menu { display: flex !important; }
+  .l2e-workspace .nav-dropdown-menu .sidebar-link { display: flex !important; align-items: center !important; width: 100% !important; min-height: 44px !important; padding: 8px 14px !important; border-radius: var(--l2e-radius-sm, 8px) !important; font-size: 0.9rem !important; font-weight: 500 !important; color: var(--l2e-text) !important; text-decoration: none !important; border-left: none !important; }
+  .l2e-workspace .nav-dropdown-menu .sidebar-link:hover { background: var(--l2e-accent-soft) !important; color: var(--l2e-accent) !important; }
+  .l2e-workspace .nav-dropdown-menu .sidebar-link[aria-current="page"] { background: var(--l2e-accent-soft) !important; color: var(--l2e-accent) !important; font-weight: 700 !important; border-left: none !important; }
+  .l2e-workspace .main-content, .l2e-workspace main.l2e-ui { margin-left: 0 !important; margin-right: 0 !important; width: 100% !important; max-width: 1360px !important; margin-inline: auto !important; padding: 32px 32px 64px !important; }
+}
+
+/* 2. Tablet & Phone Shared (<1100px): Compact header + grouped drawer sheet */
+@media (max-width: 1099px) {
+  .l2e-workspace .sidebar { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; height: 60px !important; padding: 0 16px !important; border-right: none !important; border-bottom: 1px solid var(--l2e-border) !important; background: var(--l2e-surface) !important; z-index: 40 !important; overflow: hidden !important; transition: height 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important; display: flex !important; flex-direction: column !important; }
+  .l2e-workspace .sidebar.menu-open { height: 100vh !important; height: 100dvh !important; overflow: hidden !important; z-index: 60 !important; }
+  .l2e-workspace .sidebar-heading { display: flex !important; align-items: center !important; justify-content: space-between !important; height: 60px !important; flex-shrink: 0 !important; width: 100% !important; }
+  .l2e-workspace .mobile-menu-toggle { display: inline-flex !important; }
+  .l2e-workspace .sidebar-nav { display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; overflow-y: auto !important; overscroll-behavior: contain !important; padding: 16px 20px 24px !important; -webkit-overflow-scrolling: touch !important; }
+  .l2e-workspace .sidebar-foot { display: flex !important; flex-shrink: 0 !important; padding: 12px 20px !important; border-top: 1px solid var(--l2e-border) !important; background: var(--l2e-surface) !important; align-items: center !important; justify-content: space-between !important; }
+  .l2e-workspace .nav-dropdown { position: static !important; }
+  .l2e-workspace .nav-dropdown-trigger { display: none !important; }
+  .l2e-workspace .nav-dropdown-menu { display: flex !important; position: static !important; box-shadow: none !important; border: none !important; padding: 0 !important; background: transparent !important; flex-direction: column !important; }
+  .l2e-workspace .nav-dropdown-divider, .l2e-workspace .nav-dropdown-action { display: none !important; }
+  .l2e-workspace .nav-kicker { display: block !important; }
+  .l2e-workspace .sidebar-link { display: flex !important; align-items: center !important; min-height: 44px !important; padding: 10px 14px !important; border-radius: var(--l2e-radius-sm, 8px) !important; margin-bottom: 2px !important; }
+  .l2e-workspace .sidebar-link[aria-current="page"] { border-left: 3px solid var(--l2e-accent) !important; }
+  .l2e-workspace .main-content, .l2e-workspace main.l2e-ui { margin-left: 0 !important; padding-top: 80px !important; width: 100% !important; max-width: 100% !important; }
+}
+
+/* 3. Tablet specific (768-1099px): current page title & account button in header */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .l2e-workspace .workspace-current-title { display: inline-block !important; font-size: 1rem !important; font-weight: 700 !important; color: var(--l2e-text) !important; margin: 0 16px !important; max-width: 340px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+  .l2e-workspace .tablet-account-btn { display: inline-flex !important; align-items: center !important; justify-content: center !important; min-width: 44px !important; min-height: 44px !important; border: 1px solid var(--l2e-border) !important; border-radius: var(--l2e-radius-sm, 8px) !important; background: var(--l2e-subtle) !important; color: var(--l2e-text) !important; cursor: pointer !important; margin-right: 8px !important; margin-left: auto !important; }
+  .l2e-workspace .phone-bottom-nav { display: none !important; }
+}
+
+/* 4. Phone specific (<768px): 4 labeled bottom actions with safe area */
+@media (max-width: 767px) {
+  .l2e-workspace .workspace-current-title, .l2e-workspace .tablet-account-btn { display: none !important; }
+  .l2e-workspace .phone-bottom-nav { display: flex !important; position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; height: calc(56px + env(safe-area-inset-bottom, 0px)) !important; padding-bottom: env(safe-area-inset-bottom, 0px) !important; background: var(--l2e-surface) !important; border-top: 1px solid var(--l2e-border) !important; z-index: 40 !important; justify-content: space-around !important; align-items: center !important; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05) !important; }
+  .l2e-workspace .sidebar.menu-open .phone-bottom-nav { display: none !important; }
+  .l2e-workspace .bottom-action-btn { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; min-width: 44px !important; min-height: 44px !important; flex: 1 1 0 !important; height: 100% !important; border: none !important; background: transparent !important; color: var(--l2e-secondary) !important; text-decoration: none !important; font: 600 0.72rem/1.2 var(--l2e-font) !important; gap: 3px !important; cursor: pointer !important; padding: 4px 0 !important; }
+  .l2e-workspace .bottom-action-btn:hover, .l2e-workspace .bottom-action-btn.active, .l2e-workspace .bottom-action-btn[aria-current="page"] { color: var(--l2e-accent) !important; }
+  .l2e-workspace .bottom-action-btn.active svg, .l2e-workspace .bottom-action-btn[aria-current="page"] svg { stroke: var(--l2e-accent) !important; }
+  .l2e-workspace .main-content, .l2e-workspace main.l2e-ui { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important; }
+}
+

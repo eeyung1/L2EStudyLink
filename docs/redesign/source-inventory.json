@@ -563,6 +563,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/api/v1/admin/product-email-audience.csv",
         "/learn"
       ],
@@ -591,7 +592,7 @@
       ],
       "forms": 4,
       "dialogs": [],
-      "controls": 19,
+      "controls": 28,
       "inline_styles": 0
     },
     "templates/app-navigation.html": {
@@ -610,13 +611,14 @@
         "/skills",
         "/portfolio",
         "/availability",
-        "/admin"
+        "/admin",
+        "/dashboard"
       ],
       "styles": [],
       "scripts": [],
       "forms": 0,
       "dialogs": [],
-      "controls": 2,
+      "controls": 11,
       "inline_styles": 0
     },
     "templates/article.html": {
@@ -670,6 +672,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/timetable"
       ],
       "styles": [
@@ -698,7 +701,7 @@
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 16,
+      "controls": 25,
       "inline_styles": 1
     },
     "templates/buddy.html": {
@@ -719,6 +722,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "#activeHeading",
         "#incomingHeading",
         "#discoverHeading"
@@ -747,7 +751,7 @@
       ],
       "forms": 0,
       "dialogs": [],
-      "controls": 8,
+      "controls": 17,
       "inline_styles": 0
     },
     "templates/dashboard.html": {
@@ -768,6 +772,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/timetable?reflect=today",
         "/timetable",
         "/my-bookings",
@@ -812,7 +817,7 @@
       ],
       "forms": 0,
       "dialogs": [],
-      "controls": 6,
+      "controls": 15,
       "inline_styles": 1
     },
     "templates/focus.html": {
@@ -833,6 +838,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/timetable"
       ],
       "styles": [
@@ -857,7 +863,7 @@
       "dialogs": [
         "focus-leave-dialog"
       ],
-      "controls": 17,
+      "controls": 26,
       "inline_styles": 0
     },
     "templates/forgot-password.html": {
@@ -1013,6 +1019,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/search-page"
       ],
       "styles": [
@@ -1041,7 +1048,7 @@
       ],
       "forms": 2,
       "dialogs": [],
-      "controls": 18,
+      "controls": 27,
       "inline_styles": 0
     },
     "templates/my-bookings.html": {
@@ -1062,6 +1069,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/search-page",
         "/timetable",
         "/availability"
@@ -1094,7 +1102,7 @@
       "dialogs": [
         "bookingActionDialog"
       ],
-      "controls": 17,
+      "controls": 26,
       "inline_styles": 0
     },
     "templates/planner.html": {
@@ -1115,6 +1123,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/timetable",
         "/timetable"
       ],
@@ -1137,7 +1146,7 @@
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 12,
+      "controls": 21,
       "inline_styles": 0
     },
     "templates/portfolio.html": {
@@ -1188,6 +1197,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "#postProject"
       ],
       "styles": [
@@ -1214,7 +1224,7 @@
       ],
       "forms": 2,
       "dialogs": [],
-      "controls": 15,
+      "controls": 24,
       "inline_styles": 0
     },
     "templates/reflections.html": {
@@ -1235,6 +1245,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/timetable"
       ],
       "styles": [
@@ -1262,7 +1273,7 @@
       ],
       "forms": 1,
       "dialogs": [],
-      "controls": 14,
+      "controls": 23,
       "inline_styles": 0
     },
     "templates/reset-password.html": {
@@ -1312,6 +1323,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/masterclass",
         "/timetable"
       ],
@@ -1344,7 +1356,7 @@
         "modalTitle",
         "modalContent"
       ],
-      "controls": 18,
+      "controls": 27,
       "inline_styles": 0
     },
     "templates/signup.html": {
@@ -1393,6 +1405,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/portfolio",
         "/portfolio"
       ],
@@ -1422,7 +1435,7 @@
       ],
       "forms": 2,
       "dialogs": [],
-      "controls": 15,
+      "controls": 24,
       "inline_styles": 1
     },
     "templates/timetable.html": {
@@ -1443,6 +1456,7 @@
         "/portfolio",
         "/availability",
         "/admin",
+        "/dashboard",
         "/reflections",
         "/reflections"
       ],
@@ -1478,7 +1492,7 @@
         "reflectionModal",
         "unnamed"
       ],
-      "controls": 44,
+      "controls": 53,
       "inline_styles": 0
     }
   }
