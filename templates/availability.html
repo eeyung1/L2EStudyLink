@@ -22,7 +22,81 @@
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <link rel="stylesheet" href="/static/css/ui-polish.css">
     <script src="/static/js/mobile-nav.js" defer></script>
-    <style>body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; }</style>
+    <style>
+body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; }
+[data-learning-page=availability] #availability.community-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+[data-learning-page=availability] #availability .settings-record {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 18px;
+    border-radius: 14px;
+    border-left: 4px solid var(--l2e-accent);
+    background: var(--l2e-surface);
+    box-shadow: var(--l2e-shadow, 0 2px 8px rgba(0,0,0,0.04));
+    transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+[data-learning-page=availability] #availability .settings-record h3 {
+    font-size: 1.1rem !important;
+    font-weight: 750;
+    margin: 0 0 6px;
+    color: var(--l2e-text);
+}
+[data-learning-page=availability] #availability .settings-record p {
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--l2e-secondary);
+    margin: 0 0 14px;
+}
+[data-learning-page=availability] #availability .settings-record button {
+    align-self: flex-start;
+    min-height: 44px;
+}
+[data-learning-page=availability] .learning-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+    max-width: 650px;
+    margin-bottom: 16px;
+}
+[data-learning-page=availability] .learning-days button {
+    padding: 10px 4px;
+    min-height: 44px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    background: var(--l2e-subtle) !important;
+    color: var(--l2e-text) !important;
+    border: 1px solid var(--l2e-border) !important;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+[data-learning-page=availability] .learning-days button[aria-pressed="true"] {
+    background: var(--l2e-accent) !important;
+    color: var(--l2e-on-accent) !important;
+    border-color: var(--l2e-accent) !important;
+}
+[data-learning-page=availability] .learning-days button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.availability-distinction {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.availability-distinction-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+    </style>
     <script src="/static/js/session.js"></script>
     <link rel="stylesheet" href="/static/redesign/tokens.css">
     <link rel="stylesheet" href="/static/css/workspace.css"><link rel="stylesheet" href="/static/css/community.css"><link rel="stylesheet" href="/static/css/account-admin.css">
@@ -49,4 +123,4 @@
             </div>
         </header>
 
-<main data-learning-page="availability" class="main-content l2e-ui"><div class="community-page"><header class="workspace-header"><div><p class="workspace-eyebrow">YOUR LEARNING ACCOUNT</p><h1 class="workspace-title">Tutoring availability</h1><p class="workspace-subtitle">Publish times when fellow learners can request a tutoring session.</p></div></header><p id="settingsNotice" class="l2e-feedback" role="status" aria-live="polite"></p><section class="l2e-card"><p>Tutoring availability is published for booking and does not create a <a href="/timetable">personal study block</a>.</p><p id="bookingClock" class="l2e-muted" role="status">Loading the shared booking clock…</p></section><section id="availabilitySection" class="l2e-card"><h2>Your tutoring availability</h2><p id="weeklyCount" class="l2e-muted"></p><div id="availability" class="community-list" aria-busy="true">Loading availability…</div><form data-unsaved-watch id="availabilityForm" class="community-form"><h3>Add a time you can meet</h3><div class="learning-chips learning-days" role="group" aria-label="Choose a tutoring day"><button type="button" data-availability-day="0" aria-pressed="true" disabled>Mon</button><button type="button" data-availability-day="1" aria-pressed="false" disabled>Tue</button><button type="button" data-availability-day="2" aria-pressed="false" disabled>Wed</button><button type="button" data-availability-day="3" aria-pressed="false" disabled>Thu</button><button type="button" data-availability-day="4" aria-pressed="false" disabled>Fri</button><button type="button" data-availability-day="5" aria-pressed="false" disabled>Sat</button><button type="button" data-availability-day="6" aria-pressed="false" disabled>Sun</button></div><label for="availDay">Day of week</label><select id="availDay"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select><div class="settings-time-grid"><label for="availStartTime">Start time<input id="availStartTime" type="time" step="60" value="09:00" required></label><label for="availEndTime">End time<input id="availEndTime" type="time" step="60" value="10:00" required></label></div><button type="submit">Add slot</button></form></section></div></main></div><script src="/static/js/booking-common.js"></script><script src="/static/js/community-common.js"></script><script src="/static/js/settings.js"></script><script src="/static/js/dialog-viewport.js" defer></script></body></html>
+<main data-learning-page="availability" class="main-content l2e-ui"><div class="community-page"><header class="workspace-header"><div><p class="workspace-eyebrow">YOUR LEARNING ACCOUNT</p><h1 class="workspace-title">Tutoring availability</h1><p class="workspace-subtitle">Publish times when fellow learners can request a tutoring session.</p></div></header><p id="settingsNotice" class="l2e-feedback" role="status" aria-live="polite"></p><section class="l2e-card availability-notice-card"><div class="availability-distinction"><div class="availability-distinction-header"><span class="l2e-badge" style="background:var(--l2e-accent-soft);color:var(--l2e-accent);font-weight:750;">Public Directory</span><h2 class="text-base font-bold m-0">Public Tutoring vs. Personal Timetable</h2></div><p class="text-sm">Tutoring availability is published for booking and does not create a <a href="/timetable">personal study block</a>.</p><p id="bookingClock" class="l2e-muted" role="status">Loading the shared booking clock…</p></div></section><section id="availabilitySection" class="l2e-card"><h2>Your tutoring availability</h2><p id="weeklyCount" class="l2e-muted"></p><div id="availability" class="community-list" aria-busy="true">Loading availability…</div><form data-unsaved-watch id="availabilityForm" class="community-form"><h3>Add a time you can meet</h3><div class="learning-chips learning-days" role="group" aria-label="Choose a tutoring day"><button type="button" data-availability-day="0" aria-pressed="true" disabled>Mon</button><button type="button" data-availability-day="1" aria-pressed="false" disabled>Tue</button><button type="button" data-availability-day="2" aria-pressed="false" disabled>Wed</button><button type="button" data-availability-day="3" aria-pressed="false" disabled>Thu</button><button type="button" data-availability-day="4" aria-pressed="false" disabled>Fri</button><button type="button" data-availability-day="5" aria-pressed="false" disabled>Sat</button><button type="button" data-availability-day="6" aria-pressed="false" disabled>Sun</button></div><label for="availDay">Day of week</label><select id="availDay"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select><div class="settings-time-grid"><label for="availStartTime">Start time<input id="availStartTime" type="time" step="60" value="09:00" required></label><label for="availEndTime">End time<input id="availEndTime" type="time" step="60" value="10:00" required></label></div><button type="submit">Add slot</button></form></section></div></main></div><script src="/static/js/booking-common.js"></script><script src="/static/js/community-common.js"></script><script src="/static/js/settings.js"></script><script src="/static/js/dialog-viewport.js" defer></script></body></html>
