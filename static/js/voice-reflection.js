@@ -4,7 +4,33 @@
     const MAX_SECONDS=180, MAX_BYTES=5*1024*1024;
     const el=id=>document.getElementById(id);
     const drafts=new Map();
-    window.L2EUnsaved?.register('reflection-drafts',()=>saving||state==='recording'||[...drafts.values()].some(d=>d.summary?.trim()||d.challenges?.trim()||d.learnings?.trim()||d.blob||d.audioURL));
+
+    function sessionScopeKey() {
+        if (typeof sessionScope === 'function') {
+            try { const s = sessionScope(); if (s) return s; } catch (_) {}
+        }
+        const match = typeof document !== 'undefined' && document.cookie ? document.cookie.match(/(?:^|; )l2e_scope=([a-f0-9]+)/) : null;
+        return match ? match[1] : '';
+    }
+    let currentScope = sessionScopeKey();
+    function syncScope() {
+        const scope = sessionScopeKey();
+        if (scope !== currentScope) {
+            cancelAsync();
+            revokePreview();
+            drafts.clear();
+            key = null;
+            currentScope = scope;
+        }
+        return currentScope;
+    }
+    const scopedKey = k => k ? `${sessionScopeKey()}::${k}` : null;
+
+    window.L2EUnsaved?.register('reflection-drafts', () => {
+        if (sessionScopeKey() !== currentScope) return false;
+        return saving || state === 'recording' || [...drafts.entries()].some(([k, d]) => k.startsWith(currentScope + '::') && (d.summary?.trim() || d.challenges?.trim() || d.learnings?.trim() || d.blob || d.audioURL));
+    });
+
     let key=null,version=0,mode='write',state='ready',saving=false;
     let recorder=null,stream=null,timer=null,startedAt=0,seconds=0,blobSeconds=0;
     let blob=null,blobURL='',audioURL='',upload=null,requesting=false;
@@ -12,6 +38,7 @@
     const takeState=()=>audioURL?'attached':blob?(blob.size>MAX_BYTES?'too-large':'upload-error'):'ready';
     const busy=()=>['requesting','recording','stopping','uploading'].includes(state);
     const clock=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
     function status(text,tone='') {
         el('voiceStatus').textContent=text;
         el('voiceStatus').classList.toggle('is-error',tone==='error');
@@ -27,7 +54,7 @@
         record.setAttribute('aria-label',state==='recording'?'Stop recording':'Start recording');
         record.classList.toggle('is-recording',state==='recording');
         el('voiceWaveform').classList.toggle('is-active',state==='recording');
-        el('voiceTimer').textContent=clock(seconds)+' / 03:00';
+        el('voiceTimer').innerHTML=clock(seconds)+' <span>/ 03:00</span>';
         el('voicePreview').hidden=!blob;
         el('voiceAttachedLabel').hidden=!audioURL;
         el('url-summary').value=audioURL;
@@ -59,7 +86,8 @@
     }
     function stash() {
         if(!key)return;
-        drafts.set(key,{summary:el('reflectionSummary').value,challenges:el('reflectionChallenges').value,learnings:el('reflectionLearnings').value,blob,audioURL,seconds:blob?blobSeconds:0,mode});
+        syncScope();
+        drafts.set(scopedKey(key),{summary:el('reflectionSummary').value,challenges:el('reflectionChallenges').value,learnings:el('reflectionLearnings').value,blob,audioURL,seconds:blob?blobSeconds:0,mode});
     }
     function cancelAsync() {
         version++;requesting=false;
@@ -70,6 +98,7 @@
     }
     function setMode(next,focus=false) {
         if(saving)return;
+        stash();
         mode=next==='voice'?'voice':'write';
         for(const [value,tab,panel] of [['write','modeWriteTab','reflectionWritePanel'],['voice','modeSpeakTab','reflectionVoicePanel']]){
             el(tab).setAttribute('aria-selected',String(mode===value));el(tab).tabIndex=mode===value?0:-1;el(panel).hidden=mode!==value;
@@ -79,10 +108,12 @@
         if(mode==='write'&&state==='requesting'){cancelAsync();state=takeState();render();}
         const panel=document.querySelector('#reflectionModal .dialog-body');if(panel)panel.scrollTop=0;
         if(focus)el(mode==='write'?'modeWriteTab':'modeSpeakTab').focus();
+        stash();
+        render();
     }
     function openDraft(nextKey) {
-        stash();cancelAsync();revokePreview();key=nextKey;saving=false;
-        const draft=drafts.get(key)||{};
+        stash();cancelAsync();revokePreview();syncScope();key=nextKey;saving=false;
+        const draft=(key?drafts.get(scopedKey(key)):null)||{};
         blob=draft.blob||null;audioURL=draft.audioURL||'';seconds=draft.seconds||0;blobSeconds=seconds;
         for(const [id,name] of [['reflectionSummary','summary'],['reflectionChallenges','challenges'],['reflectionLearnings','learnings']])el(id).value=draft[name]||'';
         state=takeState();
@@ -101,7 +132,7 @@
         const timeout=setTimeout(()=>controller.abort(),30000);
         try {
             const token=typeof sessionToken==='function'?sessionToken():'';
-            const response=await fetch('/api/v1/voice/upload',{method:'POST',headers:token?{Authorization:'Bearer '+token}:{},body:form,signal:controller.signal});
+            const response=await fetch('/api/v1/voice/upload',{method:'POST',credentials:'same-origin',headers:token?{Authorization:'Bearer '+token}:{},body:form,signal:controller.signal});
             if(!response.ok)throw Error('Upload unavailable');
             const data=await response.json();
             if(id!==version||take!==blob)return;
@@ -190,7 +221,12 @@
         const audio=el('voicePreviewAudio');
         for(const name of ['loadedmetadata','timeupdate','ended'])audio.addEventListener(name,syncPlayer);
         for(const name of ['play','pause','ended'])audio.addEventListener(name,()=>{el('voicePlayBtn').textContent=audio.paused?'▶':'⏸';el('voicePlayBtn').setAttribute('aria-label',audio.paused?'Play recording':'Pause recording');});
-        el('voiceScrubber').addEventListener('input',()=>{const duration=Number.isFinite(audio.duration)?audio.duration:blobSeconds;if(duration>0){audio.currentTime=Number(el('voiceScrubber').value)/100*duration;syncPlayer();}});
+        const scrub=()=>{
+            const duration=Number.isFinite(audio.duration)&&audio.duration>0?audio.duration:blobSeconds;
+            if(duration>0){audio.currentTime=(Number(el('voiceScrubber').value)/100)*duration;syncPlayer();}
+        };
+        el('voiceScrubber').addEventListener('input',scrub);
+        el('voiceScrubber').addEventListener('change',scrub);
         el('reflectionModal').addEventListener('keydown',event=>{
             if(event.key==='Escape'){event.preventDefault();if(!saving)window.closeReflectionModal();return;}
             if(event.key!=='Tab')return;
@@ -208,10 +244,10 @@
     window.rerecordVoiceTake=startRecording;
     window.deleteVoiceTake=deleteTake;
     window.abortVoiceRecording=closeDraft;
-    window.resetReflectionModal=()=>{if(key)drafts.delete(key);key=null;openDraft(null);};
+    window.resetReflectionModal=()=>{if(key)drafts.delete(scopedKey(key));key=null;openDraft(null);};
     window.setReflectionSaving=value=>{saving=value;render();};
     window.reflectionCanSave=()=>!saving&&!busy()&&!(blob&&!audioURL);
-    window.markReflectionSaved=()=>{drafts.delete(key);key=null;cancelAsync();blob=null;audioURL='';seconds=0;blobSeconds=0;state='ready';revokePreview();};
+    window.markReflectionSaved=()=>{if(key)drafts.delete(scopedKey(key));key=null;cancelAsync();blob=null;audioURL='';seconds=0;blobSeconds=0;state='ready';revokePreview();};
     window.onReflectionModalOpened=()=>{opener=document.activeElement;document.querySelector('.app-shell').inert=true;el(mode==='voice'?'voiceRecordBtn':'reflectionSummary').focus();};
     window.onReflectionModalClosed=()=>{document.querySelector('.app-shell').inert=false;if(opener?.isConnected)opener.focus();opener=null;};
     window.addEventListener('pagehide',()=>{cancelAsync();revokePreview();drafts.clear();});
